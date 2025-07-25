@@ -1,0 +1,481 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 3
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Contents
+Terminology .....................................................................................................................25
+Reference Documents ......................................................................................................34
+Revision History ...............................................................................................................34
+1.0 Introduction ............................................................................................................35
+1.1 UCIe Components..............................................................................................40
+1.1.1 Protocol Layer.......................................................................................40
+1.1.2 Die-to-Die (D2D) Adapter.......................................................................411.1.3 Physical Layer.......................................................................................41
+1.1.4 Interfaces ............................................................................................42
+1.2 UCIe Configurations...........................................................................................42
+1.2.1 Single Module Configuration....................................................................42
+1.2.2 Multi-module Configurations ...................................................................43
+1.2.3 Sideband-only Configurations..................................................................44
+1.3 UCIe Retimers...................................................................................................45
+1.4 UCIe Key Performance Targets............................................................................47
+1.5 Interoperability .................................................................................................48
+2.0 Protocol Layer .........................................................................................................49
+2.1 PCIe ................................................................................................................50
+2.1.1 Raw Format..........................................................................................512.1.2 Standard 256B End Header Flit Format.....................................................51
+2.1.3 68B Flit Format.....................................................................................51
+2.1.4 Standard 256B Start Header Flit Format ...................................................512.1.5 Latency-Optimized 256B with Optional Bytes Flit Format.............................52
+2.2 CXL 256B Flit Mode............................................................................................52
+2.2.1 Raw Format..........................................................................................522.2.2 Latency-Optimized 256B Flit Formats.......................................................52
+2.2.3 Standard 256B Start Header Flit Format ...................................................53
+2.3 CXL 68B Flit Mode .............................................................................................53
+2.3.1 Raw Format..........................................................................................53
+2.3.2 68B Flit Format.....................................................................................53
+2.4 Streaming Protocol ............................................................................................54
+2.4.1 Raw Format..........................................................................................54
+2.4.2 68B Flit Format.....................................................................................54
+2.4.3 Standard 256B Flit Formats ....................................................................542.4.4 Latency-Optimized 256B Flit Formats.......................................................55
+2.5 Management Transport Protocol ..........................................................................55
+3.0 Die-to-Die Adapter ...................................................................................................56
+3.1 Stack Multiplexing .............................................................................................57
+3.2 Link Initialization...............................................................................................60
+3.2.1 Stage 3 of Link Initialization: Adapter Initialization ....................................60
+3.2.1.1 Part 1: Determine Local Capabilities .........................................60
+3.2.1.2 Part 2: Parameter Exchange with Remote Link Partner................613.2.1.3 Part 3: FDI bring up ...............................................................69
+3.3 Operation Formats.............................................................................................70
+3.3.1 Raw Format for All Protocols ...................................................................70
+3.3.2 68B Flit Format.....................................................................................70
+3.3.2.1 68B Flit Format Alignment and Padding Rules ............................72
+3.3.3 Standard 256B Flit Formats ....................................................................74
+3.3.4 Latency-Optimized 256B Flit Formats.......................................................79
+--- Page 2 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 4
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 3.3.5 Flit Format-related Implementation Requirements 
+for Protocol Layer and Adapter................................................................83
+3.4 Decision Table for Flit Format and Protocol..... .......................................................84
+3.5 State Machine Hierarchy.....................................................................................88
+3.6 Power Management Link States...........................................................................89
+3.7 CRC Computation ..............................................................................................91
+3.8 Retry Rules.......................................................................................................92
+3.9 Runtime Link Testing using Parity ........................................................................94
+4.0 Logical Physical Layer ..............................................................................................97
+4.1 Data and Sideband Transmission Flow..................................................................97
+4.1.1 Byte to Lane Mapping ............................................................................974.1.2 Valid Framing .......................................................................................99
+4.1.2.1 Valid Framing for Retimers.................................................... 100
+4.1.3 Clock Gating....................................................................................... 1004.1.4 Free Running Clock Mode ..................................................................... 101
+4.1.5 Sideband transmission ......................................................................... 101
+4.1.5.1 Sideband Performant Mode Operation (PMO) ........................... 101
+4.2 Lane Reversal ................................................................................................. 102
+4.2.1 Lane ID ............................................................................................. 103
+4.3 Interconnect redundancy remapping .................................................................. 105
+4.3.1 Data Lane repair ................................................................................. 105
+4.3.2 Data Lane repair with Lane reversal....................................................... 107
+4.3.3 Data Lane repair implementation........................................................... 107
+4.3.3.1 Single Lane repair................................................................ 107
+4.3.3.2 Two Lane repair................................................................... 1094.3.3.3 Single Lane repair with Lane reversal...................................... 111
+4.3.3.3.1 x64 Advanced Package Pseudo Codes................... 111
+4.3.3.3.2 x32 Advanced Package Pseudo Codes................... 111
+4.3.3.4 Two Lane repair with Lane reversal ........................................ 112
+4.3.3.4.1 x64 Advanced Package Pseudo Codes................... 112
+4.3.3.4.2 x32 Advanced Package Pseudo Codes................... 113
+4.3.4 Clock and Track Lane remapping ........................................................... 114
+4.3.5 Clock and Track Lane repair implementation ........................................... 115
+4.3.6 Valid Repair and implementation ........................................................... 116
+4.3.7 Width Degrade in Standard Package Interfaces ....................................... 117
+4.4 Data to Clock Training and Test Modes ............................................................... 117
+4.4.1 Scrambling and training pattern generation ............................................ 119
+4.5 Link Initialization and Training.................... ....................................................... 122
+4.5.1 Link Training Basic Operations .............................................................. 123
+4.5.1.1 Transmitter initiated Data to Clock Point Test........................... 123
+4.5.1.2 Transmitter initiated Data to Clock Eye Width Sweep ................ 125
+4.5.1.3 Receiver initiated Data to Clock point test ............................... 1264.5.1.4 Receiver initiated Data to Clock Eye Width Sweep..................... 127
+4.5.2 Link Training with Retimer.................................................................... 1284.5.3 Link Training State Machine.................................................................. 129
+4.5.3.1 RESET ................................................................................ 131
+4.5.3.2 Sideband Initialization (SBINIT) ............................................. 132
+4.5.3.3 MBINIT............................................................................... 135
+4.5.3.3.1 MBINIT.PARAM.................................................. 136
+4.5.3.3.2 MBINIT.CAL ...................................................... 145
+4.5.3.3.3 MBINIT.REPAIRCLK............................................ 145
+4.5.3.3.4 MBINIT.REPAIRVAL............................................ 1484.5.3.3.5 MBINIT.REVERSALMB......................................... 150
+4.5.3.3.6 MBINIT.REPAIRMB............................................. 152
+4.5.3.4 MBTRAIN ............................................................................ 154
+--- Page 3 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 5
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 4.5.3.4.1 MBTRAIN.VALVREF ............................................ 155
+4.5.3.4.2 MBTRAIN.DATAVREF .......................................... 156
+4.5.3.4.3 MBTRAIN.SPEEDIDLE ......................................... 157
+4.5.3.4.4 MBTRAIN.TXSELFCAL ......................................... 1574.5.3.4.5 MBTRAIN.RXCLKCAL .......................................... 157
+4.5.3.4.6 MBTRAIN.VALTRAINCENTER................................ 158
+4.5.3.4.7 MBTRAIN.VALTRAINVREF.................................... 158
+4.5.3.4.8 MBTRAIN.DATATRAINCENTER1............................ 159
+4.5.3.4.9 MBTRAIN.DATATRAINVREF ................................. 1604.5.3.4.10 MBTRAIN.RXDESKEW......................................... 160
+4.5.3.4.11 MBTRAIN.DATATRAINCENTER2............................ 161
+4.5.3.4.12 MBTRAIN.LINKSPEED......................................... 1624.5.3.4.13 MBTRAIN.REPAIR............................................... 165
+4.5.3.5 LINKINIT ............................................................................ 166
+4.5.3.6 ACTIVE............................................................................... 166
+4.5.3.7 PHYRETRAIN ....................................................................... 166
+4.5.3.7.1 Adapter initiated PHY retrain ............................... 168
+4.5.3.7.2 PHY initiated PHY retrain..................................... 1684.5.3.7.3 Remote Die requested PHY retrain ....................... 169
+4.5.3.7.4 PHY retrain from LINKSPEED............................... 169
+4.5.3.8 TRAINERROR....................................................................... 169
+4.5.3.9 L1/L2 ................................................................................. 170
+4.6 Runtime Recalibration ...................................................................................... 1704.7 Multi-module Link............................................................................................ 170
+4.7.1 Multi-module initialization..................................................................... 171
+4.7.1.1 Sideband Assignment and Retimer Credits for Multi-module 
+Configurations ..................................................................... 174
+4.7.1.2 Examples of MMPL Synchronization ........................................ 174
+4.7.1.2.1 Example 1: MMPL Resolution results 
+in a Width Degrade per Module............................ 175
+4.7.1.2.2 Example 2: MMPL Resolution results 
+in a Speed Degrade ........................................... 176
+4.7.1.2.3 Example 3: MMPL Resolution results 
+in a Module Disable............................................ 176
+4.7.2 Multi-module Interoperability between x64 and x32 Advanced Packages..... 177
+4.8 Sideband PHY Arbitration between MPMs and Link Management Packets ................. 178
+5.0 Electrical Layer (2D and 2.5D) ............................................................................... 180
+5.1 Interoperability ............................................................................................... 180
+5.1.1 Data rates.......................................................................................... 1805.1.2 Reference Clock (REFCLK) .................................................................... 181
+5.2 Overview........................................................................................................ 182
+5.2.1 Interface Overview.............................................................................. 1825.2.2 Electrical summary.............................................................................. 184
+5.3 Transmitter Specification .................................................................................. 185
+5.3.1 Driver Topology .................................................................................. 1855.3.2 Transmitter Electrical parameters .......................................................... 186
+5.3.3 24 GT/s and 32 GT/s Transmitter Equalization......................................... 187
+5.4 Receiver Specification ...................................................................................... 189
+5.4.1 Receiver Electrical Parameters .............................................................. 190
+5.4.2 Rx Termination ................................................................................... 190
+5.4.3 24 and 32 GT/s Receiver Equalization .................................................... 193
+5.5 Clocking......................................................................................................... 193
+5.5.1 Track................................................................................................. 194
+5.6 Supply noise and clock skew ............................................................................. 196
+5.7 Ball-out and Channel Specification ..................................................................... 197
+--- Page 4 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 6
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.1 Voltage Transfer Function..................................................................... 199
+5.7.2 Advanced Package............................................................................... 200
+5.7.2.1 Loss and Crosstalk Mask ....................................................... 201
+5.7.2.2 x64 Advanced Package Module Bump Map............................... 201
+5.7.2.3 x32 Advanced Package Module Bump Map............................... 2105.7.2.4 x64 and x32 Advanced Package Module Interoperability ............ 2165.7.2.5 Module Naming of Advanced Package Modules ......................... 219
+5.7.3 Standard Package ............................................................................... 223
+5.7.3.1 x16 Standard Package Module Bump Map................................ 224
+5.7.3.2 x8 Standard Package Module Bump Map ................................. 2275.7.3.3 x16 and x8 Standard Package Module Interoperability............... 227
+5.7.3.4 Module Naming of Standard Package Modules.......................... 228
+5.7.3.4.1 Module Degrade Rules........................................ 232
+5.7.4 UCIe-S Sideband-only Port ................................................................... 234
+5.8 Tightly Coupled Mode....................................................................................... 235
+5.9 Interconnect redundancy Remapping ................................................................. 235
+5.9.1 Advanced Package Lane Remapping....................................................... 2355.9.2 Standard Package Lane remapping ........................................................ 236
+5.10 BER requirements, CRC and retry ...................................................................... 236
+5.11 Valid and Clock Gating ..................................................................................... 2375.12 Electrical Idle.................................................................................................. 239
+5.13 Sideband signaling........................................................................................... 239
+5.13.1 Sideband Electrical Parameters ............................................................. 2405.13.2 Auxiliary Clock (AUXCL K) .......... ........... .......... ........... .......... ........... ...... 241
+6.0 UCIe-3D ................................................................................................................. 242
+6.1 Introduction.................................................................................................... 242
+6.2 UCIe-3D Features and Summary ....................................................................... 242
+6.3 UCIe-3D Tx, Rx, and Clocking ........................................................................... 244
+6.4 Electrical Specification...................................................................................... 245
+6.4.1 Timing Budget .................................................................................... 245
+6.4.2 ESD and Energy Efficiency.................................................................... 247
+6.4.3 UCIe-3D Module and Bump Map............................................................ 2486.4.4 Repair Strategy................................................................................... 249
+6.4.5 Channel and Data Rate Extension.......................................................... 251
+7.0 Sideband ............................................................................................................... 252
+7.1 Protocol Specification ................................ ....................................................... 252
+7.1.1 Packet Types ...................................................................................... 253
+7.1.2 Packet Formats................................................................................... 256
+7.1.2.1 Register Access Packets........................................................ 256
+7.1.2.2 Messages without Data ......................................................... 2597.1.2.3 Messages with data payloads................................................. 265
+7.1.2.4 Management Port Message (MPM) with Data............................ 274
+7.1.2.4.1 Common Fields in MPM Header of MPM 
+with Data Messages on Sideband ......................... 274
+7.1.2.4.2 Encapsulated MTP Message................................. 275
+7.1.2.4.3 Vendor-defined Management Port 
+Gateway Message.............................................. 276
+7.1.2.5 MPMs without Data............................................................... 276
+7.1.2.5.1 Common Header Fields of MPM 
+without Data Messages on Sideband..................... 277
+7.1.2.5.2 Management Port Gateway Capabilities Message.... 277
+7.1.2.5.3 Credit Return Message ....................................... 278
+7.1.2.5.4 Init Done Message ............................................. 2797.1.2.5.5 PM Message...................................................... 279
+--- Page 5 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 7
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 7.1.2.5.6 Vendor-defined Management Port 
+Gateway Message.............................................. 279
+7.1.3 Flow Control and Data Integrity............................................................. 280
+7.1.3.1 Flow Control and Data Integrity over FDI and RDI .................... 280
+7.1.3.2 Flow Control and Data Integrity over 
+UCIe sideband Link between dies ........................................... 281
+7.1.3.3 End-to-End flow control and forward progress 
+for UCIe Link sideband.......................................................... 281
+7.1.4 Operation on RDI and FDI .................................................................... 284
+8.0 System Architecture .............................................................................................. 285
+8.1 UCIe Manageability.......................................................................................... 285
+8.1.1 Overview ........................................................................................... 2858.1.2 Theory of Operation............................................................................. 286
+8.1.3 UCIe Management Transport ................................................................ 289
+8.1.3.1 UCIe Management Transport Packet ....................................... 289
+8.1.3.1.1 Traffic Class and Packet Ordering Requirements..... 291
+8.1.3.1.2 Packet Length ................................................... 2938.1.3.1.3 Management Protocol......................................... 293
+8.1.3.2 Management Network ID ...................................................... 294
+8.1.3.3 Routing .............................................................................. 295
+8.1.3.3.1 Routing of a Packet from a Management Entity 
+within the Chiplet .............................................. 295
+8.1.3.3.2 Routing of a Packet Received 
+on a Management Port ....................................... 297
+8.1.3.4 Packet Integrity Protection .................................................... 297
+8.1.3.4.1 CRC Integrity Protection ..................................... 297
+8.1.3.5 Access Control..................................................................... 298
+8.1.3.5.1 Standard Asset Classes ...................................... 300
+8.1.3.5.2 Security Director ............................................... 302
+8.1.3.6 Initialization and Configuration .............................................. 302
+8.1.3.6.1 Management Capability Directory......................... 304
+8.1.3.6.2 Chiplet Capability Structure. ............ ............ ........ 306
+8.1.3.6.3 Access Control Capability Structure...................... 3158.1.3.6.4 Security Clearance Group Capability Structure....... 322
+8.1.4 UCIe Memory Access Protocol ............................................................... 323
+8.1.4.1 UCIe Memory Access Protocol Packets .................................... 324
+8.1.4.1.1 UCIe Memory Request Packet.............................. 324
+8.1.4.1.2 UCIe Memory Access Response Packet ................. 326
+8.1.4.2 UCIe Memory Access Protocol Capa bility Structure .... ........... .... 328
+8.2 Management Transport Packet (MTP) Encapsulation ............................................. 331
+8.2.1 MTP Encapsulation Architecture Overview ............................................... 331
+8.2.2 Management Port Messages.................................................................. 335
+8.2.2.1 Sideband ............................................................................ 335
+8.2.2.2 Mainband............................................................................ 336
+8.2.2.2.1 MPMs with Data................................................. 336
+8.2.2.2.2 MPMs without Data ............................................ 338
+8.2.3 Management Transport Path Setup ........................................................ 341
+8.2.3.1 Sideband ............................................................................ 341
+8.2.3.1.1 Negotiation Phase Steps ..................................... 341
+8.2.3.1.2 Initialization Phase Steps.................................... 341
+8.2.3.1.3 Other Sideband Management Transport 
+Path Rules ........................................................ 346
+8.2.3.2 Mainband............................................................................ 346
+8.2.3.2.1 Negotiation Phase Steps ..................................... 346
+8.2.3.2.2 Initialization Phase Steps.................................... 346
+--- Page 6 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 8
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 8.2.3.2.3 Other Mainband Management Transport 
+Path Rules ........................................................ 349
+8.2.4 Common Rules for Management Transport 
+over Sideband and Mainband ................................................................ 349
+8.2.4.1 Management Packet Flow Control........................................... 349
+8.2.4.2 Segmentation...................................................................... 3518.2.4.3 Interleaving and Multi-module Sideband 
+and Multi-stack Mainband Ordering......................................... 352
+8.2.4.3.1 Transmitter Rules .............................................. 352
+8.2.4.3.2 Receiver Rules .................................................. 353
+8.2.4.4 ‘Init Done’ Timeout Flow ....................................................... 355
+8.2.5 Other Management Transport Details ..................................................... 355
+8.2.5.1 Sideband ............................................................................ 355
+8.2.5.1.1 Management Port Gateway Flow Control over RDI.. 355
+8.2.5.1.2 MPMs with Data Length Rules.............................. 355
+8.2.5.1.3 Sideband Runtime Management Transport Path 
+Monitoring — Heartbeat Mechanism ..................... 356
+8.2.5.1.4 Sideband Management Path Power 
+Management Rules ............................................ 357
+8.2.5.1.5 Management Port Gateway Mux Arbitration ........... 358
+8.2.5.2 Mainband............................................................................ 358
+8.2.5.2.1 NOP Message.................................................... 358
+8.2.5.2.2 Credit Return DWORD Format ............................. 358
+8.2.5.2.3 Management Flit Formats ................................... 3598.2.5.2.4 L1/L2 Link States and Management Transport ....... 362
+8.2.5.2.5 Link Reset/Link Disable and 
+Management Transport....................................... 362
+8.2.6 Retimers and Management Transport..................................................... 363
+8.3 UCIe Debug and Test Architecture (UDA)............................................................ 363
+8.3.1 Overview ........................................................................................... 363
+8.3.1.1 DFx Management Hub (DMH) ................................................ 364
+8.3.1.2 DFx Management Spoke (DMS).............................................. 364
+8.3.1.3 Supported Protocols ............................................................. 365
+8.3.1.3.1 UCIe Memory Access Protocol (UMAP) .................. 365
+8.3.1.3.2 Vendor-defined Test and Debug Protocol............... 365
+8.3.1.4 UDM and UCIe Memory Access Protocol Message 
+Encapsulation over UCIe ....................................................... 366
+8.3.1.5 UCIe Test Port Options and Other Considerations ..................... 366
+8.3.1.5.1 Determinism Considerations................................ 366
+8.3.1.6 DFx Security ....................................................................... 366
+8.3.2 Sort/Pre-bond Chiplet Testing with UDA ................................................. 367
+8.3.3 SiP-level Chiplet Testing with UDA ......................................................... 368
+8.3.4 System Debug with UDA ...................................................................... 3698.3.5 DMH/DMS Registers ............................................................................ 369
+8.3.5.1 DMH/DMS Register Address Sp ace and Access Mechanism......... 369
+8.3.5.2 DMH Registers..................................................................... 370
+8.3.5.2.1 Ver (Offset 00h) ................................................ 371
+8.3.5.2.2 Capability ID (Offset 02h)................................... 371
+8.3.5.2.3 DBG_CAP — Debug Capab ilities (Offset 04h) ......... 372
+8.3.5.2.4 DBG_CTL — Debug Control (Offset 08h) ............... 3728.3.5.2.5 DBG_STS — Debug Status (Offset Ah).................. 372
+8.3.5.2.6 DMH_Length_Low — DMH Register Space 
+Length Low (Offset 10h)..................................... 372
+8.3.5.2.7 DMH_Length_High — DMH Register Space 
+Length High (Offset 14h) .................................... 372
+--- Page 7 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 9
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 8.3.5.2.8 DMH_Ext_Cap_Low — DMH Extended Capability 
+Pointer Low (Offset 18h)..................................... 373
+8.3.5.2.9 DMH_Ext_Cap_High — DMH Extended Capability 
+Pointer High (Offset 1Ch).................................... 373
+8.3.5.2.10 DMS_Start_Low — DMS Starting Address 
+Low (Offset 20h) ............................................... 373
+8.3.5.2.11 DMS_Start_High — DMS Starting Address 
+High (Offset 24h) .............................................. 373
+8.3.5.3 DMS Registers..................................................................... 373
+8.3.5.3.1 “Empty” Spoke Registers .................................... 374
+8.3.5.3.2 Common DMS Registers for 
+All Non-empty Spokes........................................ 374
+8.3.5.3.3 DMS Registers of UCIe Spoke Types 
+(‘Spoke Type’ = 0 through 2) .............................. 379
+8.3.5.3.4 DMS Registers of Vendor-defined Spoke Types 
+(‘Spoke Type’ = 128 through 255) ....................... 383
+8.3.5.3.5 DMS Register Implementation in UCIe Adapter 
+and in UCIe Physical Layer.................................. 384
+9.0 Configuration and Parameters ............................................................................... 385
+9.1 High-level Software View of UCIe....................................................................... 385
+9.2 SW Discovery of UCIe Links .............................................................................. 3869.3 Register Location Details and Access Mechanism.................................................. 386
+9.4 Software view Examples................................................................................... 388
+9.5 UCIe Registers ................................................................................................ 391
+9.5.1 UCIe Link DVSEC ................................................................................ 391
+9.5.1.1 PCI Express Extended Capability Header (Offset 0h) ................. 393
+9.5.1.2 Designated Vendor Specific Header 1, 2 (Offsets 4h and 8h)...... 393
+9.5.1.3 Capability Descriptor (Offset Ah)............................................ 3949.5.1.4 UCIe Link DVSEC - UCIe Link Capability (Offset Ch).................. 395
+9.5.1.5 UCIe Link DVSEC - UCIe Link Control (Offset 10h).................... 396
+9.5.1.6 UCIe Link DVSEC - UCIe Link Status (Offset 14h)..................... 3989.5.1.7 UCIe Link DVSEC - Link Event Notification Control (Offset 18h) .. 401
+9.5.1.8 UCIe Link DVSEC - Error Notification Control (Offset 1Ah) ......... 401
+9.5.1.9 UCIe Link DVSEC - Register Locator 0, 1, 2, 3 Low 
+(Offset 1Ch and when Register Locators 1, 2, 3 
+are present Offsets 24h, 2Ch, and 34h respectively)................. 405
+9.5.1.10 UCIe Link DVSEC - Register Locator 0, 1, 2, 3 High 
+(Offset 20h and when Register Locators 1, 2, 3 
+Are Present Offsets 28h, 30h, and 38h respectively)................. 406
+9.5.1.11 UCIe Link DVSEC - Sideband Mailbox Index Low 
+(Offset is design dependent).................................................. 406
+9.5.1.12 UCIe Link DVSEC - Sideband Mailbox Index High 
+(Offset is design dependent).................................................. 407
+9.5.1.13 UCIe Link DVSEC - Sideband Mailbox Data Low 
+(Offset is design dependent).................................................. 407
+9.5.1.14 UCIe Link DVSEC - Sideband Mailbox Data High 
+(Offset is design dependent).................................................. 407
+9.5.1.15 UCIe Link DVSEC - Sideband Mailbox Control 
+(Offset is design dependent).................................................. 408
+9.5.1.16 UCIe Link DVSEC - Sideband Mailbox Status 
+(Offset is design dependent).................................................. 408
+9.5.1.17 UCIe Link DVSEC - Requester ID (Offset is design dependent) ... 4089.5.1.18 UCIe Link DVSEC - Associated Port Numbers 
+(Offset is design dependent).................................................. 409
+9.5.1.19 Examples of setting the Length field 
+in DVSEC for various Scenarios.............................................. 409
+9.5.2 UCIe Switch Register Block (UiSRB) DVSEC Capability.............................. 409
+--- Page 8 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 10
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.2.1 PCI Express Extended Capability Header (Offset 0h) ................. 409
+9.5.2.2 Designated Vendor Specific Header 1, 2 (Offsets 4h and 8h)...... 409
+9.5.2.3 UCIe Switch Register Block (UiSRB) Base Address (Offset Ch).... 410
+9.5.3 D2D/PHY Register Block ....................................................................... 411
+9.5.3.1 UCIe Register Block Header................................................... 411
+9.5.3.2 Uncorrectable Error Status Register (Offset 10h)...................... 4119.5.3.3 Uncorrectable Error Mask Register (Offset 14h)........................ 412
+9.5.3.4 Uncorrectable Error Severity Register (Offset 18h) ................... 413
+9.5.3.5 Correctable Error Status Register (Offset 1Ch) ......................... 4139.5.3.6 Correctable Error Mask Register (Offset 20h) ........................... 414
+9.5.3.7 Header Log 1 Register (Offset 24h) ........................................ 414
+9.5.3.8 Header Log 2 Register (Offset 2Ch) ........................................ 4159.5.3.9 Error and Link Testing Control Register (0ffset 30h).................. 417
+9.5.3.10 Runtime Link Testing Parity Log 0 (Offset 34h) ........................ 418
+9.5.3.11 Runtime Link Testing Parity Log 1 (Offset 3Ch) ........................ 4189.5.3.12 Runtime Link Testing Parity Log 2 (Offset 44h) ........................ 418
+9.5.3.13 Runtime Link Testing Parity Log 3 (Offset 4Ch) ........................ 419
+9.5.3.14 Advertised Adapter Capability Log (Offset 54h) ........................ 4199.5.3.15 Finalized Adapter Capability Log (O ffset 5Ch).......... ........... ...... 419
+9.5.3.16 Advertised CXL Capability Log (Offs et 64h)............. ........... ...... 419
+9.5.3.17 Finalized CXL Capability Log (Offset 6Ch) ................................ 4199.5.3.18 Advertised Multi-Protocol Capability Log Register (Offset 78h).... 420
+9.5.3.19 Finalized Multi-Protocol Capability Log Register (Offset 80h) ...... 420
+9.5.3.20 Advertised CXL Capability Log Register for Stack 1 (Offset 88h) . 4209.5.3.21 Finalized CXL Capability Log Register for Stack 1 (Offset 90h).... 420
+9.5.3.22 PHY Capability (Offset 1000h)................................................ 421
+9.5.3.23 PHY Control (Offset 1004h) ................................................... 4229.5.3.24 PHY Status (Offset 1008h) .................................................... 423
+9.5.3.25 PHY Initialization and Debug (Offset 100Ch) ............................ 424
+9.5.3.26 Training Setup 1 (Offset 1010h)............................................. 4259.5.3.27 Training Setup 2 (Offset 1020h)............................................. 425
+9.5.3.28 Training Setup 3 (Offset 1030h)............................................. 426
+9.5.3.29 Training Setup 4 (Offset 1050h)............................................. 4269.5.3.30 Current Lane Map Module 0 (Offset 1060h) ............................. 427
+9.5.3.31 Current Lane Map Module 1 (Offset 1068h) ............................. 427
+9.5.3.32 Current Lane Map Module 2 (Offset 1070h) ............................. 4279.5.3.33 Current Lane Map Module 3 (Offset 1078h) ............................. 427
+9.5.3.34 Error Log 0 (Offset 1080h) .................................................... 428
+9.5.3.35 Error Log 1 (Offset 1090h) .................................................... 4299.5.3.36 Runtime Link Test Control (Offset 1100h)................................ 429
+9.5.3.37 Runtime Link Test Status (Offset 1108h)................................. 431
+9.5.3.38 Mainband Data Repair (Offset 110Ch)..................................... 4319.5.3.39 Clock, Track, Valid and Sideband Repair (Offset 1134h) ............ 433
+9.5.3.40 UCIe Link Health Monitor (UHM) DVSEC .................................. 434
+9.5.3.40.1 UHM Status (Offset Eh) ...................................... 435
+9.5.3.40.2 Eye Margin (Starting Offset 18h) ......................... 435
+9.5.4 Test/Compliance Register Block............................................................. 436
+9.5.4.1 UCIe Register Block Header................................................... 437
+9.5.4.2 D2D Adapter Test/Compliance Register Block Offset ................. 437
+9.5.4.3 PHY Test/Compliance Register Block Offset.............................. 4379.5.4.4 D2D Adapter Test/Compliance Register Block........................... 438
+9.5.4.4.1 Adapter Compliance Control................................ 438
+9.5.4.4.2 Flit Tx Injection Control ...................................... 439
+9.5.4.4.3 Adapter Test Status (Offset 30h from D2DOFF)...... 440
+9.5.4.4.4 Link State Injection Control Stack 0 
+(Offset 34h from D2DOFF) .................................. 441
+9.5.4.4.5 Link State Injection Control Stack 1 
+(Offset 38h from D2DOFF) .................................. 442
+9.5.4.4.6 Retry Injection Control (Offset 40h from D2DOFF).. 442
+--- Page 9 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 11
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.5 PHY Test/Compliance Register Block....................................... 444
+9.5.4.5.1 Physical Layer Complian ce Control 1 (Offsets 000h, 
+400h, 800h, and C00h from PHYOFF) ................... 444
+9.5.4.5.2 Physical Layer Complian ce Control 2 (Offsets 008h, 
+408h, 808h, and C08h from PHYOFF) ................... 446
+9.5.4.5.3 Physical Layer Compliance Status 1 (Offsets 010h, 
+410h, 810h, and C10h from PHYOFF) ................... 447
+9.5.4.5.4 Physical Layer Compliance Status 2 (Offsets 018h, 
+418h, 818h, and C18h from PHYOFF) ................... 447
+9.5.4.5.5 Physical Layer Compliance Status 3 (Offsets 020h, 
+420h, 820h, and C20h from PHYOFF) ................... 448
+9.5.5 Implementation Specific Register Blocks................................................. 448
+9.6 UCIe Link Registers in Streaming Mode and System SW/FW Implications ................ 449
+9.7 MSI and MSI-X Capability in Hosts/Switches fo r UCIe Interrupt.............................. 450
+9.8 UCIe Early Discovery Table (UEDT) .................................................................... 450
+10.0 Interface Definitions .............................................................................................. 452
+10.1 Raw Die-to-Die Interface (RDI) ......................................................................... 452
+10.1.1 Interface reset requirements................................................................. 46010.1.2 Interface clocking requirements ............................................................ 460
+10.1.3 Dynamic clock gating........................................................................... 461
+10.1.3.1 Rules and description for 
+lp_wake_req/pl_wake_ack handshake .................................... 461
+10.1.3.2 Rules and description for pl_c lk_req/lp_clk_ack handshake........ 461
+10.1.4 Data Transfer ..................................................................................... 463
+10.1.5 RDI State Machine............................................................................... 46510.1.6 RDI bring up flow ................................................................................ 466
+10.1.7 RDI PM flow........................................................................................ 467
+10.2 Flit-Aware Die-to-Die Interface (FDI)............. ..................................................... 471
+10.2.1 Interface reset requirements................................................................. 479
+10.2.2 Interface clocking requirements ............................................................ 479
+10.2.3 Dynamic clock gating........................................................................... 479
+10.2.3.1 Rules and description for 
+lp_wake_req/pl_wake_ack handshake .................................... 480
+10.2.3.2 Rules and description for pl_c lk_req/lp_clk_ack handshake........ 480
+10.2.4 Data Transfer ..................................................................................... 481
+10.2.4.1 DLLP transfer rules for 256B Flit Mode .................................... 482
+10.2.5 Examples of pl_flit_cancel Timing Relationships....................................... 483
+10.2.6 FDI State Machine............................................................................... 48410.2.7 Rx_active_req/Sts Handshake............................................................... 484
+10.2.8 FDI Bring up flow ................................................................................ 485
+10.2.9 FDI PM Flow ....................................................................................... 487
+10.3 Common rules for FDI and RDI.......................................................................... 491
+10.3.1 Byte Mapping for FDI and RDI............................................................... 491
+10.3.2 Stallreq/Ack Mechanism ....................................................................... 49510.3.3 State Request and Status..................................................................... 496
+10.3.3.1 Reset State rules ................................................................. 497
+10.3.3.2 Active State rules................................................................. 498
+10.3.3.3 PM Entry/Exit Rules.............................................................. 49810.3.3.4 Retrain State Rules .............................................................. 498
+10.3.3.5 LinkReset State Rules........................................................... 499
+10.3.3.6 Disabled State Rules............................................................. 50010.3.3.7 LinkError State Rules............................................................ 50010.3.3.8 Common State Rules............................................................ 501
+10.3.4 Example Flow Diagrams ....................................................................... 504
+10.3.4.1 LinkReset Entry and Exit ....................................................... 504
+--- Page 10 ---
+Contents
+UCIe Specification Revision 2.0, Version 1.0 12
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 10.3.4.2 LinkError ............................................................................ 505
+10.3.4.3 Example of L2 Cross Product with Retrain on RDI ..................... 506
+10.3.4.4 L2 Exit Example for RDI........................................................ 507
+11.0 Compliance ............................................................................................................ 508
+11.1 Protocol Layer Compliance................................................................................ 509
+11.2 Adapter Compliance......................................................................................... 509
+11.3 PHY Compliance .............................................................................................. 510
+A CXL/PCIe Register applicability to UCIe ................................................................ 511
+A.1 CXL Registers applicability to UC Ie.......... ........... .......... ........... .......... ........... ...... 511
+A.2 PCIe Register applicability to UCIe ..................................................................... 511A.3 PCIe/CXL registers that need to be part of D2D ................................................... 513
+B AIB Interoperability .............................................................................................. 514
+B.1 AIB Signal Mapping.......................................................................................... 514
+B.1.1 Data path............................................................................................ 514
+B.1.2 Always high Valid ................................................................................. 514
+B.1.3 Sideband............................................................................................. 514B.1.4 Raw Die-to-Die interface ....................................................................... 515
+B.2 Initialization.................................................................................................... 516
+B.3 Bump Map...................................................................................................... 516

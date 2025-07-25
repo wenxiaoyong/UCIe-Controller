@@ -1,0 +1,2174 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 180
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.0 Electrical Layer (2D and 2.5D)
+Key attributes of electrical specification include:
+• Support for 4, 8, 12, 16, 24, and 32 GT/s data rates
+• Support for Advanced and Standard package interconnects• Support for clock and power gating mechanisms
+• Single-ended unidirectional data signaling
+• DC coupled point-to-point interconnect• Forwarded clock for transmit jitter tracking
+• Matched length interconnect design within a module
+• Tx driver strength control and unterminated Rx for Advanced Package• Tx termination and data rate and channel reach dependent Rx termination for Standard Package
+5.1 Interoperability
+5.1.1 Data rates
+A device must support 4 GT/s and all the data rates data rates between 4 GT/s and the highest 
+supported data rate. For example, a device supporti ng 16 GT/s must also support 4, 8, and 12 GT/s 
+Data rates.
+Spread-Spectrum Clocking (SSC) is permitted. Common reference clock (REFCLK) is required 
+between a UCIe Link Transmitter and the corresponding  UCIe Link partner’s Receiver with a transport 
+delay difference less than 5 ns to limit the FIFO  depth and minimize the latency impact. For the 
+retimer use case, the “Local UCIe Link connection”  shall use common REFCLK , while the “Off-Package 
+Link connection” is not required to use or share the common REFCLK. Figure 5-1  shows the transport 
+delay difference and is symmetrical for both directio ns of a Die’s UCIe Link connection. The transport 
+delay represents the delay difference between the Transmitter data to the Receiver data latch and the 
+clock as seen at the receiver’s FIFO output data latch. See Section 5.1.2  for REFCLK details.
+--- Page 2 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 181
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.1.2 Reference Clock (REFCLK)
+Common reference clock (REFCLK) uses a single source  that is distributed to both the Transmitter and 
+the Receiver. The clock can be supplied from a pack age pin or be forwarded by another die on the 
+package. In either case, the reference clock used by both dies on the same link must be from the 
+same clock source. Although other reference clocks are possible, it is recommended that every chiplet 
+use a 100-MHz reference clock, including both dies having different reference clock values from the same clock source. Table 5-1  lists the permitted reference cloc k frequency range. The minimum and 
+maximum frequencies listed in the table indicate the limits, and do not indicate a requirement to 
+support the entire frequency range. It is required  for implementations to generate precise I/O clock 
+frequencies for the supported data rates that use the reference clock. Note that this is possible if the 
+I/O clock frequency is an exact integer multiple of the reference clock frequenc y (if different from 100 
+MHz). The reference clock may be disabled in low-po wer states (such as is done in other Standards 
+and Specifications).Figure 5-1. Example Common Reference Clock
+IMPLEMENTATION NOTE
+In typical implementations, the LCLK for UCIe Link Transmitter and LCLK for the corresponding link partner Receiver, are both generated from the common reference 
+clock. In the example implementation of Figure 5-1 , the LCLK for Transmitter in Die-1 
+can be generated from TX PLL and the LCLK for Receiver in Die-2 can be generated from the RX PLL
+Table 5-1. REFCLK Frequency PPMs and SSC PPMs (Sheet 1 of 2)
+Symbol DescriptionLimits
+Unit Notes
+Min Rec Max
+FREFCLK REFCLK Frequency 25 100 200 MHz
+FREFCLKDEVIATIONREFCLK Frequency 
+Deviation-300 300 ppmMaximum deviation allowed 
+from ideal target frequency.
+FSSC SSC Modulation Frequency 30 33 kHz 
+
+--- Page 3 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 182
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.2 Overview
+5.2.1 Interface Overview
+High-level block diagrams of UCIe PHY are shown in Figure 5-2  and Figure 5-3 . The UCIe physical 
+interface consists of building blocks called Modules. A Module that uses advanced packaging 
+technology (e.g., EMIB, CoWoS) called “Advanced Pa ckage Module” consists of a pair of clocks, 64 or 
+32 single-ended data Lanes for x6 4 or x32 Advanced Package Module, respectively, a data valid Lane 
+each direction (transmit and receive) and a Track Lane. There is a low-speed sideband bus for 
+initialization, Link training, and configuration reads/writes. The sideband consists of a single-ended 
+sideband data Lane and single-ended sideband cloc k Lane in both directions (transmit and receive).
+The x16 or x8 “Standard Package Module” uses a trad itional Standard packaging with larger pitch. A 
+Standard Package Module consists of a pair of cloc ks, 16 or 8 single-ended data Lanes, a data valid 
+Lane and Track Lane in each direction (transmit and receive). There is a low-speed sideband bus for 
+initialization, Link training, and configuration reads/writes. The sideband consists of a single-ended 
+sideband data Lane and single-ended sideband cloc k Lane in both directions (transmit and receive).
+For some applications, multiple modules (2 or 4) can be aggregated to deliver additional bandwidth.
+To avoid reliability issues, it is recommen ded to limit the Transmitter output high (VOH) to a maximum 
+of 100 mV above the receiving chiplet’s Receiver fr ont-end circuit power supply rail. An over-stress 
+protection circuit may be implemented in the Receiver when VOH is more than 100 mV above the 
+Receiver power supply rail.TSSC-FREQ-DEVIATION SSC Deviation -0.5 0 %Tracks for different 
+frequencies.
+TTRANSPORT-DELAY Tx-to-Rx Transport Delay 5 ns
+TSSC-MAX-FREQ-SLEW SSC df/dt 1250 ppm/usTable 5-1. REFCLK Frequency PPMs and SSC PPMs (Sheet 2 of 2)
+Symbol DescriptionLimits
+Unit Notes
+Min Rec Max
+--- Page 4 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 183
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-2. x64 or x32 Advanced Package Module
+Figure 5-3. x16 or x8 Standard Package Module
+ModuleT
+xR
+xModuleT
+xR
+xDie-1 Die-2Multi-die Advanced Package Module
+x64/x32 Data
+1 Valid2 Clock
+1 Track
+x64/x32 Data
+1 Valid2 Clock
+1 Track
+T
+xR
+xSB Data
+SB Clock
+SB Data
+SB ClockT
+xR
+xMainband
+SidebandModuleT
+xR
+xModuleT
+xR
+xDie-1 Die-2Multi-die Standard Package Module
+T
+xR
+xSB Data
+SB Clock
+SB Data
+SB ClockT
+xR
+xx16/x8 Data
+1 Valid2 Clock
+1 Track
+x16/x8 Data
+1 Valid2 Clock
+1 TrackMainband
+Sideband
+--- Page 5 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 184
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.2.2 Electrical summary
+Table 5-2  defines the PHY electrical characteristics of a UCIe device.
+Table 5-2. Electrical summary
+ParameterAdvanced Package
+(x64)Standard Package
+Data Width (per module) 64 64 64 16 16 16 16
+Data Rate (GT/s) 4/8/12 16 24/32 4-16 4/8/12 16 24/32
+Power Efficiency Target (pJ/b) See Table 1-4
+Latency Target (TX+RX) (UI)a
+(Target upper bound)
+a. Electrical PHY latency target. For overall latency target, see Table 1-4 .12 12 16 12 12 12 16
+Idle Exit/Entry Latency (ns)
+(target upper bound)0.5 1 1 0.5 0.5 1 1
+Idle Power
+(% of peak power)(target upper bound)15 15 15 15 15 15 15
+Channel Reach (mm) 2 2 2 2-10 25 25 25
+Die Edge Bandwidth Density
+(GB/s/mm)b
+b. See Table 1-4 .See Table 1-4
+Bandwidth area density
+(GB/s/mm2)158/316/473 631 710/947 21-85 21/42/64 85 109/145
+PHY dimension width per module 
+(um)c
+c. For compatibility, PHY dimension width must match spec for Ad vanced Package. Tolerance of PHY dimension width for Standard
+Package can be higher because there is mo re routing flexibility. For best channel pe rformance, it’s recommended for width to
+be close to spec.388.8 388.8 388.8 571.5d
+d. Standard Package PHY dimension width is the effective width of one (x16) module based on x32 interface (see Figure 5-42  and
+Figure 5-43 ).571.5d571.5d571.5d
+PHY dimension Depth (um)e
+e. PHY dimension depth is an informative parameter and depends on bump pitch. Number in the table is based on 45-um bump
+pitch for 10-column x64 Advanced Package and 100-um bump pitch for Standard Package. See Section 5.7.2  for informative
+values of PHY dimension depth for combinations of the x64 and x32 Advanced Package module s in 10-column, 16-column, and
+8-column bump matrix construction.1043 1043 1320 1320 1320 1540
+ESDf
+f. Reference (Industry Council on ESD Target Levels): White Paper 2: A Case for Lowering Component-level CDM ESD
+Specifications and Requirements. 30V CDM (Anticipating going to 5-10V in Future.)
+--- Page 6 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 185
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.3 Transmitter Specification
+The Transmitter topology is shown in Figure 5-4 . Each data module consists of N single-ended data 
+Transmitters plus a Valid signal. N is 68 (64 Data + 4 Redundant Data) for a x64 Advanced Package Module. N is 34 (32 Data + 2 Redundant Data) for a x32 Advanced Package Module. N is 16 for a x16 
+Standard Package Module. N is 8 for a x8 Standard Package Module. There is a pair of Transmitters for 
+clocking and a Track signal in each module. The clock rates and phases are discussed in detail in 
+Section 5.5 .
+The Valid signal is used to gate the clock distribution to all data Lanes to enable fast idle exit and 
+entry. The signal also serves the purpose of Valid framing, see Section 4.1.2  for details. The 
+Transmitter implementation for Valid signal is expected to be the same as for regular Data.
+The Track signal can be used for PHY to compensate  for slow-changing variables such as voltage or 
+temperature. Track is a unidirectional signal simila r to a data bit. The UCIe Module sends a clock 
+pattern (1010…) aligned with Phase-1 of the forwar ded clock signal on its Track Transmitter when 
+requested over the sideband by the UCIe Module Partner for its Track Receiver. See Section 4.6  for 
+more details on Runtime Recalibration steps and Section 5.5.1  for Track usage.
+5.3.1 Driver Topology
+The Transmitter is optimized for simplicity and low power operation. An example of a low power 
+Transmitter driver is shown in Figure 5-5 . Separate pull-up and pull- down network strengths are 
+permitted to achieve optimal performance across different channel configurations.
+A control loop or training is recommended to adjust  output impedance to compensate for the process, 
+voltage and temperature variations. Control loop and training are implementation specific and beyond 
+the scope of this specification. In low power states, the implementation must be capable of tri-stating 
+the output.
+It is recommended to optimize the ESD network to minimize pad capacitance. Inductive peaking 
+technique such as T-coil may be needed at higher data rates.Figure 5-4. Transmitter
+DLLTXD
+PLLPhase-1N
+/N
+CK 
+BufFIFON
+PI
++
+DCCSerializerData + Valid
+Phase-2ClockData In
+TXDTrackfCK TX Deskew
+  TXCK
+--- Page 7 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 186
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.3.2 Transmitter Electrical parameters
+Table 5-3  defines the Transmitter electrical parameters.Figure 5-5. Transmitter driver example circuit
+Table 5-3. Transmitter Electrical Parameters (Sheet 1 of 2)
+Parameter Min Typ Max Unit
+Data Lane TX Swinga0.4 V
+Fwd Clock Tx Swing (single ended) 0.4 V
+Incoming Clock Rise/Fall timeb0.1 0.22 0.25 UI
+Incoming Differential Clock Overlapb--3 0 m U I
+Incoming Data Rise/Fall timeb-0 . 3 5 - U I
+Driver Pull-up/Pull-down Impedance for Advanced Packagec22 25 28 Ohms
+Impedance Step Size for Advanced Packaged0.5 Ohms
+Driver Pull-up/Pull-down Impedance for Standard Packagee27 30 33 Ohms
+Impedance Step Size for Standard Packaged--0 . 5O h m s
+1-UI Total Jitterf- - 96/113 mUI pk-pk
+1-UI Deterministic Jitter (Dual Dirac)g--4 8 m U I  p k - p k
+Tx Data/clock Differential Jitter (Divergent Path)h60 mUI pk-pk
+Duty Cycle Errori-0.02 - 0.02 UI
+Lane-to-Lane Skew Correction Range (up to 16 GT/s)j-0.1 - 0.1 UI
+Lane-to-Lane Skew Correction Range (up to 32 GT/s)j-0.15 - 0.15 UI
+Lane-to-Lane Skew Correction Range (up to 16 GT/s)k-0.14 - 0.14 UI
+Lane-to-Lane Skew Correction Range (up to 32 GT/s)k-0.22 - 0.22 UI
+Lane-to-Lane Skewi-0.02 - 0.02 UIVCCIO
+Pad
+Segmented DriverData
+M2M1
+RS
+RSPre-
+Driver
+ESD
+Network
+--- Page 8 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 187
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.3.3 24 GT/s and 32 GT/s Transmitter Equalization
+Transmitter equalization is recommended for 16 GT/s and must be supported at 24 GT/s and 32 GT/s 
+data rates to mitigate the channel ISI impact. Tx equalization is de-emphasis only for all applicable Data rates.
+Tx equalization coefficients for 24 GT/s and 32  GT/s are based on the FIR filter shown in Figure 5-6 . 
+Equalization coefficient is subject to maximum unity swing constraint.
+The Transmitter must support the equalization settings shown in Table 5-4 . Determination of de-
+emphasis setting is based on initial configuration or training sequence, where the value with larger 
+eye opening will be selected.Clock to Mean Data Training Accuracyl-0.07 - 0.07 UI
+Phase Adjustment Stepm--1 6 m U I
+TX Pad Capacitance (for all speeds)n- - 250 fF
+TX Pad Capacitance (8 GT/s capable design)14- - 300 fF
+TX Pad Capacitance (16 GT/s capable design)o- - 200 fF
+TX Pad Capacitance (32 GT/s capable design)o- - 125 fF
+a. For recommended maximum Transmitter voltage, see Section 1.5 .
+b. Expected input (informative). Meas ured 20% to 80%. Differential clock ov erlap is deviation from the ideal
+differential phase (180 degrees apart).
+c. Driver pull-up/down impedanc e is calibrated at midpoint of Transmitter signal swing.
+d. Impedance step size is an informative parameter and ca n be implementation specific to meet Driver pull-up/
+pull-down impedance.
+e. Driver pull-up/pull-down impedance is calibrated at midpoint of Transmitter signal swing (with nominal Rx
+termination when applicable).
+f. At BER 1E-15/1E-27.
+g. Data dependent jitter excluding Duty Cycle Error.h. Includes absolute random jitter and untracked determin istic jitter of the divergent path due to delay mismatch
+(in the matched architecture).
+i. Post correction.j. Advanced Package.
+k. Standard Package.
+l. Includes static and tracking error.m. Informative parameter. Phase adjustment step size m u s t  b e  c h o s e n  t o  m e e t  other timing parameters,
+including Clock-to-Mean Data Training Accuracy, Lane-to-Lane skew, and Duty cycle error (if applicable).
+n. Effective pad capacitance Advanced Package.o. Effective pad capacitance Standard Package.Table 5-3. Transmitter Electrical Parameters (Sheet 2 of 2)
+Parameter Min Typ Max Unit
+--- Page 9 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 188
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-6. Transmitter de-emphasis
+Figure 5-7. Transmitte r de-emphasis waveform
+Table 5-4. Transmitter de-emphasis values
+Setting De-emphasis Accuracy C+1 Vb/Va
+1 0.0 dB - 0.000 1.000
+2 -2.2 dB +/- 0.5 dB -0.112 0.776Vin(n) 1 UI
+C0 C+1
+∑ 
+Vout(n)
+Vout(n) = C 0 Vin(n) + C +1 Vin(n-1) + |C +1|
+|C0|+ |C +1|=1
+Vin(n) = {0, +1) 
+Va Vb
+De-emphasis = 20log 10(Vb/Va)
+--- Page 10 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 189
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.4 Receiver Specification
+The Receiver topology is illustrated in Figure 5-8 . Each Module (Advanced Package and Standard 
+Package) consists of clocks Receivers, data Receivers, and Track Receiver.
+The received clock is used to sample the incoming data. The Receiver must match the delays between 
+the clock path and the data/valid path to the sampler.  This is to minimize the impact of power supply 
+noise induced jitter. The data Receivers may be implemented as 2-way or 4-way interleaved. For 
+4-way interleaved implementation the Receiver needs to generate required phases internally from the 
+two phase of the forwarded clock. This may require duty cycle correction capability on the Receiver. The supported forwarded clock frequencies and phases are described in Section 5.5 .
+At higher data rates, deskew ca pability may be needed in the re ceiver to achieve the matching 
+requirements between the data Lanes. Receiver Deskew, when applicable, can be performed during mainband training. More details are provided in Section 4.5 .
+The UCIe Module, upon requesting the Track signal , receives a clock pattern (1010…) aligned with 
+Phase-1 of the forwarded clock signal on its Track Receiver from the UCIe Module Partner’s Track Transmitter and may use the Track signal to track th e impact of slow varying voltage and temperature 
+changes on sampling phase.
+Figure 5-8. Receiver topology
+RX
+RXFlop FIFO
+ RXCKPhase-1Data
+Phase-2FlopFlip-
+flop
+RXDTrack
+TrackPhase 
+Gen
+(Optional)2/4 Phases RX  RXDDeskew
+……
+--- Page 11 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 190
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.4.1 Receiver Electrical Parameters
+The specified Receiver electrical parameters are shown in Table 5-5 .
+5.4.2 Rx Termination
+Rx termination is applicable only to Standard Pa ckage modules. All Receivers on Advanced Package 
+modules must be unterminated.
+Receiver termination on Standard Packag e is data rate and channel dependent. Table 5-6  shows the 
+maximum data rate and channel reach combinations for which the Receivers in Standard Package 
+Modules are recommended to remain unterminat ed for a minimally compliant Transmitter. Figure 5-9  
+shows an alternate representation of termination requirement. The area below the curve in Figure 5-9  
+shows the speed and channel-reach combinations for which the Receivers in Standard Package 
+Modules are recommended to remain unterminat ed. Termination is required for all other 
+combinations. Receivers must be ground-terminated when applicable, as shown in Figure 5-10 .Table 5-5. Receiver Electrical parameters
+Parameter Min Typ Max Unit
+RX Input Impedancea
+a. Standard Package mode with termination. Impedanc e step size is an inform ative parameter and can be
+implementation specific to meet Rx Input Impedance.45 50 55 Ohms
+Impedance Step Sizea-- 1O h m s
+Data/Clock Total Differential Jitterb c
+b. Based on matched architecture.
+c. Includes absolute random jitter and untracked determin istic jitter of the divergent path due to delay mismatch
+(in the matched architecture).- - 60 mUI pk-pk
+Lane-to-Lane skew (up to 16 GT/s)d
+d. Require Rx per-Lane deskew if limit is exceeded.-0.07 - 0.07 UI
+Lane-to Lane skew (> 16 GT/s)d-0.12 - 0.12 UI
+Phase errore
+(Including Duty cycle error and in-phase quadrature 
+mismatch)
+e. Residual error post training and correction.-0.04 - 0.04 UI
+Per-Lane deskew adjustment stepf
+f. When applicable (informative).-- 1 6 m U I
+Output Rise Timeg
+g. Expected output (informative). Measured 20% to 80%.-- 0 . 1 U I
+Output Fall Timeg-- 0 . 1 U I
+RX Pad Capacitanceh
+h. Advanced Package.- - 200 fF
+RX Pad Capacitance (up to 8 GT/s)a- - 300 fF
+RX Pad Capacitance (up to 16 GT/s)a i
+i. Effective Pad capacitance.- - 200 fF
+RX Pad Capacitance (24 and 32 GT/s)a i- - 125 fF
+Rx Voltage sensitivity - - 40 mV
+--- Page 12 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 191
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 For higher Transmitter swing, unterminated Receiver can be extended to longer channel and high data 
+rate. Table 5-7  shows the maximum data rate and channel reach combinations for Transmitter swing 
+and 0.85 V (maximum recommended swing). Figure 5-11  shows an alternate representation of 
+termination requirement. The area below the curve in Figure 5-11  shows the speed and channel reach Table 5-6. Maximum channel reach for unt erminated Receiver (Tx Swing = 0.4 V)
+Data Rate
+(GT/s)Channel Reach
+(mm)
+12 3
+85
+41 0
+Figure 5-9. Receiver Termination Map for Table 5-6 (Tx Swing = 0.4 V)
+Figure 5-10. Receiver termination
+0246810121416
+0 5 10 15 20 25Data Rate (G d/s)
+Channel Reach (mm)
+RXD
+RX
+ RXCKClock Phase-1Data
+RXDTrackClock Phase-2
+--- Page 13 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 192
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 combinations for which the Receivers in Standard Package Modules are recommended to remain 
+unterminated.
+Table 5-7. Maximum Channel reach for unt erminated Receiver (TX swing = 0.85V)
+Data Rate
+(GT/s)Channel Reach
+(mm)
+16 5
+12 108 and below All supported Lengths
+Figure 5-11. Receiver termination map for Table 5-7 (TX Swing = 0.85 V)
+IMPLEMENTATION NOTE
+When the Transmitter is tri-stated and the Receiver is not required to be enabled 
+(e.g., SBINIT, and some MBINIT states):
+• Disabled Receivers must be tolerant of a floating input pad• Receivers are permitted to enable weak-termination directly on the input pad to 
+prevent crowbar current in the receiver and to lower noise sensitivity at the receiver trip point
+When the Transmitter is tri-stated and the Re ceiver is required to be enabled (e.g., 
+REPAIRCLK and REPAIRVAL states for Advanced Package):
+• Enabled Receivers for (CLKP, CLKN, CLKRD,  TRK, VLD, VLDRD) must be tolerant 
+of a floating input signal on the pad
+• Receivers are permitted to enable weak-termination directly on the input pad to 
+prevent crowbar current in the receiver and to lower noise sensitivity at the receiver trip point
+048121620242832
+0 5 10 15 20 25 30 35 40Data Rate (G d/s)
+Channel Reach (mm)
+--- Page 14 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 193
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.4.3 24 and 32 GT/s Receiver Equalization
+Receiver equalization may be implemented at 24 GT/s and 32 GT/s data rates. This enables Link 
+operation even when TX equalization is not availabl e. Implementation can be CTLE, inductive peaking, 
+1-tap DFE, or others. Expected RX equa lization capability is equivalent of 1st order CTLE. Example 
+transfer function curves of a first order CTLE are shown in Figure 5-12  and the corresponding 
+equation is shown below:
+where, ωp2 = 2π*DataRate, ωp1 = 2π*DataRate /4, and ADC is the DC gain.
+5.5 Clocking
+Figure 5-13  shows the forwarded clocking architecture. Each module supports a two-phase forwarded 
+clock. It is critical to maintain matching between all data Lanes and valid signal within the module. 
+The Receiver must provide matched delays between the Receiver clock distribution and Data/Valid 
+Receiver path. This is to minimize the impact  of power supply noise-induced jitter on Link 
+performance. Phase adjustment is perf ormed on the Transmitter as shown in Figure 5-13 . Link 
+training is required to set the position of phase adjustment to maximize the Link margin.
+At higher data rates, Receiver eye margins may be small and any skew between the data Lanes 
+(including Valid) may further degrade Link performa nce. Per-Lane deskew must be supported on the 
+Transmitter at high data rates.
+This specification supports quarter-rate clock frequencies at data rates (24 GT/s and 32 GT/s). The 
+forwarded clock Transmitter must support quadrature ph ases in addition to differential clock at these 
+data rates (to enable either quarter-rate  or half-rate Receiver implementations). Table 5-8  shows the 
+clock frequencies and phases that must be supported  at different data rates. Forwarded Clock Phase 
+is negotiated during Link Initialization and Training (see Section 4.5.3.3.1 ). At 24 GT/s and 32 GT/s, Figure 5-12. Example CTLEHs() ωp2sADCωp1+
+sωp1+() sωp2+()---------------------------------=
+
+--- Page 15 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 194
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Receiver has the options to support differential clock or quadrature clock. The capability register is 
+defined in Table 9-47 , and advertised at the beginning of link negotiation. Note that to achieve 
+interoperability with designs of lower max data rate, differential clock must always be used at 16 GT/
+s and below, independent of the choice at 24 GT/s and 32 GT/s.
+5.5.1 Track
+Track signal can be used to perform Runtime Recalib ration to adjust the Receiver clock path against 
+slow varying voltage, temperature and transistor aging conditions.
+When requested by the UCIe Module, the UCIe Modu le Partner sends a clock pattern (1010…) aligned 
+with Phase-1 of the forwarded clock on its Track Transmitter, as shown in Figure 5-13 .
+Figure 5-13. Clocking architecture
+Table 5-8. Forwarded clock frequency and phase
+Data rate (GT/s)Clock freq. (fCK) 
+(GHz)Phase-1 Phase-2Deskew
+(Req/Opt)
+3216 90 270 Required
+8 45 135 Required
+2412 90 270 Required
+6 45 135 Required
+16 8 90 270 Required12 6 90 270 Required
+8 4 90 270 Optional
+4 2 90 270 OptionalRX TXD
+RXFlop FIFO
+PLL RXCKPhase-1/N
+CK 
+BufFIFO Serializer
+TXData + Valid
+Phase-2ClockDataFlopFlip-
+flop
+16x / 64x Die-1 Die-2
+RXD TXDTrack
+Phase
+ControlTrackPhase 
+Gen2/4 Phases 
+fCK RX  RXDDeskew
+Deskew
+  TXCK
+DLLPI
++
+DCC……
+--- Page 16 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 195
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 IMPLEMENTATION NOTE
+This implementation note provides an example usage for Track signal to calibrate out 
+slow varying temperature- and voltage-related delay drift between Data and Clock on 
+the Receiver.
+Track uses the same type of Tx driver and Rx receiver as Data (see Figure 5-13 ). A 
+clock pattern aligned with Phase-1 of the forwarded clock is sent from Track 
+Transmitter and received on the Track Receiver. Any initial skew can be calibrated out 
+during initialization and trai ning (MBTRAIN.RXCLKCAL) on the Receiver side. During 
+run-time, any drift between Data and th e forwarded clock can be detected. One 
+method for detecting the drift is to sample Track with the forwarded clock. An 
+implementation-specific number of samples can be collected, averaged if needed, and 
+used for drift detection. This drift can then be corrected on the forwarded clock 
+(if needed).
+Figure 5-14. Track Usage Example
+TrackFwd ClockTrack Fwd ClockTrack and Fwd clock pre initialization
+Track and Fwd clock post initialization (alignment)
+TrackFwd ClockClock drift and correction
+Fwd Clock
+(post correction)
+--- Page 17 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 196
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.6 Supply noise and clock skew
+I/O Vcc noise and the clock skew between data modules shall be within the range specified in 
+Table 5-9 .
+Table 5-9. I/O Noise and Clock Skew
+Parameter Min Nom Max Unit
+I/O Vcc noise for 4 GT/s and 8 GT/sa
+a. I/O VCC noise includes all noise at the I/O supply bumps relative to VSS bumps. This  noise includes all DC and
+AC fluctuations at all applicable frequencies.--8 0 m V p p
+I/O Vcc noise for 12 GT/sa--5 0 m V p p
+I/O Vcc noise for 16 GT/s - - 40 mVpp
+I/O Vcc noise for 24 GT/s and 32 GT/sa--3 0 m V p p
+Module to module clock skewb
+b. Applies only to multi- module instantiations.--6 0 p s
+IMPLEMENTATION NOTE
+Due to different micro bump max current ca pacity and power delivery requirements, 
+PHY in Advanced Package may have TX prov iding I/O power supply to RX circuits.
+Due to low current draw, sideband supply vo ltage is strongly recommended to be on 
+an always-on power domain.
+--- Page 18 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 197
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7 Ball-out and Channel Specification
+UCIe interconnect channel needs to meet the requirement of minimum rectangular eye open as 
+specified in Table 5-10  under channel compliance simulation conditions with noiseless and jitter-less 
+behavioral TX and RX models.
+Figure 5-15. Example Eye diagram
+Table 5-10. Eye requirements
+Data Rate
+(GT/s)Eye Height
+(mV)Eye width
+(UI)
+4, 8, 12, 16a c
+a. Rectangular mask.40 0.75
+24, 32a b c
+b. With equalization enabled.
+c. Based on minimum Tx swing specification.40 0.65
+-0.8 +0.8
+Time (UI)0Voltage (mV)
+--- Page 19 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 198
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 IMPLEMENTATION NOTE
+Figure 5-16  shows an example circuit setup that can be used to generate the 
+statistical eye diagram shown in Figure 5-15 . RTX is the Transmitter impedance and 
+RRX represents the Receiver termination. CTX, CRX represent effective Transmitter 
+and Receiver capacitance, respectively. For crosstalk, the 19-largest aggressors need 
+to be included. Transmitter equalization (T XEQ) is enabled at 24 GT/s and 32 GT/s.
+The eye diagram was generated using a two-step process.
+1. Generate ISI and XTALK channel step response using circuit setup shown in 
+Figure 5-16 .
+2. Use the generated channel response in a signal-integrity or channel-simulation 
+tool to generate a statistical eye diagram (see Figure 5-15 )
+Other equivalent methods may be used, depending on the si gnal-integrity or channel-
+simulation tool.
+Figure 5-16. Example Eye Simulation Setup
+RTX CTX
+RRX CRX RTX CTXRRX CRX
+CTXRTX
+Ag g # 1Ag g # N
+VictimInterconnect Rx Model
+Vo_vicTx Model
+RRX CRX
+Vo_a gg1Vo_a ggN
+--- Page 20 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 199
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.1 Voltage Transfer Function
+Voltage Transfer Function (VTF) based metrics are used to define insertion loss and crosstalk. VTF 
+metrics incorporate both resistive and capaciti ve components of TX and RX terminations. Figure 5-17  
+shows the circuit diagram for VTF calculations.
+VTF loss is defined as the ratio of the Receiver voltage and the Source voltage, as shown in 
+Equation 5-1  and Equation 5-2 .
+Equation 5-1.
+Equation 5-2.
+L(f) is the frequency dependent loss and L(0) is the DC loss. For unterminated channel, L(0) is 
+effectively 0.
+VTF crosstalk is defined as the power sum of the ratios of the aggressor Receiver voltage to the 
+source voltage. 19 aggressors are included in the calculation. Based on crosstalk reciprocity, 
+VTF crosstalk can be expressed as shown in Equation 5-3 .Figure 5-17. Circuit for VTF calculation
+Lf() 20 10Vrf()
+Vsf()--------- log =
+L0() 20 10Rrx
+RtxRchannelRrx++----------------------------------- -log =
+--- Page 21 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 200
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Equation 5-3.
+5.7.2 Advanced Package
+fN is the Nyquist frequency. The equations in the table form a segmented line in the loss-crosstalk 
+coordinate plane, defining the pass/fail region.Table 5-11. Channel Characteristics
+Data Rate 4-16 GT/s 24, 32 GT/s
+VTF Loss (dB) L(fN) > -3 L(fN) > -5
+VTF Crosstalk (dB)a
+a. Based on Voltage Transfer Function Method (Tx: 25 ohm / 0.25 pF; Rx: 0.2 pF).XT(fN) < 1.5 L(fN) - 21.5 and XT(fN) < -23 XT(fN) < 1.5 L(fN) - 19 and XT(fN) < -24
+Table 5-12. x64 Advanced Package Mo dule Signal List (Sheet 1 of 2)a
+Signal Name Count Description
+Data
+TXDATA[63:0] 64 Transmit Data
+TXVLD 1 Transmit Data Valid; Enables clocking in corresponding module
+TXTRK 1 Transmit Track signal
+TXCKP 1 Transmit Clock Phase-1
+TXCKN 1 Transmit Clock Phase-2
+TXCKRD 1 Redundant for Clock and Track Lane repair
+TXDATARD[3:0] 4 Redundant for Data Lane repair
+TXVLDRD 1 Redundant for Valid
+RXDATA[63:0] 64 Receive Data
+RXVLD 1 Receive Data Valid; Enables clocking in corresponding module
+RXTRK 1 Receive Track.
+RXCKP 1 Receive Clock Phase-1
+RXCKN 1 Receive Clock Phase-2
+RXDATARD[3:0] 4 Redundant for Data Lane repair
+RXCKRD 1 Redundant for Clock Lane repair
+RXVLDRD 1 Redundant for Valid
+Sideband
+TXDATASB 1 Sideband Transmit Data
+RXDATASB 1 Sideband Receiver Data
+TXCKSB 1 Sideband Transmit Clock
+RXCKSB 1 Sideband Receive Clock
+TXDATASBRD 1 Redundant Sideband Transmit DataXT f() 10 10Vaif()
+Vsf()----------2
+i1=19
+
+
+log =
+--- Page 22 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 201
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.2.1 Loss and Crosstalk Mask
+Loss and crosstalk are specified by a mask defined by the L(fN) and XT(fN) at Nyquist frequency. It is 
+a linear mask from DC to fN for loss and flat mask for crosstalk, illustrated by Figure 5-18 . Loss from 
+DC to fN needs to be above the spec line. Crosstalk from DC to fN needs to be below the spec line. The 
+green line in Figure 5-18  is a representative passing signal.
+5.7.2.2 x64 Advanced Package Module Bump Map
+All bump matrices in this section and hereinafter are defined with “dead bug” view which means the 
+viewer is looking directly at the UCIe micro bumps fa cing up, with the die flipped like a “dead bug” as 
+illustrated in Figure 5-19 .RXDATASBRD 1 Redundant Sideband Receiver Data
+TXCKSBRD 1 Redundant Sideband Transmit Clock
+RXCKSBRD 1 Redundant Sideband Receive Clock
+Power and Voltage
+VSS Ground Reference
+VCCIO I/O supply
+VCCFWDIOForwarded power supply from remote Transmitter supply to local 
+Receiver AFE (see Tigh tly Coupled mode in Section 5.8 )
+VCCAON Always on Aux supply (sideband)
+a. For x32 Advanced Package module, the TXDATA[63:32] , TXRD[3:2] , RXDATA[63:32] , and RXRD[3:2]
+signals do not apply. All other signals are the sa me as the x64 Advanced Package Module signals.
+Figure 5-18. Loss and Crosstalk Mask
+Figure 5-19. Viewer Orientation Looking at the Defined UCIe Bump MatrixTable 5-12. x64 Advanced Package Mo dule Signal List (Sheet 2 of 2)a
+Signal Name Count Description
+ 
+
+--- Page 23 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 202
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-20 , Figure 5-21 , and Figure 5-22  show the reference bump matrix for the 10-column, 16-
+column, and 8-column x64 Advanced Package Module s, respectively. The lower left corner of the 
+bump map will be considered “origin” of a bump  matrix and the leftmost column is Column 0.
+It is strongly recommended to follow the bump matrices provided in Figure 5-20 , Figure 5-21 , and 
+Figure 5-22  for x64 Advanced Package interfaces.
+The 10-column bump matrix is optimal for bump pitch range of 38 to 50 um. To achieve optimal area 
+scaling with different bump pitches, the optional 16-column and 8-column bump matrices are defined 
+for bump ranges of 25 to 37 um and 51 to 55 um, respectively, which will result in optimal Module 
+depth while maintaining Module width of 388.8 um, as shown in Figure 5-21  and Figure 5-22 , 
+respectively.
+The following rule must be followed for the 10-column x64 Advanced Package bump matrix:
+• The signal order within a column must be pres erved. For example, Column 0 must contain the 
+signals: txdataRD0 , txdata0 , txdata1 , txdata2 , txdata3 , txdata4 , …, rxdata59 , 
+rxdata60 , rxdata61 , rxdata62 , rxdata63 , rxdataRD3 , and txdatasbRD . Similarly, 16-
+column and 8-column x64 Advanced Packages must preserve the signal order within a column of 
+the respective bump matrices.
+It is strongly recommended to follow the supply and ground  pattern shown in the bump matrices. It 
+must be ensured that sufficient supply and ground  bumps are provided to meet channel 
+characteristics (FEXT and NEXT) an d power-delivery requirements.
+The following rules must be followed when instanti ating multiple modules of Advanced Package bump 
+matrix:
+• Modules must be stepped in the same orientation and abutted.
+• Horizontal or vertical mirroring is not permitted.
+• Module stacking is not permitted.
+Additionally, in multi-module instantiations it is strongly recommended to add one column of VSS 
+bumps on each outside edge of the multi-module instantiation.
+Mirror die implementation may necessitate a jog or additional metal layers for proper connectivity.
+--- Page 24 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 203
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Note: In Figure 5-20 , at 45-um pitch, the module depth of the 10-column reference bump 
+matrix as shown is approximately 1043 um.Figure 5-20. 10-column x64 Advanced Package Bump Map
+Column0 Column1 Column2 Column3 Column4 Column5 Column6 Column7 Column8 Column9
+vss vss vccio vccio vss
+vss vccio vccio vss vss
+vss vss vccio vccio vss
+rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+txdatasbRD txdatasb vccio txcksb txcksbRD
+rxdata50 rxdata35 rxdata29 rxdata14 rxdataRD0
+rxdataRD3 rxdata49 rxdata34 rxdata28 rxdata13
+rxdata51 rxdata36 rxdata30 rxdata15 vss
+rxdata63 vccio rxdata33 vccio rxdata12
+rxdata52 vss rxdata31 vss rxdata0
+vss rxdata48 rxdata32 rxdata27 rxdata11
+rxdata53 rxdata37 rxdataRD1 rxdata16 rxdata1
+rxdata62 rxdata47 rxdataRD2 rxdata26 rxdata10
+rxdata54 rxdata38 vss rxdata17 vss
+rxdata61 rxdata46 vccio rxdata25 rxdata9
+rxdata55 rxdata39 rxckRD rxdata18 rxdata2
+vss rxdata45 rxvldRD rxdata24 rxdata8
+rxdata56 vss rxckn rxdata19 rxdata3
+rxdata60 rxdata44 rxvld vss rxdata7
+rxdata57 rxdata40 rxckp rxdata20 vss
+rxdata59 rxdata43 rxtrk rxdata23 rxdata6
+rxdata58 rxdata41 vss rxdata21 rxdata4
+vss rxdata42 vccio rxdata22 rxdata5
+vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio
+vccio txdata21 vccio txdata41 txdata58
+txdata5 txdata22 vss txdata42 vss
+txdata4 txdata20 txckp txdata40 txdata57
+txdata6 txdata23 txtrk txdata43 txdata59
+vss txdata19 txckn vss txdata56
+txdata7 vss txvld txdata44 txdata60
+txdata3 txdata18 txckRD txdata39 txdata55
+txdata8 txdata24 txvldRD txdata45 vss
+txdata2 txdata17 vccio txdata38 txdata54
+txdata9 txdata25 vss txdata46 txdata61
+vccio vccio vccio vccio vccio
+txdata10 txdata26 txdataRD2 txdata47 txdata62
+txdata1 txdata16 txdataRD1 txdata37 txdata53
+txdata11 txdata27 txdata32 txdata48 vss
+txdata0 vss txdata31 vss txdata52
+txdata12 vss txdata33 vss txdata63
+vss txdata15 txdata30 txdata36 txdata51
+txdata13 txdata28 txdata34 txdata49 txdataRD3
+txdataRD0 txdata14 txdata29 txdata35 txdata50
+vccio vccio vccio vccio vccio
+vccio vccio vccio vccio vccio
+Die Edge
+--- Page 25 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 204
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Note: In Figure 5-21 , at 25-um pitch, the module depth of the 16-column reference bump 
+matrix as shown is approximately 388 um.Figure 5-21. 16-column x64 Advanced Package Bump Map
+Column0 Column1 Column2 Column3 Column4 Column5 Column6 Column7 Column8 Column9 Column10 Column11 Column12 Column13 Column14 Column15
+vss vss vccio vccio vccio vccio vss vss
+vss vss vccio vccio vccio vccio vss vss
+vss rxcksbRD rxcksb vss rxdatasb rxdatasbRD vss vss
+vss txdatasbRD txdatasb vss vss txcksb txcksbRD vss
+rxdata54 rxdata50 rxdata35 vss rxdata29 rxdata14 rxdata11 rxdataRD0
+vss rxdata52 rxdata49 rxdata34 rxdataRD1 rxdata28 rxdata13 rxdata9
+rxdata55 rxdata51 rxdata36 rxdataRD2 rxdata30 rxdata15 rxdata10 vss
+rxdataRD3 rxdata53 rxdata48 rxdata33 vss rxdata27 rxdata12 rxdata8
+rxdata61 vss rxdata37 vss rxdata31 rxdata16 vss rxdata0
+rxdata63 rxdata56 rxdata47 rxdata32 rxckRD rxdata26 rxdata17 rxdata2
+rxdata60 rxdata46 vss rxvldRD rxdata25 vss rxdata7 vss
+vss rxdata57 rxdata43 rxdata38 rxckn rxdata23 rxdata18 rxdata3
+rxdata59 rxdata45 rxdata40 rxvld vss rxdata20 rxdata6 rxdata1
+rxdata62 rxdata58 rxdata42 rxdata39 rxckp rxdata22 rxdata19 rxdata4
+vss rxdata44 rxdata41 rxtrk rxdata24 rxdata21 rxdata5 vss
+vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio
+vccio vccio vccio vccio vccio vccio vccio vccio
+vss txdata5 txdata21 txdata24 txtrk txdata41 txdata44 vss
+txdata4 txdata19 txdata22 txckp txdata39 txdata42 txdata58 txdata62
+txdata1 txdata6 txdata20 vss txvld txdata40 txdata45 txdata59
+txdata3 txdata18 txdata23 txckn txdata38 txdata43 txdata57 vss
+vss txdata7 vss txdata25 txvldRD vss txdata46 txdata60
+txdata2 txdata17 txdata26 txckRD txdata32 txdata47 txdata56 txdata63
+txdata0 vss txdata16 txdata31 vss txdata37 vss txdata61
+txdata8 txdata12 txdata27 vss txdata33 txdata48 txdata53 txdataRD3
+vss txdata10 txdata15 txdata30 txdataRD2 txdata36 txdata51 txdata55
+txdata9 txdata13 txdata28 txdataRD1 txdata34 txdata49 txdata52 vss
+txdataRD0 txdata11 txdata14 txdata29 vss txdata35 txdata50 txdata54
+vccio vccio vccio vccio vccio vccio vccio vccio
+vccio vccio vccio vccio vccio vccio vccio vccio
+Die Edge
+--- Page 26 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 205
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Note: In Figure 5-22 , at 55-um pitch, the module depth of the 8-column reference bump 
+matrix as shown is approximately 1,585 um.Figure 5-22. 8-column x64 Advanced Package Bump Map
+Column0 Column1 Column2 Column3 Column4 Column5 Column6 Column7
+vss vccio vccio vss
+vss vccio vccio vss
+vss vccio vccio vss
+rxcksbRD rxcksb rxdatasb rxdatasbRD
+txdatasbRD txdatasb txcksb txcksbRD
+rxdata50 rxdata36 rxdata14 rxdataRD0
+rxdataRD3 rxdata49 rxdata27 rxdata13
+rxdata51 rxdata35 rxdata15 rxdata0
+vss rxdata48 vss rxdata12
+rxdata52 rxdata34 rxdata16 vss
+rxdata63 vss rxdata28 rxdata11
+rxdata53 rxdata33 rxdata17 rxdata1
+rxdata62 rxdata47 rxdata29 rxdata10
+vccio vccio vccio vccio
+rxdata61 rxdata46 rxdata30 vss
+vss vss rxdata26 rxdata2
+rxdata60 rxdata37 rxdata31 rxdata9
+rxdata54 rxdata32 rxdata25 rxdata3
+rxdata59 rxdata38 rxdataRD1 rxdata8
+rxdata55 rxdataRD2 rxdata24 rxdata4
+vss rxdata39 vss vss
+rxdata45 vss rxdata23 rxdata7
+rxdata56 rxdata40 rxckRD rxdata18
+vss rxvldRD rxdata22 vss
+rxdata57 rxdata41 rxckn rxdata19
+rxdata44 rxvld vss rxdata6
+rxdata58 vss rxckp rxdata20
+rxdata43 rxtrk rxdata21 rxdata5
+vss rxdata42 vss vss
+vccfwdio vccfwdio vccfwdio vccfwdio
+vccio vccio vccio vccio
+vss vss txdata42 vss
+txdata5 txdata21 txtrk txdata43
+txdata20 txckp vss txdata58
+txdata6 vss txvld txdata44
+txdata19 txckn txdata41 txdata57
+vss txdata22 txvldRD vss
+txdata18 txckRD txdata40 txdata56
+txdata7 txdata23 vss txdata45
+vss vss txdata39 vss
+txdata4 txdata24 txdataRD2 txdata55
+txdata8 txdataRD1 txdata38 txdata59
+txdata3 txdata25 txdata32 txdata54
+txdata9 txdata31 txdata37 txdata60
+txdata2 txdata26 vss vss
+vss txdata30 txdata46 txdata61
+vccio vccio vccio vccio
+txdata10 txdata29 txdata47 txdata62
+txdata1 txdata17 txdata33 txdata53
+txdata11 txdata28 vss txdata63
+vss txdata16 txdata34 txdata52
+txdata12 vss txdata48 vss
+txdata0 txdata15 txdata35 txdata51
+txdata13 txdata27 txdata49 txdataRD3
+txdataRD0 txdata14 txdata36 txdata50
+vccio vccio vccio vccio
+vccio vccio vccio vccio
+Die Edge
+--- Page 27 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 206
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-23  shows the signal exit order for the 10- column x64 Advanced Package bump map.
+IMPLEMENTATION NOTE — X64 B UMP MAPS FOR MAX SPEED
+Three reference bump maps in Figure 5-20 , Figure 5-21 , and Figure 5-22  are recommended for 
+different ranges of bump pitch, while PHY implemen tations have the flexibility to adjust the power and 
+ground bumps to meet channel characteristics and power delivery requirements, which largely 
+depend on the target speed and the adva nced packaging technology capabilities.
+At higher speeds, the PHY circuits draw larger current through the bumps and require better signal 
+and power integrity of the packagin g solution. This typically requires  adding power and ground bumps 
+and optimizing the distribution of them, but the implementation also needs to minimize the lane-to-
+lane length skew and preserve the assignment and relative order of the signals in each column to comply with the bump matrix rules in Section 5.7.2.2 .
+This Implementation Note is formulated to provid e PHY implementations a set of reference x64 bump 
+maps to encompass the max speed specified. Table 5-13  summarizes the corresponding max speed 
+for these bump map options and their recommended bump pitch ranges.
+Bump maps in Figure 5-24 , Figure 5-25 , and Figure 5-26  are the x64 implementation references for 
+the corresponding max speed with an enhancement of  the power and ground bumps. They all comply 
+with the bump matrix rules in Section 5.7.2.2 , and they maintain the backward compatibility in terms 
+of signal exit order. These reference examples have been optimized for signal integrity, power 
+integrity, lane-to-lane skew, electro-migration stre ss and bump area based on most of the advanced 
+packaging technologies in the industry. Please note that technology requirements vary, and it is still 
+required to verify the bump map with the technology  provider for actual implementation requirements 
+and performance targets.Figure 5-23. 10-column x64 Advanced Pa ckage Bump map: Signal exit order
+Table 5-13. Bump Map Options and the Reco mmended Bump Pitch Range and Max Speed
+Bump MapBump Pitch
+(um)Max Speed
+(GT/s)
+16 column25-30 12
+31-37 16
+10 column38-44 24
+45-50 32
+8 column 51-55 32Left to Right
+txdataRD0 txdata0 txdata1 txdata2 txdata3 txdata4 txdata5 txdata6 txdata7 txdata8 txdata9 txdata10 txdata11 txdata12 txdata13 Cont…
+Cont… txdata14 txdata15 txdata16 txdata17 txdata18 txdata19 txdata20 txdata21 txdata22 txdata23 txdata24 txdata25 txdata26 txdata27 txdata28 Co nt1…
+Cont1… txdata29 txdata30 txdata31 txdataRD1 txckRD txckn txckp txtrk txvld txvldRD txdataRD2 txdata32 txdata33 txdata34 txdata35 Cont2…Cont2… txdata36 txdata37 txdata38 txdata39 txdata40 txdata41 txdata42 txdata43 txdata44 txdata45 txdata46 txdata47 txdata48 txdata49 txdata50 C ont3…
+Cont3… txdata51 txdata52 txdata53 txdata54 txdata55 txdata56 txdata57 txdata58 txdata59 txdata60 txdata61 txdata62 txdata63 txdataRD3Left to Right
+rxdataRD3 rxdata63 rxdata62 rxdata61 rxdata60 rxdata59 rxdata58 rxdata57 rxdata56 rxdata55 rxdata54 rxdata53 rxdata52 rxdata51 rxdata50 Cont…
+Cont… rxdata49 rxdata48 rxdata47 rxdata46 rxdata45 rxdata44 rxdata43 rxdata42 rxdata41 rxdata40 rxdata39 rxdata38 rxdata37 rxdata36 rxdata35 Co nt1…
+Cont1… rxdata34 rxdata33 rxdata32 rxdataRD2 rxvldRD rxvld rxtrk rxckp rxckn rxckRD rxdataRD1 rxdata31 rxdata30 rxdata29 rxdata28 Cont2…Cont2… rxdata27 rxdata26 rxdata25 rxdata24 rxdata23 rxdata22 rxdata21 rxdata20 rxdata19 rxdata18 rxdata17 rxdata16 rxdata15 rxdata14 rxdata13 C ont3…
+Cont3… rxdata12 rxdata11 rxdata10 rxdata9 rxdata8 rxdata7 rxdata6 rxdata5 rxdata4 rxdata3 rxdata2 rxdata1 rxdata0 rxdataRD0Tx 
+Breakout
+Rx 
+Breakout
+--- Page 28 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 207
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-24. 10-column x64 Advanced Package Bump Map Example 
+for 32 GT/s Implementation
+Note: In Figure 5-24 , at 45-um pitch, the module depth of the 10-column bump map as 
+shown is approximately 1225 um. Rows 1, 2, and 53 are required for packaging 
+solutions using floating bridges without through-silicon vias (TSVs). They can be 
+optional for packaging solutions with TSVs.1 23456789 1 0
+1 vss vss vccio vccio vss
+2 vss vccio vccio vss vss
+3 vss vss vccio vccio vss
+4 rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+5 txdatasbRD txdatasb vss txcksb txcksbRD6 rxdata50 rxdata35 rxdata29 rxdata14 rxdataRD07 rxdataRD3 rxdata49 rxdata34 rxdata28 rxdata138 rxdata51 vccio vccio vccio vccio
+9 vccio vss rxdata33 vss rxdata12
+10 rxdata52 rxdata36 rxdata30 rxdata15 vss
+11 vss rxdata48 vss rxdata27 rxdata1112 rxdata53 rxdata37 rxdata31 rxdata16 rxdata013 rxdata63 rxdata47 rxdata32 rxdata26 rxdata1014 vccio vccio vccio vccio vccio
+15 rxdata62 rxdata46 rxdataRD2 rxdata25 rxdata916 rxdata54 rxdata38 rxdataRD1 rxdata17 rxdata117 vss vss vss vss vss18 rxdata55 rxdata39 vccio rxdata18 rxdata2
+19 rxdata61 rxdata45 rxvldRD rxdata24 rxdata8
+20 vccio vccio vccio vccio vccio
+21 rxdata60 rxdata44 rxvld rxdata23 rxdata722 rxdata56 rxdata40 rxckRD rxdata19 rxdata323 vss vss vss vss vss24 rxdata57 rxdata41 rxckn rxdata20 rxdata425 rxdata59 rxdata43 rxtrk rxdata22 rxdata626 rxdata58 vss rxckp rxdata21 vss27 vss rxdata42 vss vss rxdata528 vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio
+29 vss vss vss vss vss30 txdata5 vccio vccio txdata42 vccio
+31 vccio txdata21 txckp vccio txdata58
+32 txdata6 txdata22 txtrk txdata43 txdata5933 txdata4 txdata20 txckn txdata41 txdata57
+34 vccio vccio vccio vccio vccio
+35 txdata3 txdata19 txckRD txdata40 txdata5636 txdata7 txdata23 txvld txdata44 txdata6037 vss vss vss vss vss38 txdata8 txdata24 txvldRD txdata45 txdata6139 txdata2 txdata18 vss txdata39 txdata5540 vccio vccio vccio vccio vccio
+41 txdata1 txdata17 txdataRD1 txdata38 txdata5442 txdata9 txdata25 txdataRD2 txdata46 txdata6243 vss vss vss vss vss44 txdata10 txdata26 txdata32 txdata47 txdata6345 txdata0 txdata16 txdata31 txdata37 txdata5346 txdata11 txdata27 vccio txdata48 vccio
+47 vccio txdata15 txdata30 txdata36 txdata52
+48 txdata12 vccio txdata33 vccio vss
+49 vss vss vss vss txdata5150 txdata13 txdata28 txdata34 txdata49 txdataRD351 txdataRD0 txdata14 txdata29 txdata35 txdata50
+52 vccio vss vss vccio vccio
+53 vccio vccio vccio vccio vccio
+Die Edge
+--- Page 29 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 208
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-25. 16-column x64 Advanced Package Bump Map Example 
+for 16 GT/s Implementation
+Note: In Figure 5-25 , at 25-um pitch, the module depth of the 16-column bump map as 
+shown is approximately 400 um. Rows 1 and 31 are required for packaging solutions 
+using floating bridges without TSVs. They ca n be optional for packaging solutions with 
+TSVs.123456789 1 0 1 1 1 2 1 3 1 4 1 5 1 6
+1 vss vccio vccio vss vss vccio vccio vss
+2 vss vccio vccio vss vss vccio vccio vss
+3 txdatasbRD rxcksbRD txdatasb rxcksb txcksb rxdatasb txcksbRD rxdatasbRD4 rxdata54 rxdata50 rxdata35 vss rxdata29 rxdata14 rxdata11 rxdataRD05 rxdataRD3 rxdata52 rxdata49 rxdata34 vss rxdata28 rxdata13 rxdata96 rxdata55 rxdata51 rxdata36 rxdataRD2 rxdata30 rxdata15 rxdata10 vss7 vss rxdata53 rxdata48 rxdata33 rxdataRD1 rxdata27 rxdata12 rxdata88 rxdata61 vss rxdata37 vss rxdata31 vss rxdata7 vss9 rxdata63 rxdata56 vss rxdata32 vss rxdata26 vss rxdata2
+10 vccio rxdata46 vccio rxvldRD vccio rxdata16 vccio rxdata0
+11 vss vccio rxdata47 vccio rxckRD vccio rxdata17 vccio
+12 rxdata60 rxdata45 rxdata40 rxvld rxdata25 rxdata20 rxdata6 vss13 rxdata62 rxdata57 rxdata43 rxdata38 rxckn rxdata23 rxdata18 rxdata3
+14 rxdata59 rxdata44 rxdata41 rxtrk rxdata24 rxdata21 rxdata5 rxdata1
+15 vss rxdata58 rxdata42 rxdata39 rxckp rxdata22 rxdata19 rxdata416 vccfwdio vss vccfwdio vss vccfwdio vss vccfwdio vss
+17 vss vccfwdio vss vccfwdio vss vccfwdio vss vccfwdio
+18 txdata4 txdata19 txdata22 txckp txdata39 txdata42 txdata58 vss19 txdata1 txdata5 txdata21 txdata24 txtrk txdata41 txdata44 txdata5920 txdata3 txdata18 txdata23 txckn txdata38 txdata43 txdata57 txdata6221 vss txdata6 txdata20 txdata25 txvld txdata40 txdata45 txdata6022 vccio txdata17 vccio txckRD vccio txdata47 vccio vss
+23 txdata0 vccio txdata16 vccio txvldRD vccio txdata46 vccio
+24 txdata2 vss txdata26 vss txdata32 vss txdata56 txdata6325 vss txdata7 vss txdata31 vss txdata37 vss txdata6126 txdata8 txdata12 txdata27 txdataRD1 txdata33 txdata48 txdata53 vss27 vss txdata10 txdata15 txdata30 txdataRD2 txdata36 txdata51 txdata5528 txdata9 txdata13 txdata28 vss txdata34 txdata49 txdata52 txdataRD329 txdataRD0 txdata11 txdata14 txdata29 vss txdata35 txdata50 txdata5430 vccio vccio vccio vccio vccio vccio vccio vccio
+31 vccio vccio vccio vccio vccio vccio vccio vccio
+Die Edge
+--- Page 30 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 209
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-26. 8-column x64 Advanced Package Bump Map Example 
+for 32 GT/s Implementation
+1234567 8
+1 vss vccio vccio vss
+2 vss vccio vccio vss
+3 vss vccio vccio vss
+4 rxcksbRD rxcksb rxdatasb rxdatasbRD5 txdatasbRD txdatasb txcksb txcksbRD6 rxdata50 vss rxdata14 rxdataRD07 rxdataRD3 rxdata49 rxdata27 rxdata138 vccio rxdata36 vss vccio
+9 rxdata63 rxdata48 rxdata28 rxdata12
+10 rxdata51 rxdata35 rxdata15 rxdata011 vss vss vss vss
+12 rxdata52 rxdata34 rxdata16 rxdata1
+13 rxdata62 rxdata47 rxdata29 rxdata1114 vccio vccio vccio vccio
+15 rxdata61 rxdata46 rxdata30 rxdata1016 rxdata53 rxdata33 rxdata17 rxdata217 rxdata60 rxdata37 rxdata31 rxdata918 rxdata54 rxdata32 rxdata26 rxdata3
+19 vss vss vss vss
+20 rxdata55 rxdataRD2 rxdata25 rxdata421 rxdata59 rxdata38 rxdataRD1 rxdata822 vccio vccio rxdata24 vccio
+23 rxdata56 rxdata39 vccio rxdata18
+24 rxdata45 rxvldRD rxdata23 rxdata725 vss rxdata40 vss vss26 vccio rxvld rxdata22 rxdata6
+27 rxdata57 vss rxckRD rxdata19
+28 rxdata44 vccio vccio vccio
+29 rxdata58 rxdata41 rxckn rxdata2030 rxdata43 rxtr
+k rxdata21 rxdata5
+31 vss rxdata42 rxckp vss32 vccfwdio vccfwdio vccfwdio vccfwdio
+33 vss vss vss vss
+34 vccio txckp txdata42 vccio
+35 txdata5 txdata21 txtr
+k txdata43
+36 txdata20 txckn txdata41 txdata5837 vss vss vss txdata4438 txdata19 txckRD vccio txdata57
+39 txdata6 txdata22 txvld vss
+40 vccio vccio txdata40 vccio
+41 txdata7 txdata23 txvldRD txdata4542 txdata18 vss txdata39 txdata5643 vss txdata24 vss vss44 txdata8 txdataRD1 txdata38 txdata5945 txdata4 txdata25 txdataRD2 txdata5546 vccio vccio vccio vccio
+47 txdata3 txdata26 txdata32 txdata54
+48 txdata9 txdata31 txdata37 txdata6049 txdata2 txdata17 txdata33 txdata5350 txdata10 txdata30 txdata46 txdata6151 vss vss vss vss52 txdata11 txdata29 txdata47 txdata6253 txdata1 txdata16 txdata34 txdata5254 vccio vccio vccio vccio
+55 txdata0 txdata15 txdata35 txdata51
+56 txdata12 txdata28 txdata48 txdata6357 vss vss txdata36 vss58 txdata13 txdata27 txdata49 txdataRD359 txdataRD0 txdata14 vss txdata5060 vccio vccio vccio vccio
+61 vccio vccio vccio vccio
+Die Edge
+--- Page 31 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 210
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Note: In Figure 5-26 , at 55-um pitch, the module depth of the 8-column bump map as shown 
+is approximately 1705 um. Rows 1, 2, and 61 are required for packaging solutions 
+using floating bridges without TSVs. They ca n be optional for packaging solutions with 
+TSVs.
+5.7.2.3 x32 Advanced Package Module Bump Map
+UCIe also defines a x32 Advanced Package Module that supports 32 Tx and 32 Rx data signals and 
+two redundant bumps each for Tx and two for Rx (tot al of four) for lane-repair functions. All other 
+signals, including the sidebands, are the sa me as those of the x64 Advanced Package.
+Figure 5-27 , Figure 5-28 , and Figure 5-29  show the reference bump matrix for the 10-column, 16-
+column, and 8-column x32 Advanced Package Module s, respectively. The lower left corner of the 
+bump map will be considered “origin” of a bump  matrix and the leftmost column is Column 0.
+It is strongly recommended to follow the bump matrices provided in Figure 5-27 , Figure 5-28 , and 
+Figure 5-29  for x32 Advanced Package Modules.
+The following rule must be followed for the 10-column x32 Advanced Package bump matrix:
+• The signals order within a column must be pres erved. For example, Column 0 must contain the 
+signals: txdataRD0 , txdata0 , txdata1 , txdata2 , txdata3 , txdata4 , and txdatasbRD . 
+Similarly, 16-column and 8-column x32 Advanced Packages must preserve the signal order within 
+a column of the respective bump matrices.
+It is strongly recommended to follow the supply and ground  pattern shown in the bump matrices. It 
+must be ensured that sufficient supply and ground  bumps are provided to meet channel 
+characteristics (FEXT and NEXT) an d power-delivery requirements.
+When instantiating multiple x32 Advanced Pack age Modules, the same rules as defined in 
+Section 5.7.2.2  must be followed.
+--- Page 32 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 211
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Note: In Figure 5-27 , at 45-um pitch, the module depth of the 10-column reference bump 
+matrix as shown is approximately 680.5 um.
+Note: In Figure 5-28 , at 25-um pitch, the module depth of the 16-column reference bump 
+matrix as shown is approximately 237.5 um.Figure 5-27. 10-column x32 Advanced Package Bump Map
+Figure 5-28. 16-column x32 Advanced Package Bump MapColumn0 Column1 Column2 Column3 Column4 Column5 Column6 Column7 Column8 Column9
+vss vss vccio vccio vss
+vss vccio vccio vss vss
+vss vss vccio vccio vss
+rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+txdatasbRD txdatasb vss txcksb txcksbRD
+vss txdata22 rxdata31 vccio vccio
+vss txdata21 txckp rxdata30 rxdata13
+txdata5 txdata23 vss rxdata14 vccio
+vccio txdata20 txckn rxdata29 rxdata12
+txdata6 vss rxdataRD1 rxdata15 rxdataRD0
+txdata4 vss txckRD rxdata28 rxdata11
+txdata7 txdata24 rxvldRD vss vss
+vss txdata19 txtrk rxdata27 rxdata10
+txdata8 txdata25 rxvld rxdata16 rxdata0
+txdata3 txdata18 vss rxdata26 vss
+vss txdata26 vss rxdata17 rxdata1
+txdata2 txdata17 txvld rxdata25 rxdata9
+txdata9 vss rxtrk rxdata18 vss
+vccio vccio vccio vccfwdio vccfwdio
+txdata10 txdata27 rxckRD rxdata19 rxdata2
+txdata1 txdata16 txvldRD rxdata24 rxdata8
+txdata11 txdata28 rxckn rxdata20 rxdata3
+txdata0 vss vss vss rxdata7
+txdata12 txdata29 rxckp vss vss
+vss txdata15 txdataRD1 rxdata23 rxdata6
+txdata13 txdata30 vss rxdata21 rxdata4
+txdataRD0 txdata14 txdata31 rxdata22 rxdata5
+vccio vccio vccfwdio vccfwdio vccfwdio
+vccio vccio vccio vccfwdio vccfwdio
+Die Edge
+Column0 Column1 Column2 Column3 Column4 Column5 Column6 Column7 Column8 Column9 Column10 Column11 Column12 Column13 Column14 Column15
+vss vss vss vss vss vss vss vss
+vccio vccio vccio vccio vccio vccio vccio vccio
+txdatasbRD rxcksbRD txdatasb rxcksb txcksb rxdatasb txcksbRD rxdatasbRD
+vss txdata5 vss vss vss vss vss vss
+txdata4 txdata20 txdata22 txtrk rxdata30 rxdata26 rxdata13 rxdataRD0
+txdata2 vss txdata21 txckp rxdata31 rxdata27 rxdata14 rxdata11
+txdata3 txdata17 txdata23 vss rxdata29 vss rxdata12 vss
+txdata1 txdata6 txdata19 txckn vss rxdata28 rxdata15 rxdata10
+txdata8 vss vss txvld rxdataRD1 rxdata25 vss rxdata0
+vss txdata7 txdata18 txckRD rxvldRD rxdata24 rxdata16 rxdata9
+txdata9 txdata16 txdata24 txvldRD rxckRD rxdata18 rxdata7 vss
+txdata0 vss txdata25 txdataRD1 rxvld vss rxdata17 rxdata8
+txdata10 txdata15 txdata28 vss rxckn rxdata19 rxdata6 rxdata1
+vss txdata12 vss txdata29 vss rxdata23 vss rxdata3
+txdata11 txdata14 txdata27 txdata31 rxckp rxdata21 rxdata5 rxdata2
+txdataRD0 txdata13 txdata26 txdata30 rxtrk rxdata22 rxdata20 rxdata4
+vccio vccio vccio vccio vccfwdio vccfwdio vccfwdio vccfwdio
+vccio vccio vccio vccio vccfwdio vccfwdio vccfwdio vccfwdio
+Die Edge
+--- Page 33 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 212
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Note: In Figure 5-29 , at 55-um pitch, the module depth of the 8-column reference bump 
+matrix as shown is approximately 962.5 um.
+Figure 5-30  shows the signal exit order for the 10- column x32 Advanced Package bump map.Figure 5-29. 8-column x32 Advanced Package Bump Map
+Figure 5-30. 10-column x32 Advanced Package Bump Map: Signal Exit OrderColumn0 Column1 Column2 Column3 Column4 Column5 Column6 Column7
+vss vss vss vss
+vss vss vss vss
+vccio vccio vccio vccio
+rxcksbRD rxcksb rxdatasb rxdatasbRD
+txdatasbRD txdatasb txcksb txcksbRD
+txdata5 txdata23 rxdata30 rxdata13
+txdata22 txckp rxdata14 rxdataRD0
+txdata6 vss vss rxdata12
+txdata21 txckn rxdata15 vss
+txdata7 txdata24 rxdata31 rxdata11
+txdata20 vss vss rxdata0
+vss txdata25 rxdataRD1 rxdata10
+txdata19 txckRD rxdata16 rxdata1
+txdata4 vss vss rxdata9
+txdata18 txtrk rxdata29 vss
+txdata3 txdata26 rxvldRD rxdata8
+txdata17 vss rxdata28 rxdata2
+vss txdata27 rxvld vss
+txdata8 txvld rxdata27 rxdata3
+vccio vccio vccfwdio vccfwdio
+txdata9 txvldRD rxdata26 vss
+txdata2 txdata28 rxtrk rxdata17
+txdata10 vss vss rxdata4
+vss txdata29 rxckRD rxdata18
+txdata11 txdataRD1 rxdata25 rxdata7
+txdata1 txdata16 vss rxdata19
+vss txdata31 rxdata24 vss
+txdata0 txdata15 rxckn rxdata20
+txdata12 vss vss rxdata6
+vss txdata14 rxckp rxdata21
+txdata13 txdata30 rxdata23 rxdata5
+txdataRD0 vss vss rxdata22
+vccio vccio vccfwdio vccfwdio
+vccio vccio vccfwdio vccfwdio
+Die Edge
+Left to Right
+txdataRD0 txdata0 txdata1 txdata2 txdata3 txdata4 txdata5 txdata6 txdata7 txdata8 Cont…
+Cont… txdata9 txdata10 txdata11 txdata12 txdata13 txdata14 txdata15 txdata16 txdata17 txdata18 Cont1…Cont1… txdata19 txdata20 txdata21 txdata22 txdata23 txdata24 txdata25 txdata26 txdata27 txdata28 Cont2…Cont2… txdata29 txdata30 txdata31 txdataRD1 txvldRD txvld txtrk txckRD txckn txckp Left to Right
+rxckp rxckn rxckRD rxtrk rxvld rxvldRD rxdataRD1 rxdata31 rxdata30 rxdata29 Cont…
+Cont… rxdata28 rxdata27 rxdata26 rxdata25 rxdata24 rxdata23 rxdata22 rxdata21 rxdata20 rxdata19 Cont1…Cont1… rxdata18 rxdata17 rxdata16 rxdata15 rxdata14 rxdata13 rxdata12 rxdata11 rxdata10 rxdata9 Cont2…Cont2… rxdata8 rxdata7 rxdata6 rxdata5 rxdata4 rxdata3 rxdata2 rxdata1 rxdata0 rxdataRD0Tx 
+Breakout
+Rx 
+Breakout
+--- Page 34 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 213
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 IMPLEMENTATION NOTE — X32 B UMP MAPS FOR MAX SPEED
+This Implementation Note is formulated to provid e PHY implementations a set of reference x32 bump 
+maps to encompass the max speed specified.
+Bump maps in Figure 5-31 , Figure 5-32 , and Figure 5-33  are the x32 implementation references for 
+the corresponding max speed with an enhancement of  the power and ground bumps. They all comply 
+with the bump matrix rules in Section 5.7.2.3 , and they maintain the backward compatibility in terms 
+of signal exit order. These reference examples have been optimized for signal integrity, power 
+integrity, lane-to-lane skew, electro-migration stre ss and bump area based on most of the advanced 
+packaging technologies in the industry. Please note that technology requirements vary, and it is still 
+required to verify the bump map with the technology  provider for actual implementation requirements 
+and performance targets.
+Figure 5-31. 10-column x32 Advanced Package Bump Map Example 
+for 32 GT/s Implementation
+Note: In Figure 5-31 , at 45-um pitch, the module depth of the 10-column bump map as 
+shown is approximately 725 um. Rows 1, 2, and 31 are required for packaging solutions using floating bridges without through-silicon vias (TSVs). They can be 
+optional for packaging solutions with TSVs. The vccfwdio bumps are required for the 
+tightly coupled mode up to 16 GT/s. For higher speeds, the vccfwdio bumps may be 
+connected to the vccio bumps in package.1234567891 0
+1 vss vss vccio vccio vss
+2 vss vccio vccio vss vss
+3 vss vss vccio vccio vss
+4 rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+5 txdatasbRD txdatasb vss txcksb txcksbRD6 txdata5 vccio vss rxdata14 vccio
+7 txdata4 txdata21 txckp rxdata30 rxdata138 txdata6 txdata22 vccio vccio rxdataRD0
+9 vss vss txckn rxdata29 rxdata12
+10 txdata7 txdata23 rxdata31 rxdata15 vccio
+11 vccio txdata20 txckRD rxdata28 vss
+12 vccio vccio vccio rxdata16 rxdata0
+13 txdata3 txdata19 txtrk rxdata27 rxdata1114 txdata8 txdata24 rxdataRD1 vccio rxdata1
+15 vss vss vss vss rxdata1016 txdata9 txdata25 rxvldRD rxdata17 vss
+17 txdata2 txdata18 txvld rxdata26 vss
+18 vccio txdata26 rxvld rxdata18 rxdata2
+19 vccio txdata17 txvldRD rxdata25 rxdata9
+20 txdata10 vccio vccio vccio vccio
+21 txdata1 vss txdataRD1 rxdata24 rxdata822 txdata11 txdata27 rxtrk rxdata19 rxdata323 txdata0 txdata16 vss vccfwdio vccfwdio
+24 vccio txdata28 rxckRD rxdata20 vss
+25 vss txdata15 txdata31 rxdata23 rxdata726 txdata12 txdata29 rxckn vss vss27 txdataRD0 vss vss rxdata22 rxdata628 txdata13 txdata30 rxckp rxdata21 rxdata429 vss txdata14 vss vss rxdata530 vccio vccio vccfwdio vccfwdio vccfwdio
+31 vccio vccio vccio vccfwdio vccfwdio
+Die Edge
+--- Page 35 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 214
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-32. 16-column x32 Advanced Package Bump Map Example 
+for 16 GT/s Implementation
+Note: In Figure 5-32 , at 25-um pitch, the module depth of the 16-column bump map as 
+shown is approximately 250 um. Rows 1 and 19 are required for packaging solutions 
+using floating bridges without TSVs. They ca n be optional for packaging solutions with 
+TSVs. The vccfwdio bumps are required for th e tightly coupled mode up to 16 GT/s. For 
+higher speeds, the vccfwdio bumps may be connected to the vccio bumps in package.123456789 1 0 1 1 1 2 1 3 1 4 1 5 1 6
+1 vss vccio vccio vss vss vccio vccio vss
+2 vss vccio vccio vss vss vccio vccio vss
+3 txdatasbRD rxcksbRD txdatasb rxcksb txcksb rxdatasb txcksbRD rxdatasbRD4 txdata4 txdata20 txdata22 vss rxdata30 rxdata26 rxdata13 vss5 vss txdata5 txdata21 txckp vss rxdata27 rxdata14 rxdata116 txdata3 vss txdata23 txtrk rxdata29 vss rxdata12 rxdataRD07 txdata2 txdata6 vss txckn rxdata31 rxdata28 vss rxdata108 vccio txdata17 txdata24 vss rxdataRD1 rxdata25 rxdata7 rxdata0
+9 txdata1 vccio txdata19 txckRD rxvldRD vccio rxdata15 rxdata9
+10 txdata8 txdata16 vccio txvld vccio rxdata18 vccio vss
+11 vss vccio txdata18 vccio rxvld vccio rxdata16 rxdata8
+12 txdata9 txdata15 vccio txvldRD rxckRD rxdata19 vccio rxdata1
+13 txdata0 txdata7 txdata25 txdataRD1 vss rxdata24 rxdata17 vccio
+14 txdata10 vss txdata28 txdata31 rxckn vss rxdata6 rxdata2
+15 txdataRD0 txdata12 vss txdata29 rxtrk rxdata23 vss rxdata3
+16 txdata11 txdata14 txdata27 vss rxckp rxdata21 rxdata5 vss17 vss txdata13 txdata26 txdata30 vss rxdata22 rxdata20 rxdata418 vccio vccio vccio vccio vccfwdio vccfwdio vccfwdio vccfwdio
+19 vccio vccio vccio vccio vccfwdio vccfwdio vccfwdio vccfwdio
+Die Edge
+--- Page 36 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 215
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-33. 8-column x32 Advanced Package Bump Map Example 
+for 32 GT/s Implementation
+Note: In Figure 5-33 , at 55-um pitch, the module depth of the 8-column bump map as shown 
+is approximately 990 um. Rows 1, 2, and 35  are required for packaging solutions using 
+floating bridges without TSVs. They can be optional for packaging solutions with TSVs. 
+The vccfwdio bumps are required for the tightly coupled mode up to 16 GT/s. For 
+higher speeds, the vccfwdio bumps may be connected to the vccio bumps in package.
+These bump maps have been optimized to minimize the lane to-lane routing mismatch, which is not 
+avoidable when two different bumps at different bump pitches interoperate. Table 5-14  summarizes 
+the max skew due to bump locations for the represen tative cases. As a rule of thumb, each 150-um 
+mismatch causes about 1-ps timing skew. This sk ew can be reduced or el iminated by the length 
+matching effort in package channel layout design.12345678
+1 vss vccio vccio vss
+2 vss vccio vccio vss
+3 vss vccio vccio vss
+4 txdatasbRD txdatasb txcksb txcksbRD5 rxcksbRD rxcksb rxdatasb rxdatasbRD6 txdata22 txckp rxdata14 rxdataRD07 vss txdata23 vss rxdata138 txdata21 txckn vccio vccio
+9 txdata5 vss rxdata30 rxdata12
+10 vccio vccio rxdata15 rxdata0
+11 txdata6 txdata24 rxdata31 rxdata1112 txdata20 txckRD rxdata16 rxdata113 vss vss vss vss14 txdata19 txtrk rxdata29 rxdata215 txdata7 txdata25 rxdataRD1 rxdata1016 txdata18 vccio rxdata28 rxdata3
+17 vccio txdata26 vss rxdata9
+18 txdata17 txvld rxdata27 vccio
+19 txdata4 vss rxvldRD rxdata820 txdata8 txvldRD vccio rxdata4
+21 vss txdata27 rxvld rxdata1722 txdata9 vccio rxdata26 vss
+23 txdata3 txdata28 vss rxdata1824 txdata10 txdataRD1 rxdata25 rxdata725 txdata2 txdata29 rxtrk rxdata1926 vccio vccio vccio vccfwdio
+27 txdata1 txdata16 rxckRD rxdata2028 txdata11 txdata31 rxdata24 rxdata629 txdata0 txdata15 vss vss30 txdata12 txdata30 vccfwdio rxdata5
+31 vss vss rxckn rxdata2132 txdata13 vss rxdata23 vss33 txdataRD0 txdata14 rxckp rxdata2234 vccio vccio vccfwdio vccfwdio
+35 vccio vccio vccfwdio vccfwdio
+Die Edge
+--- Page 37 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 216
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.2.4 x64 and x32 Advanced Package Module Interoperability
+x64 and x32 Advanced Package Module bump maps enable interoperability between all Tx and Rx 
+combinations of x64 or x32, 10-column, 16-column, or 8-column Modules, in both Normal-to-Normal 
+module orientation or Normal-to-Mirrored module orientation.
+However, if x64 to x32 modules or x32 to x32 modules have normal and mirrored orientation as 
+shown in Figure 5-34  and Figure 5-35 , respectively, signal traces between the TX half and RX half will 
+crisscross and require swizzling technique which re fers to rearranging the physical connections 
+between signal bumps of two chip lets to optimize the layout and routing on the interposer or 
+substrate. It involves changing the order of the connections or route on different layers without altering the netlist or the electrical functionality of the design. Moreover, connections between 8-
+column, 16-column, and 10-column modules may need to  be routed to adjacent columns (swizzle and 
+go across). In all cases, the electrical spec must be met for all these connections.
+It is optional for a x64 Module to support in teroperability with a x32 Module. The following 
+requirements apply when a x64 module supports x32 interoperability:
+• When a x64 module connects to x32 module, the connection shall always be contained to the 
+lower half of the x64 module. This must be follow ed even with x32 lane reversal described below.
+• Electrical specifications must be met for combinations that require signal-routing swizzling.
+• Lane reversal will not be permitted on 
+CKP- , CKN- , CKRD- , VLD- , VLDRD- , TRK- , and sideband-
+related pins. These pins need to be connected appropriately. Swizzling for these connections is 
+acceptable.
+• x64 module must support a lane-reversal mode in a x32 manner (i.e., TD_P[31:0]  = 
+TD_L[0:31] . When a x64 module is connected to a x32 module, in either Normal or Mirrored 
+orientation, the upper 32 bits are not used and should be disabled.
+• It is not permitted for a single module of larger width to simultaneously interop with two or more 
+modules of a lower width. For example, a x64 Ad vanced Package module physically connected to 
+two x32 Advanced Package modules is prohibited.
+Additional technological capabilities or layers may be needed to accomplish swizzling on data/auxiliary 
+signals.Table 5-14. Maximum Systematic Lane-to- lane Length Mismatch in um between 
+the Reference Bump Maps in the Implementation Note
+Rx16-column 
+x64 at 25 um16-column 
+x32 at 25 um10-column 
+x64 at 45 um10-column 
+x32 at 45 um8-column x64 
+at 55 um8-column x32 
+at 55 umTx
+16-column x64 
+at 25 um0 125 351 399 560 605
+16-column x32 
+at 25 um0 351 393 563 618
+10-column x64 
+at 45 um0 159 351 463
+10-column x32 
+at 45 um0 428 398
+8-column x64 
+at 55 um0 468
+8-column x32 
+at 55 um0
+--- Page 38 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 217
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table 5-15  summarizes the connections between combin ations of x64 and x32 modules in both 
+Normal-to-Normal and Normal-to-Mirrored module orie ntations. The table applies to all combinations 
+of 10-column, 16-column, or 8-column modules on either side of the Link.
+The defined bump matrices can achieve optimal sk ew between bump matrices of differing depths, 
+and the worst-case trace-reach skews are expected to  be within the maximum lane-to-lane skew limit 
+for the corresponding data rates as defined in Section 5.3  and Section 5.4 .
+Figure 5-34  and Figure 5-35  show examples of normal and mirrored x64-to-x32 and x32-to-x32 
+Advanced Package Module connections, respectively.Table 5-15. x64 and x32 Advanced Package Connectivity Matrix
+–Normal Module Mirrored Module
+Rx
+x64 x32 x64 x32
+Normal 
+ModuleTxx64 TX[63:0] – RX[63:0]a
+a. Entry “TX[63:0] – RX[63:0]” is for Normal Module connections between two x64 modules without lane reversal. 
+This applies to x64–to–x64 combination.TX[31:0] – RX[31:0]b
+b. Entry “TX[31:0] – RX[31:0]” is for Normal Module conne ctions between lower 32-bit half without lane reversal. 
+This applies to x64-to-x32, x32-to -x64, and x32-to-x32 combinations.rTX[63:0] – RX[0:63]c d
+c. The prefix “r” means lane reversal is  enabled on the Transmitter lanes, and:
+• “rTX[63:0]” means TD_P[63:0] = TD_L[0:63], to be connected with RD_P[0:63]
+• “rTX[31:0]” means TD_P[31:0] = TD_L[0:31], to be connected with RD_P[0:31].
+d. Entry “rTX[63:0] – RX[0:63]” = Normal-to-Mirrored Module connections between two x64 modules with TX lane reversal. 
+This applies to x64-to-x64 Norm al-to-Mirrored combinations.rTX[31:0] – RX[0:31]c e
+e. Entry “rTX[31:0] – RX[0:31]” = Normal-to-Mirrored Module conn ections between lower 32-bit half  with TX lane reversal. This
+applies to x64-to-x32, x32-to-x64, and x 32-to-x32 Normal-to-Mirrored combinations.x32 TX[31:0] – RX[31:0]bTX[31:0] – RX[31:0]brTX[31:0] – RX[0:31]c erTX[31:0] – RX[0:31]c e
+--- Page 39 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 218
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-34. Example of No rmal and Mirrored x64-to-x32 Advanced Package 
+Module Connection
+vss vss vccio vccio vss vss vss vccio vccio vss
+vss vccio vccio vss vss vss vccio vccio vss vss
+vss vss vccio vccio vss vss vss vccio vccio vss
+rxcksbRD rxcksb vccio rxdatasb rxdatasbRD rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+txdatasbRD txdatasb vccio txcksb txcksbRD txdatasbRD txdatasb vccio txcksb txcksbRD
+rxdata29 rxdata1 4 rxdataRD0 rxdata29 rxdata1 4 rxdataRD0
+rxdata28 rxdata13 rxdata28 rxdata13
+rxdata3 0 rxdata15 vss rxdata3 0 rxdata15 vss
+vccio vccio rxdata12 vccio vccio rxdata12
+vss rxdata31 vss rxdata0 vss rxdata31 vss rxdata0
+vss rxdata27 rxdata11 vss rxdata27 rxdata11
+rxdataRD1 rxdata16 rxdata1 rxdataRD1 rxdata16 rxdata1
+rxdata26 rxdata1 0 rxdata26 rxdata1 0
+vss rxdata17 vss vss rxdata17 vss
+vccio rxdata25 rxdata9 vccio rxdata25 rxdata9
+rxckRD rxdata18 rxdata2 rxckRD rxdata18 rxdata2
+vss rxvldRD rxdata2 4 rxdata8 vss rxvldRD rxdata2 4 rxdata8
+vss rxckn rxdata19 rxdata3 vss rxckn rxdata19 rxdata3
+rxvld vss rxdata7 rxvld vss rxdata7
+rxckp rxdata2 0 vss rxckp rxdata2 0 vss
+rxtrk rxdata23 rxdata6 rxtrk rxdata23 rxdata6
+vss rxdata21 rxdata4 vss rxdata21 rxdata4
+vss vccio rxdata22 rxdata5 vss vccio rxdata22 rxdata5
+vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio vccfwdio
+vccio txdata21 vccio vccio txdata21 vccio
+txdata5 txdata22 vss vss txdata5 txdata22 vss vss
+txdata4 txdata20 txckp txdata4 txdata20 txckp 
+txdata6 txdata23 txtrk txdata6 txdata23 txtrk
+vss txdata19 txckn vss vss txdata19 txckn vss
+txdata7 vss txvld txdata7 vss txvld 
+txdata3 txdata18 txckRD txdata3 txdata18 txckRD 
+txdata8 txdata24 txvldRD vss txdata8 txdata24 txvldRD vss
+txdata2 txdata17 vccio txdata2 txdata17 vccio
+txdata9 txdata25 vss txdata9 txdata25 vss
+vccio vccio vccio vccio vccio vccio vccio vccio vccio vccio
+txdata10 txdata26 txdata10 txdata26
+txdata1 txdata16 txdataRD1 txdata1 txdata16 txdataRD1
+txdata11 txdata27 vss txdata11 txdata27 vss
+txdata0 vss txdata31 vss txdata0 vss txdata31 vss
+txdata12 vss vss txdata12 vss vss
+vss txdata15 txdata30 vss txdata15 txdata30
+txdata13 txdata28 txdata13 txdata28
+txdataRD0 txdata14 txdata29 txdataRD0 txdata14 txdata29
+vccio vccio vccio vccio vccio vccio vccio vccio vccio vccio
+vccio vccio vccio vccio vccio vccio vccio vccio vccio vccio
+vccfwdio vccfwdio vccio vccio vccio vccio vccio vccio vccfwdio vccfwdio
+vccfwdio vccfwdio vccfwdio vccio vccio vccio vccio vccfwdio vccfwdio vccfwdio
+rxdata5 rxdata22 txdata31 txdata14 txdataRD0 txdataRD0 txdata14 txdata31 rxdata22 rxdata5
+rxdata4 rxdata21 vss txdata30 txdata13 txdata13 txdata30 vss rxdata21 rxdata4
+rxdata6 rxdata23 txdataRD1 txdata15 vss vss txdata15 txdataRD1 rxdata23 rxdata6
+vss vss rxckp txdata29 txdata12 txdata12 txdata29 rxckp vss vss
+rxdata7 vss vss vss txdata0 txdata0 vss vss vss rxdata7
+rxdata3 rxdata2 0 rxckn txdata28 txdata11 txdata11 txdata28 rxckn rxdata2 0 rxdata3
+rxdata8 rxdata2 4 txvldRD txdata16 txdata1 txdata1 txdata16 txvldRD rxdata2 4 rxdata8
+rxdata2 rxdata19 rxckRD txdata27 txdata10 txdata10 txdata27 rxckRD rxdata19 rxdata2
+vccfwdio vccfwdio vccio vccio vccio vccio vccio vccio vccfwdio vccfwdio
+vss rxdata18 rxtr k vss txdata9 txdata9 vss rxtr k rxdata18 vss
+rxdata9 rxdata25 txvld txdata17 txdata2 txdata2 txdata17 txvld rxdata25 rxdata9
+rxdata1 rxdata17 vss txdata26 vss vss txdata26 vss rxdata17 rxdata1
+vss rxdata26 vss txdata18 txdata3 txdata3 txdata18 vss rxdata26 vss
+rxdata0 rxdata16 rxvld txdata25 txdata8 txdata8 txdata25 rxvld rxdata16 rxdata0
+rxdata1 0 rxdata27 txtrk txdata19 vss vss txdata19 txtrk rxdata27 rxdata1 0
+vss vss rxvldRD txdata24 txdata7 txdata7 txdata24 rxvldRD vss vss
+rxdata11 rxdata28 txckRD vss txdata4 txdata4 vss txckRD rxdata28 rxdata11
+rxdataRD0 rxdata15 rxdataRD1 vss txdata6 txdata6 vss rxdataRD1 rxdata15 rxdataRD0
+rxdata12 rxdata29 txckn txdata20 vccio vccio txdata20 txckn rxdata29 rxdata12
+vccio rxdata1 4 vss txdata23 txdata5 txdata5 txdata23 vss rxdata1 4 vccio
+rxdata13 rxdata3 0 txckp txdata21 vss vss txdata21 txckp rxdata3 0 rxdata13
+vccio vccio rxdata31 txdata22 vss vss txdata22 rxdata31 vccio vccio
+txcksbRD txcksb vss txdatasb txdatasbRD txdatasbRD txdatasb vss txcksb txcksbRD
+rxdatasbRD rxdatasb vccio rxcksb rxcksbRD rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+vss vccio vccio vss vss vss vss vccio vccio vss
+vss vss vccio vccio vss vss vccio vccio vss vss
+vss vccio vccio vss vss vss vss vccio vccio vssDie EdgeDie Edgex64 Normal
+x32 Mirrored w/Lane Reversal x32 Normalx64 Normal
+Die EdgeDie Edge
+--- Page 40 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 219
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.2.5 Module Naming of Advanced Package Modules
+This section describes the Module naming conventi on of x64 and x32 Advanced Package modules in a 
+multi-module configuration.
+The Module naming is defined to help with connecting the Modules deterministically which, in turn, 
+will help minimize the multiplexing requirem ents in the Multi-module PHY Logic (MMPL).
+The naming of M0, M1, M2, and M3 will apply to 1, 2, or 4 Advanced Package modules that are 
+aggregated through the MMPL.
+Figure 5-36  shows the naming convention for 1, 2, or 4 Advanced Package Modules when they are 
+connected to their “Standard Die Rotate” Module co unterparts that have same number of Advanced 
+Package Modules.
+Note: The double-ended arrows in Figure 5-36  through Figure 5-39  indicate Module-to-
+Module connections.Figure 5-35. Example of No rmal and Mirrored x32-to-x32 Advanced Package 
+Module Connection
+vss vss vccio vccio vss vss vss vccio vccio vss
+vss vccio vccio vss vss vss vccio vccio vss vss
+vss vss vccio vccio vss vss vss vccio vccio vss
+rxcksbRD rxcksb vccio rxdatasb rxdatasbRD rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+txdatasbRD txdatasb vss txcksb txcksbRD txdatasbRD txdatasb vss txcksb txcksbRD
+vss txdata22 rxdata31 vccio vccio vss txdata22 rxdata31 vccio vccio
+vss txdata21 txckp rxdata30 rxdata13 vss txdata21 txckp rxdata30 rxdata13
+txdata5 txdata23 vss rxdata14 vccio txdata5 txdata23 vss rxdata14 vccio
+vccio txdata20 txckn rxdata29 rxdata12 vccio txdata20 txckn rxdata29 rxdata12
+txdata6 vss rxdataRD1 rxdata15 rxdataRD0 txdata6 vss rxdataRD1 rxdata15 rxdataRD0
+txdata4 vss txckRD rxdata28 rxdata11 txdata4 vss txckRD rxdata28 rxdata11
+txdata7 txdata24 rxvldRD vss vss txdata7 txdata24 rxvldRD vss vss
+vss txdata19 txtrk rxdata27 rxdata10 vss txdata19 txtrk rxdata27 rxdata10
+txdata8 txdata25 rxvld rxdata16 rxdata0 txdata8 txdata25 rxvld rxdata16 rxdata0
+txdata3 txdata18 vss rxdata26 vss txdata3 txdata18 vss rxdata26 vss
+vss txdata26 vss rxdata17 rxdata1 vss txdata26 vss rxdata17 rxdata1
+txdata2 txdata17 txvld rxdata25 rxdata9 txdata2 txdata17 txvld rxdata25 rxdata9
+txdata9 vss rxtrk rxdata18 vss txdata9 vss rxtrk rxdata18 vss
+vccio vccio vccio vccfwdio vccfwdio vccio vccio vccio vccfwdio vccfwdio
+txdata10 txdata27 rxckRD rxdata19 rxdata2 txdata10 txdata27 rxckRD rxdata19 rxdata2
+txdata1 txdata16 txvldRD rxdata24 rxdata8 txdata1 txdata16 txvldRD rxdata24 rxdata8
+txdata11 txdata28 rxckn rxdata20 rxdata3 txdata11 txdata28 rxckn rxdata20 rxdata3
+txdata0 vss vss vss rxdata7 txdata0 vss vss vss rxdata7
+txdata12 txdata29 rxckp vss vss txdata12 txdata29 rxckp vss vss
+vss txdata15 txdataRD1 rxdata23 rxdata6 vss txdata15 txdataRD1 rxdata23 rxdata6
+txdata13 txdata30 vss rxdata21 rxdata4 txdata13 txdata30 vss rxdata21 rxdata4
+txdataRD0 txdata14 txdata31 rxdata22 rxdata5 txdataRD0 txdata14 txdata31 rxdata22 rxdata5
+vccio vccio vccfwdio vccfwdio vccfwdio vccio vccio vccfwdio vccfwdio vccfwdio
+vccio vccio vccio vccfwdio vccfwdio vccio vccio vccio vccfwdio vccfwdio
+vccfwdio vccfwdio vccio vccio vccio vccio vccio vccio vccfwdio vccfwdio
+vccfwdio vccfwdio vccfwdio vccio vccio vccio vccio vccfwdio vccfwdio vccfwdio
+rxdata5 rxdata22 txdata31 txdata14 txdataRD0 txdataRD0 txdata14 txdata31 rxdata22 rxdata5
+rxdata4 rxdata21 vss txdata30 txdata13 txdata13 txdata30 vss rxdata21 rxdata4
+rxdata6 rxdata23 txdataRD1 txdata15 vss vss txdata15 txdataRD1 rxdata23 rxdata6
+vss vss rxckp txdata29 txdata12 txdata12 txdata29 rxckp vss vss
+rxdata7 vss vss vss txdata0 txdata0 vss vss vss rxdata7
+rxdata3 rxdata20 rxckn txdata28 txdata11 txdata11 txdata28 rxckn rxdata20 rxdata3
+rxdata8 rxdata24 txvldRD txdata16 txdata1 txdata1 txdata16 txvldRD rxdata24 rxdata8
+rxdata2 rxdata19 rxckRD txdata27 txdata10 txdata10 txdata27 rxckRD rxdata19 rxdata2
+vccfwdio vccfwdio vccio vccio vccio vccio vccio vccio vccfwdio vccfwdio
+vss rxdata18 rxtrk vss txdata9 txdata9 vss rxtrk rxdata18 vss
+rxdata9 rxdata25 txvld txdata17 txdata2 txdata2 txdata17 txvld rxdata25 rxdata9
+rxdata1 rxdata17 vss txdata26 vss vss txdata26 vss rxdata17 rxdata1
+vss rxdata26 vss txdata18 txdata3 txdata3 txdata18 vss rxdata26 vss
+rxdata0 rxdata16 rxvld txdata25 txdata8 txdata8 txdata25 rxvld rxdata16 rxdata0
+rxdata10 rxdata27 txtrk txdata19 vss vss txdata19 txtrk rxdata27 rxdata10
+vss vss rxvldRD txdata24 txdata7 txdata7 txdata24 rxvldRD vss vss
+rxdata11 rxdata28 txckRD vss txdata4 txdata4 vss txckRD rxdata28 rxdata11
+rxdataRD0 rxdata15 rxdataRD1 vss txdata6 txdata6 vss rxdataRD1 rxdata15 rxdataRD0
+rxdata12 rxdata29 txckn txdata20 vccio vccio txdata20 txckn rxdata29 rxdata12
+vccio rxdata14 vss txdata23 txdata5 txdata5 txdata23 vss rxdata14 vccio
+rxdata13 rxdata30 txckp txdata21 vss vss txdata21 txckp rxdata30 rxdata13
+vccio vccio rxdata31 txdata22 vss vss txdata22 rxdata31 vccio vccio
+txcksbRD txcksb vss txdatasb txdatasbRD txdatasbRD txdatasb vss txcksb txcksbRD
+rxdatasbRD rxdatasb vccio rxcksb rxcksbRD rxcksbRD rxcksb vccio rxdatasb rxdatasbRD
+vss vccio vccio vss vss vss vss vccio vccio vss
+vss vss vccio vccio vss vss vccio vccio vss vss
+vss vccio vccio vss vss vss vss vccio vccio vssx32 Normal x32 Normal
+x32 Mirrored w/Lane ReversalDie EdgeDie Edge Die Edge
+Die Edge
+x32 Normal
+--- Page 41 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 220
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-37  shows the naming convention for 1, 2, or  4 Advanced Package modules when they are 
+connected to their “Mirrored Die Rotate” counterparts with the same number of Advanced Package 
+modules.Figure 5-36. Naming Convention for One-, Two-, and Four-module Advanced Package 
+Paired with “Standard Di e Rotate” Co nfigurations
+Figure 5-37. Naming Convention for One-, Two-, and Four-module Advanced Package 
+Paired with “Mirrored Die Rotate” Configurations
+
+--- Page 42 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 221
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table 5-16  summarizes the connections between the combinations shown in Figure 5-36  and 
+Figure 5-37 .
+Figure 5-38  shows the naming convention for 1, 2, or  4 Advanced Package modules when they are 
+connected to their “Standard Die Rotate” counterpar ts that have a different number of Advanced 
+Package modules.Table 5-16. Summary of Advanced Package Module Connection Combinations 
+with Same Number of Modules on Both Sides
+Advanced Package Module Connections 
+(Same # of Modules on Both Sides)Standard Die Rotate
+CounterpartMirrored Die Rotate
+Counterpart
+x1 – x1 • M0 – M0 • M0 – M0
+x2 – x2• M0 – M1
+• M1 – M0• M0 – M0
+• M1 – M1
+x4 – x4• M0 – M2
+• M1 – M3• M3 – M1
+• M2 – M0• M0 – M0
+• M1 – M1• M2 – M2
+• M3 – M3
+Figure 5-38. Examples for Advanced Pa ckage Configurations Paired with 
+“Standard Die Rotate” Counterparts, wi th a Different Number of Modules
+
+--- Page 43 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 222
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-39  shows the naming convention for 1, 2, or  4 Advanced Package modules when they are 
+connected to their “Mirrored Die Rotate” counterparts that have a different number of Advanced 
+Package modules.
+Table 5-17  summarizes the connections between the combinations shown in Figure 5-38  and 
+Figure 5-39 .Figure 5-39. Examples for Advanced Pa ckage Configurations Paired with 
+“Mirrored Die Rotate” Counterparts, wi th a Different Number of Modules
+Table 5-17. Summary of Advanced Package Module Connection Combinations 
+with Different Number of Modules on Both Sides
+Advanced Package Module Connections 
+(Different # of Modules on Both Sides)Standard Die Rotate
+Counterparta
+a. NC indicates no connection.Mirrored Die Rotate
+Counterparta
+x2 – x1• M0 – M0
+• M1 – NC• M0 – M0
+• M1 – NC
+x4 – x2• M0 – M0
+• M1 – M1
+• M3 – NC• M2 – NC• M0 – M1
+• M1 – M0
+• M2 – NC• M3 – NC
+x4 – x1• M0 – M0
+• M1 – NC
+• M3 – NC
+• M2 – NC• M0 – M0
+• M1 – NC
+• M2 – NC
+• M3 – NC
+Tx 
+(x64)Rx 
+(x64)
+M0Tx 
+(x64)Rx 
+(x64)
+M0
+--- Page 44 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 223
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.3 Standard Package
+Interconnect channel should be designed with 50 ohm characteristic impedance. Insertion loss and 
+crosstalk for requirement at Nyquist frequency with Receiver termination is defined in Table 5-18 .
+IL and crosstalk for requirement at Nyquist freque ncy without Receiver termination is defined by 
+Table 5-19 . Loss and crosstalk specifications between DC and Nyquist fN follow the same methodology 
+defined in Section 5.7.2.1 .Table 5-18. IL and Crosstalk for Standard Pa ckage: With Receiver Termination Enabled
+Data Rate 4, 8 GT/s 12, 16 GT/s 24, 32 GT/s
+VTF Loss (dB)a b c
+a. Voltage Transfer Function for 4 GT/s and 8 GT /s (Tx: 30 ohm / 0.3pF; Rx: 50 ohm / 0.3pF).
+b. Voltage Transfer Function for 12 GT/s and 16 GT/s (Tx: 30 ohm / 0.2pF; Rx: 50 ohm / 0.2pF).
+c. Voltage Transfer Function for 24 GT/s and 32 GT/s (Tx: 30 ohm / 0.125pF; Rx: 50 ohm / 0.125pF).L(0) > -4.5
+L(fN) > -7.5L(0) > -4.5
+L(fN) > -6.5L(0) > -4.5
+L(fN) > -7.5
+VTF Crosstalk (dB)XT(fN) < 3 * L(fN) - 11.5
+and XT(fN) < -25XT(fN) < 3 * L(fN) - 11.5
+and XT(fN) < -25XT(fN) < 2.5 * L(fN) - 10
+and XT(fN) < -26
+Table 5-19. IL and Crosstalk for Stan dard Package: No Rx Termination
+Data Rate 4-12 GT/s 16 GT/s
+VTF Loss (dB)a b
+a. Voltage Transfer Function for 4 GT/s and 8 GT/s (Tx: 30 ohm / 0.3pF; Rx: 0.2 pF).
+b. Voltage Transfer Function for 12 GT/s and 16 GT/s (Tx: 30 ohm / 0.2pF; Rx: 0.2 pF).L(fN) > -1.25 L(fN) > -1.15
+VTF Crosstalk (dB)XT(fN) < 7 * L(fN) - 12.5
+and XT(fN) < -15XT(fN) < 4 * L(fN) - 13.5
+and XT(fN) < -17
+Table 5-20. Standard Package Module  Signal List (Sheet 1 of 2)
+Signal Name Count Description
+Data
+TXDATA[15:0] 16 Transmit Data
+TXVLD 1 Transmit Data Valid; Enables clocking in corresponding module
+TXTRK 1 Transmit Track signal
+TXCKP 1 Transmit Clock Phase-1
+TXCKN 1 Transmit Clock Phase-2
+RXDATA[15:0] 16 Receive Data
+RXVLD 1 Receive Data Valid; Enables clocking in corresponding module
+RXTRK 1 Receive Track
+RXCKP 1 Receive Clock Phase-1
+RXCKN 1 Receive Clock Phase-2
+Sideband
+TXDATASB 1 Sideband Transmit Data
+RXDATASB 1 Sideband Receiver Data
+TXCKSB 1 Sideband Transmit Clock
+--- Page 45 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 224
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.3.1 x16 Standard Pa ckage Module Bump Map
+Figure 5-40  and Figure 5-42  show the reference bump matrices for x16 (one module) and x32 (two 
+module) Standard Packages, respectively.
+It is strongly recommended to follow the bump matrices provided in Figure 5-40  for one module and 
+Figure 5-42  for two module Standard Packages. The lower left corner of the bump map will be 
+considered “origin” of a bump matrix.
+Signal exit order for x16 and x32 Standard Package bump matrices are shown in Figure 5-41  and 
+Figure 5-43 , respectively.
+The following rules must be followed for Standard Package bump matrices:
+• The signals within a column must be preserved.  For example, for a x16 (one module Standard 
+Package) shown in Figure 5-40 , Column 1 must contain the signals: txdata0 , txdata1 , 
+txdata4 , txdata5 , and txdatasb .
+• The signals must exit the bump field in the order shown in Figure 5-41 . Layer 1 and Layer 2 are 
+two different signal routing layers in a Standard Package.
+It is strongly recommended to follow the supply and ground  pattern shown in the bump matrices. It 
+must be ensured that sufficient supply and ground  bumps are provided to meet channel 
+characteristics (FEXT and NEXT) an d power-delivery requirements.
+The following rules must be followed for instantiat ing multiple modules of Standard Package bump 
+matrix:
+• When looking at a die such that the UCIe Modules are on the south side, Tx should always 
+precede Rx within a module along the die’ s edge when going from left to right.
+• When instantiating multiple modules, the module s must be stepped in the same orientation and 
+abutted. Horizontal or vertical mirroring is not permitted.
+If more Die Edge Bandwidth density is required, it is permitted to stack two modules before abutting. 
+If two modules are stacked, the package may need to  support at least four routing layers for UCIe 
+signal routing. An example of stacked Standard  Package Module instantiations is shown in 
+Figure 5-42 .
+• If only one stacked module is instantiated, when looking at a die such that the UCIe Modules are 
+on the south side, Tx should always precede Rx within a module along the die’s edge when going 
+from left to right.
+• When instantiating multiple stacked modules,  the modules must be stepped in the same 
+orientation and abutted. Horizontal or vertical mirroring is not permitted.
+Note: An example of signal routing fo r stacked module is shown in Figure 5-44 .RXCKSB 1 Sideband Receive Clock
+Power and Voltage
+VSS Ground Reference
+VCCIO I/O supply
+VCCAON Always on Aux supply (sideband)Table 5-20. Standard Package Module  Signal List (Sheet 2 of 2)
+Signal Name Count Description
+--- Page 46 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 225
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-40. Standard Package Bump Map: x16 interface
+Figure 5-41. Standard Package x16 interface: Signal exit order
+Figure 5-42. Standard Package Bump Map: x32 interface
+L a y e r  1 0 1 2 3 t r k v l d 1 21 31 41 51 51 41 31 2 v l d t r k 3 2 1 0
+L a y e r  2 4 5 6 7c k p c k n8 9 1 01 11 11 0 9 8c k n c k p7 6 5 4
+SidebandTx 
+ModuleRx 
+Module
+rxdatasb txdatasb txcksb rxcksb
+
+--- Page 47 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 226
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-43. Standard Package x32 interface: Signal  exit routing
+Figure 5-44. Standard Package cr oss section for stacked module
+IMPLEMENTATION NOTEL a y e r  1 0 1 2 3 t r k v l d 1 21 31 41 51 51 41 31 2 v l d t r k 3 2 1 0
+L a y e r  2 4 5 6 7c k p c k n8 9 1 01 11 11 0 9 8c k n c k p7 6 5 4L a y e r  3 0 1 2 3 t r k v l d 1 21 31 41 51 51 41 31 2 v l d t r k 3 2 1 0L a y e r  4 4 5 6 7c k p c k n8 9 1 01 11 11 0 9 8c k n c k p7 6 5 4
+Sideband SidebandTx 
+Module 1Rx 
+Module 1
+Rx 
+Module 2Tx 
+Module 2
+m1rxdatasb m1rxcksb m2txdatasb m1txdatasb m2rxdatasb m1txcksb m2rxcksb m2txcksb
+Figure 5-45  shows a breakout design reference with the Standard Package channel based on the 
+bump pitch and on routing design rules.
+Figure 5-45. Standard Packag e reference configuration
+•4-row deep breakout per routing layer
+•Example 1: P y=190.5 um, P x § 111.5 um, P § 110 um
+•Example 2: P y=190.5 um, P x § 177 um, P § 130 um
+Py 
+Px P 
+S 
+L 
+ D 
+
+--- Page 48 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 227
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.3.2 x8 Standard Pack age Module Bump Map
+Designs can choose to add a UCIe-S port for sort/p re-bond test purposes in scenarios where they 
+need the high bandwidth of UCIe, but the design is an advanced package design, or for any other 
+reason. To reduce the chiplet’s die edge when suppor ting such a UCIe-S usage, a x8 version of UCIe-
+S is provided. This is an additional option that goes beyond the available standard x16 UCIe-S port 
+options. A UCIe-S x16 Module can optionally supp ort connecting to a UCIe-S x8 Module and when 
+supported, the connection is always on its lower x8 lanes (i.e., Lanes 7:0). UCIe-S x8 designs must 
+support lane reversal and degraded mode operation to x4. UCIe-S x16 designs that support 
+connection to a x8 Module must support lane reversal, and must support degraded mode operation to x4 on its lower 8 lanes when connected to a x8 Module.
+UCIe-S x8 support is limited to a single module conf iguration. When a UCIe-S x8 port is connected to 
+a multi-module x16 port, it is always connected to Module 0 UCIe-S x16.
+Figure 5-46  shows the reference bump matrix for a x8 Standard Package.
+It is strongly recommended to follow the bump matrix provided in Figure 5-46 . The lower left corner 
+of the bump map will be consider ed “origin” of a bump matrix.
+The same rules as mentioned for x16 and x32 Standard Package bump matrices in Section 5.7.3.1  
+must be followed for the x8 bump matrix.
+5.7.3.3 x16 and x8 Standard Pa ckage Module In teroperability
+A x8 bump matrix will either conne ct to another x8 bump matrix or  to bits [7:0] of a x16 bump 
+matrix.Figure 5-46. Standard Package Bump Map: x8 Interface
+Column 0 Column 1 Column 2 Column 3 Column 4 Column 5 Column 6 Column 7
+txdatasb txcksb rxcksb rxdatasb
+vccio vccio vccio vccio
+vss vss vss vss
+Txdata0 Txdata7 Rxdata6 Rxdata1
+vss Txckn vss Rxckp
+vss vss vss vss
+vccio Txckp vccio Rxckn
+Txdata1 Txdata6 Rxdata7 Rxdata0
+vccio vss vccio vss
+Txdata3 Txdata4 Rxdata5 Rxdata2
+vccio Txvld vccio Rxtrk
+vss vss vss vss
+vss Txtrk vss Rxvld
+Txdata2 Txdata5 Rxdata4 Rxdata3
+Die Edge
+--- Page 49 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 228
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.3.4 Module Naming of Standard Package Modules
+This section describes the Module naming convention  of Standard Package Modules in a multi-module 
+configuration.
+The naming of M0, M1, M2, and M3 will apply to 1, 2, or 4 Standard Package modules that are 
+aggregated through MMPL, in stacked an d unstacked configuration combinations.
+Figure 5-47  shows the naming convention for 1, 2, or  4 Standard Package modules when they are 
+connected to their “Standard Die Rotate” module counterparts with the same number of Standard 
+Package modules, with either same stack or same unstacked configuration.
+Note: The double-ended arrows in Figure 5-47  through Figure 5-51  indicate Module-to-
+Module connections.
+Figure 5-47. Naming Convention for One-, Two-, and Four-module Standard Package 
+Paired with “Standard Di e Rotate” Co nfigurations
+
+--- Page 50 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 229
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-48  shows the naming convention for 1, 2, or  4 Standard Package modules when they are 
+connected to their “Mirrored Die Rotate” counterpart s that have same number of Standard Package 
+modules, with either same stack or same unstacked configuration.
+Table 5-21  summarizes the connections between the combinations shown in Figure 5-47  and 
+Figure 5-48 .Figure 5-48. Naming Convention for One-, Two-, and Four-module Standard Package 
+Paired with “Mirrored Die Rotate” Configurations
+Table 5-21. Summary of Standard Package Module Connection Combinations 
+with Same Number of Modules on Both Sidesab
+a. Mirror-to-Mirror connection will be same as non-mirrored case.
+b. Mirror die connectivity may have jogs and need additional layers on package.Standard Package Module Connections 
+(Same # of Modules on Both Sides)Standard Die Rotate
+CounterpartMirrored Die Rotate
+Counterpart
+Option 1
+(See Figure 5-48)Option 2c
+(See Figure 5-51)
+x1 – x1 • M0 – M0 • M0 – M0
+x2 Unstacked – x2 Unstacked• M0 – M1
+• M1 – M0• M0 – M0
+• M1 – M1
+x2 Stacked – x2 Stacked• M0 – M0
+• M1 – M1• M0 – M0
+• M1 – M1• M0 – M1
+• M1 – M0
+x4 Unstacked – x4 Unstacked• M0 – M2
+• M1 – M3
+• M3 – M1
+• M2 – M0• M0 – M0
+• M1 – M1
+• M2 – M2
+• M3 – M3
+x4 Stacked – x4 Stacked• M0 – M2
+• M1 – M3• M3 – M1
+• M2 – M0• M0 – M0
+• M1 – M1• M2 – M2
+• M3 – M3• M0 – M1
+• M1 – M0• M2 – M3
+• M3 – M2
+
+--- Page 51 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 230
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-49  shows the naming convention for 1, 2, or  4 Standard Package modules when they are 
+connected to their “Standard Die Rotate” counterpar ts that have a different number of Standard 
+Package modules.c. For some mirrored cases, there are possible alternative connections to allow design choices between more routing layers vs. m ax
+data rates, shown as Op tion 1 and Option 2 in Table 5-21 . For x2 – x2 Stacked and x4 – x4  Stacked cases, Option 1 typically
+requires 2x the routing layers and enables nominal data rates, while Option 2 enables same the layer count but at reduced max
+data rates due to potential crosstalk. See Figure 5-50  for Option 2 connection illustrations.
+Figure 5-49. Examples for Standard Pa ckage Configurations Paired with 
+“Standard Die Rotate” Counterparts, wi th a Different Number of Modules
+
+--- Page 52 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 231
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 5-50  shows the naming convention for 1, 2, or  4 Standard Package Modules when they are 
+connected to their “Mirrored Die Rotate” counterparts that have a different number of Standard 
+Package Modules.
+Figure 5-51  illustrates the possible alternative connections for some mirrored cases to allow design 
+choices between more routing layers vs. reduced max data rates due to potential crosstalk, shown as 
+Option 2 in Table 5-21  and Table 5-22 .Figure 5-50. Examples for Standard Pa ckage Configurations Paired with 
+“Mirrored Die Rotate” Counterparts, wi th a Different Number of Modules
+Figure 5-51. Additional Examples for Standa rd Package Configurations Paired with 
+“Mirrored Die Rotate” Counterparts, wi th a Different Number of Modules
+x2 Stacked – x2 Stacked
+ x4 Stacked – x4 Stackedx4 Stacked – x2 Unstacked
+x4 Stacked – x2 Stacked
+
+--- Page 53 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 232
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table 5-22  summarizes the connections between the combinations shown in Figure 5-49 , Figure 5-50 , 
+and Figure 5-51 .
+5.7.3.4.1 Module Degrade Rules
+On a 2-module or 4-module link, if one or more mo dule-pairs have failed, the link will be degraded 
+and shall comply with the following rules:
+1. The degraded link shall be either one or two modules, and shall not be three modules.
+a. For a 4-module link:
+i. If any one module-pair failed, it sh all be degraded to a 2-module link.Table 5-22. Summary of Standard Package Module Connection Combinations 
+with Different Number of Modules on Both Sides
+Standard Package Module Connections 
+(Different # of Modules on Both Sides)Standard Die Rotate
+Counterparta
+a. NC indicates no connection.Mirrored Die Rotate
+Counterparta
+Option 1
+(See Figure 5-50)Option 2
+(See Figure 5-51)
+x4 Stacked – x4 Unstacked• M0 – M2
+• M1 – M3• M3 – M1
+• M2 – M0• M0 – M0
+• M1 – M1• M2 – M2
+• M3 – M3
+x4 Stacked – x2 Stacked• M0 – M0
+• M1 – M1
+• M3 – NC• M2 – NC• M0 – M0
+• M1 – M1
+• M2 – NC• M3 – NC•M 0  -  M 1
+•M 1  -  M 0
+• M2 – NC• M3 – NC
+x4 Stacked – x2 Unstacked • M0 – M0
+• M1 – NC
+• M3 – NC
+• M2 – M1• M0 – M1
+• M1 – NC
+• M2 – M0
+•M 3  -  N C• M0 – NC
+• M1 – M1
+• M2 – NC
+• M3 – M0
+x4 Stacked – x1• M0 – M0
+• M1 – NC• M3 – NC
+• M2 – NC• M0 – M0
+• M1 – NC• M3 – NC
+• M2 – NC
+x4 Unstacked – x2 Unstacked• M0 – M1
+• M1 – M0
+• M3 – NC• M2 – NC• M0 – M0
+• M1 – M1
+• M2 – NC• M3 – NC
+x4 Unstacked – x2 Stacked• M0 – M1
+• M1 – M0
+• M3 – NC
+• M2 – NC• M0 – M1
+• M1 – M0
+• M2 – NC
+• M3 – NC
+x4 Unstacked – x1• M0 – M0
+• M1 – NC
+• M3 – NC• M2 – NC• M0 – M0
+• M1 – NC
+• M3 – NC• M2 – NC
+x2 Stacked – x2 Unstacked• M0 – M1
+• M1 – M0• M0 – M0
+• M1 – M1
+x2 Stacked – x1• M0 – M0
+• M1 – NC• M0 – M0
+• M1 – NC
+x2 Unstacked – x1• M0 – M0
+• M1 – NC• M0 – M0
+• M1 – NC
+--- Page 54 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 233
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 ii. If any two module-pairs failed, it shall be degraded to a 2-module link.
+iii. If any three module-pairs failed, it shall be degraded to a 1-module link.
+b. For a 2-module link:
+i. If any one module-pair failed, it sh all be degraded to a 1-module link.
+2. For a 4-module link, if only one module-pair fail ed, one additional module-pair that belongs to the 
+“same half” (along the Die Edge) of the 4-module will be disabled/degraded.
+Figure 5-52  illustrates an example with a x4 Unstacke d connected to a x4 Unstacked “Standard Die 
+Rotate” counterpart with one M0 – M2 pair failed. The M1 – M3 pair on its left shall be disabled 
+accordingly to comply with the rules defined ab ove, which will be denoted as “x (d)” in Table 5-23 .
+Note: The double-ended arrows in Figure 5-52  indicate Module-to-Module connections.
+Table 5-23  summarizes the resulting degrad ed link if there are one, two, or three failed module-pairs 
+for the x4 Unstacked to x4 Unstacked configuration.
+All other module configurations shall follow th e same Module Degrade rules as defined above.Figure 5-52. Example of a Config uration for Standard Package,  with Some Modules Disabled
+Table 5-23. Summary of Degraded Links wh en Standard Packag e Module-pairs Fail
+Module – 
+Module Partner 
+PairNumber of Module-pairs Faileda
+a. x = Failed Module – Module Partner Pair. 
+x (d) = Disabled Module – Module Partner Pair to comply with Degrade rules.
+= Functional Module – Module Partner Pair.1-fail 2-fail 3-fail
+M0 – M2 x x (d)  xxx  xxx 
+M1 – M3 x (d) x  x xx  xx  x
+M3 – M1  xx  ( d )  x x xx  xx
+M2 – M0  x (d) x  x xx  xxx
+X X (degraded)
+--- Page 55 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 234
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.7.4 UCIe-S Side band-only Port
+A UCIe-S sideband-only port is also permitted for test/manageability purposes. The RDI signals to the 
+sideband port for a sideband-only configuration are the same as for a sideband with mainband 
+configuration (see Chapter 10.0  for details of the latter).
+Figure 5-53  shows the bump map for a UCIe-S sideband-only port. Figure 5-54  shows the supported 
+configurations for a UCIe-S sideband-only port.
+Figure 5-53. UCIe-S Sideba nd-only Port Bump Map
+Figure 5-54. UCIe-S Sideband-onl y Port Supported Configurationsvss
+m1rxdatasb
+m1rxcksb
+vccaon
+vss
+m1txcksb
+m1txdatasb
+UCIe-S 
+SB-only
+UCIe-S 
+SB-onlyUCIe-S 
+SB-only
+UCIe-S x16/x8SB MBConfig 1 Config 2
+--- Page 56 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 235
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.8 Tightly Coupled Mode
+Tightly Coupled PHY mode is defined as when both of the following conditions are met:
+• Shared Power Supply between Tx and Rx, or  Forwarded Power Supply from Tx to Rx
+• Channel supports larger eye mask defined in Table 5-24
+In this mode, there is no Receiver termination an d the Transmitter must provide full swing output. In 
+this mode, further optimization of PHY circuit and power reduction is possible. For example, a tuned 
+inverter can potentially be used instead of a front-end amplifier. Training complexity such as voltage 
+reference can be simplified.
+Loss and crosstalk requirement follow the same VTF method, adjusting to the eye mask defined in 
+Table 5-24 . Table 5-25  shows the specification at Nyquist frequency.
+Loss and crosstalk specifications between DC and Nyquist fN follow the same methodology defined in 
+Section 5.7.2.1 .
+Although the use of this mode is primarily for Advanced Package, it may also be used for Standard 
+Package when two Dies are near one another and Receiver must be unterminated.
+5.9 Interconnect redu ndancy Remapping
+5.9.1 Advanced Package Lane Remapping
+Interconnect Lane remapping is supported in Adva nced Package Module to improve assembly yield 
+and recover functionality. Each module supports:
+• Four redundant bumps for Data
+• One redundant bump for Clock and Track
+• One redundant bump for Valid
+For x64 Advanced Package modules, the four redund ant bumps for data repair are divided into two 
+groups of two. Figure 5-55  shows an illustration of x64 Advanced package module redundant bump 
+assignment for data signals. TRD_P0 and TRD_P1 are allocated to the lower 32 data Lanes and TRD_P2 and TRD_P3 are allocated to the upper 32 da ta Lanes. Each group is permitted to remap up Table 5-24. Tightly Coupled Mode: Eye Mask
+Data Rate 4-16 GT/s
+Overall (Eye Closure due to Channel)a
+a. With 750-mV Transmitter signal swing.Eye Heightb
+b. Centered around VCCFWDIO/2.250 mV
+Eye Width (rectangular eye mask with specified eye height) 0.7 UI
+Table 5-25. Tightly Coupled Mode Channel for Advanced Package
+Data Rate 4-12 GT/s 16 GT/s
+VTF Lossa (dB)
+a. Based on Voltage Transfer Function (Tx: 25 ohm / 0.25 pF; Rx: 0.2 pF).L(fN) > -3 -
+VTF Crosstalka (dB) XT(fN) < 1.5 * L(fN) - 21.5 and XT(fN) < -23 -
+--- Page 57 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 236
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 to two Lanes. For example, TD15 is a broken Lane in the lower half and TD_P32 and TD_P40 are 
+broken Lanes in the upper 32 Lanes. Figure 5-56  illustrates Lane remapping for the broken Lanes.
+For x32 Advanced Package modules, only the lower 32 data lanes and TRD_P0 and TRD_P1 apply in 
+Figure 5-55  and Figure 5-56 .
+Details and implementation of Lane remapping for Data, Clock, Track, and Valid are provided in 
+Section 4.3 .
+5.9.2 Standard Package Lane remapping
+Lane repair is not supported in Standard Package modules.
+5.10 BER requiremen ts, CRC and retry
+The BER requirement based on channel reach defined in Section 5.7  is shown in Table 5-26 . Error 
+detection and correction mechanisms such as CRC and retry are required for BER for 1E-15 to achieve 
+the required Failure In Time (FIT) rate of signif icantly less than 1 (1 FIT = 1 device failure in 
+109Hours). The UCIe spec defined CRC and retry is detailed in Chapter 3.0 . For the BER of 1E-27, 
+either parity or CRC can be used and the appropri ate error reporting mechanism must be invoked to 
+ensure a FIT that is significantly less than 1.Figure 5-55. Data Lane repair resources
+Figure 5-56. Data Lane repairTRD_P0TD_P0TD_P1TD_P2
+TD_P3
+TD_P4
+TD_P5TD_P7TD_P8TD_P9
+TD_P10
+TD_P11
+TD_P12
+TD_P6TD_P14TD_P15
+TD_P13TD_P16
+TD_P17
+TD_P18
+TD_P19TD_P21TD_P22TD_P23
+TD_P24
+TD_P25
+TD_P26
+TD_P20TD_P28TD_P29
+TD_P27TD_P30
+TD_P31
+TRD_P1
+TRD_P2TD_P32TD_P33TD_P34
+TD_P35
+TD_P36
+TD_P37TD_P39TD_P40TD_P41
+TD_P42
+TD_P43
+TD_P44
+TD_P38TD_P46TD_P47
+TD_P45TD_P48
+TD_P49
+TD_P50
+TD_P51TD_P53TD_P54TD_P55
+TD_P56
+TD_P57
+TD_P58
+TD_P52TD_P60TD_P61
+TD_P59TD_P62
+TD_P63
+TRD_P3
+TRD_P2TD_P32TD_P33TD_P34
+TD_P35
+TD_P36
+TD_P37TD_P39TD_P40TD_P41
+TD_P42
+TD_P43
+TD_P44
+TD_P38TD_P46TD_P47
+TD_P45TD_P48
+TD_P49
+TD_P50
+TD_P51TD_P53TD_P54TD_P55
+TD_P56
+TD_P57
+TD_P58
+TD_P52TD_P60TD_P61
+TD_P59TD_P62
+TD_P63
+TRD_P3
+TRD_P0TD_P0TD_P1TD_P2
+TD_P3
+TD_P4
+TD_P5TD_P7TD_P8TD_P9
+TD_P10
+TD_P11
+TD_P12
+TD_P6TD_P14TD_P15
+TD_P13TD_P16
+TD_P17
+TD_P18
+TD_P19TD_P21TD_P22TD_P23
+TD_P24
+TD_P25
+TD_P26
+TD_P20TD_P28TD_P29
+TD_P27TD_P30
+TD_P31
+TRD_P1
+--- Page 58 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 237
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.11 Valid and Clock Gating
+Valid is used to frame transmit data. For a single transmission of 8 UI data packet, Valid is asserted 
+for the first 4 UI and de-asserted for the second 4 UI. Figure 5-57  shows the transfer of two 8 UI data 
+packets back to back.
+As described in Section 4.1.3 , clock must be gated only after Valid signal remains low for 16 UI 
+(8 cycles) of postamble clock for half-rate clocking and 32 UI (8 cycles) of postamble clock for quarter-rate clocking, unless free running clock mode is negotiated.
+Idle state is when there is no data transmission on the mainband. During Idle state, Data, Clock, and 
+Valid Lanes must hold values as follows:
+• If the Link is unterminated (all Advanced Package and unterminated Standard Package Links), 
+some Data Lane Transmitters are permitted to remain toggling up to the same transition density as the scrambled data without advancing the scrambler state. The remaining Data Lane 
+Transmitters must hold the data of the last transmitted bit. Valid Lane must be held low until the 
+next normal transmission.
+— In Strobe mode, the clock level in a clock-gated state for half-rate clocking (after meeting 
+postamble requirement) must alternate between differential high and differential low during 
+consecutive clock-gating events. For quarter-ra te clocking, the clock level in a clock-gated 
+state must alternate between high and low for both phases (Phase-1 and Phase-2) simultaneously. Clock must drive a differential (simultaneous) low for half- (quarter-) rate 
+clocking for at least 1 UI or a maximum of 8 UI before normal operation. The total clock-gated 
+period must be an integer mult iple of 8 UI. Example shown in Figure 5-58  and Figure 5-59 .
+— In Continuous mode, the clock remains free running (examples shown in Figure 5-60 ). Total 
+idle period must be an integer multiple of 8 UI.Table 5-26. Raw BER requirements
+Package TypeData Rate
+(GT/s)
+4 8 12 16 24 32
+Advanced Package 1E-27 1E-27 1E-27 1E-15 1E-15 1E-15
+Standard Package 1E-27 1E-27 1E-15 1E-15 1E-15 1E-15
+Figure 5-57. Valid Framing
+ 8 UI  8 UIClock
+Valid
+Data
+--- Page 59 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 238
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 • If the Link is terminated (Standard Package term inated Links), some Data Lane Transmitters are 
+permitted to remain toggling up to the same transition density as the scrambled data without advancing the scrambler state. The remaining Data Lanes Transmitters hold the data of the last-
+transmitted bit. Valid Lane must be held low until the next normal transmission. Note that keeping 
+the transmitter toggling will incur extra power penalty and should be applied with discretion.
+— In Strobe mode, the clock level in a clock-gated state for half-rate clocking (after meeting 
+postamble requirement) must alternate between differential high and differential low during 
+consecutive clock-gating events. For quarter-ra te clocking, the clock level in a clock-gated 
+state must alternate between high and low for both phases (Phase-1 and Phase-2) 
+simultaneously. Transmitters must precondition the Data Lanes to a 0 or 1 (V) and clock must drive a differential low for at least 1 UI or up to a maximum of 8 UIs for half- (quarter-) rate 
+clocking before the normal transmission. The total clock-gated period must be an integer 
+multiple of 8 UI. Example shown in Figure 5-61  and Figure 5-63 .
+— In Continuous mode, the clock remains free running (examples shown in Figure 5-64 ). 
+Transmitters must precondition the Data Lanes to a 0 or 1 (V) for at least 1 UI or up to a maximum of 8 UI. Total idle period must be an integer multiple of 8 UI.
+Note: Entry into and Exit from Hi-Z state are analog transitions. Hi-Z represents Transmitter 
+state and the actual voltage during this period will be pulled Low due to termination to 
+ground  at the Receiver.Figure 5-58. Data, Clock, Valid Levels for Half-rate Clocking: 
+Clock-gated Unterminated Link
+Figure 5-59. Data, Clock, Valid Levels for Quarter-rate Clocking: 
+Clock-gated Unterminated Link
+Figure 5-60. Data, Clock, Valid Levels for Half-rate Clocking: 
+Continuous Clock Unterminated LinkD0 D1 D4 D2 D3 D5 D6 D7Clock
+Valid
+D7 or Implementation-specific patternClock Gated (Multiple of 8 UI: N * 8 UI)
+Parked Clock Level Parked Clock LevelClock Postamble
+ 16 UINormal operation Normal operation
+ 1 UI to 8 UIData[n]
+D0 D1 D4 D2 D3 D5 D6 D7Quad Clock 
+Phase-1
+ValidClock Gated (Multiple of Valid frames: N * 8 UI)
+Clock Postamble
+32 UINormal operation Normal operation
+1 UI to 8 UIQuad Clock 
+Phase-2Parked Clock Level
+Parked Clock LevelParked Clock Level
+Data[n] D7 or Implementation-specific pattern
+D0 D1 D4 D2 D3 D5 D6 D7Clock
+Valid
+D7 or Implementation-specific patternNormal operation Normal operation
+Data[n]Free running (Multiple of 8 UI: N * 8 UI)
+--- Page 60 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 239
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.12 Electrical Idle
+Some training states need electrical idle when Transmitters and Receivers are waiting for generate 
+and receive patterns.
+• Electrical idle on the mainband in this Specif ication is described as when Transmitters and 
+Receivers are enabled; Data, Valid and Track Lanes are held low and Clock is parked at high and 
+low.
+5.13 Sideband signaling
+Each module supports a sideband interface. The sideba nd is a two-signal interface that is used for the 
+transmit and receive directions. The sideband data is an 800 MT/s single data rate signal with an 800-
+MHz source. Sideband must run on power supply an d clock derived from the auxiliary clock (AUXCLK) 
+source which are always on (VCCAON). See Section 5.13.2  for AUXCLK details.
+Sideband data is sent edge aligned with the positive edge of the strobe. The Receiver must sample 
+the incoming data with the strobe. The negative edge of the strobe is used to sample the data as the 
+data uses single data rate signaling as shown in Figure 5-64 . Sideband transmission is described in 
+Section 4.1.5 .Figure 5-61. Data, Clock, Valid Gated Levels for Half-rate Clocking: 
+Terminated Link
+Figure 5-62. Data, Clock, Valid Gated Levels for Quarter-rate Clocking: 
+Terminated Link
+Figure 5-63. Data, Clock, Valid Gated Levels for Half -rate C locking: 
+Continuous Clock Terminated LinkD0 D1 D4 D2 D3 D5 D6 D7Clock
+Valid
+Data[n]
+16 UID7Par ked C lock LevelParked C lock LevelClock Postamble Normal operation Normal operation
+VData: Hi-ZClock Gated (Multiple of 8 UI: N*8UI)
+ 1 UI to 8 UI
+D0 D1 D4 D2 D3 D5 D6 D7Quad Clock 
+Phase -1
+Valid
+D7Clock Gated (Multiple of Valid frames: N*8UI)
+Clock Postamble
+32 UINormal operation Normal operation
+Quad Clock 
+Phase - 2Parked Clock Level
+Parked Clock LevelParked Clock Level
+Data[n]Data: Hi-Z
+ 1 UI to 8 UI
+D0 D1 D4 D2 D3 D5 D6 D7Clock
+Valid
+Data[n]
+16 UID7Normal operation Normal operation
+VData: Hi-Z
+ 1 UI to 8 UIFree running (Multiple of 8 UI : N*8UI)
+--- Page 61 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 240
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 For Advanced Package modules, redundancy is su pported for the sideband interface. Sideband 
+initialization and repair are described in Section 4.5.3.2 . There is no redundancy and no Lane repair 
+support on Standard Package modules.
+5.13.1 Sideband Electrical Parameters
+Table 5-27  shows the sideband electrical parameters.
+It is strongly recommended that the two sides of the sideband I/O Link share the same power supply 
+rail.
+sFigure 5-64. Sideband signaling
+Table 5-27. Sideband Parameters summary
+Parameter Min Typ Max Unit
+Supply voltage (VCCAON)a
+a. Always On power supply . The guidelines for maximum Voltage presented in Section 1.5  apply to sideband
+signaling.0.65 V
+TX Swing 0.8*VCCAON - - VInput high voltage (V
+IH)0 . 7 * V C C A O N V
+Input low voltage (VIL) 0.3*VCCAON V
+Output high voltage (VOH) 0.9*VCCCAON V
+Output low voltage (VOL) 0.1*VCCAON V
+Sideband Data Setup Time 200 - - ps
+Sideband Data Hold Time 200 - - psRise/Fall time for Advanced Package
+b
+b. 20 to 80% of VCCAON level with Adva nced Package reference channel load.50 - 280 ps
+Rise/Fall time for Standard Packagec
+c. 20 to 80% of VCCAON level with Standard Package reference channel load.80 - 175 psSB Clock
+SB Message
+--- Page 62 ---
+Electrical Layer (2D and 2.5D)
+UCIe Specification Revision 2.0, Version 1.0 241
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5.13.2 Auxiliary Clock (AUXCLK)
+Auxiliary clock (AUXCLK) may be from any cloc k source. Although other clock frequencies are 
+possible, it is recommended that every chiplet should also use a 100-MHz clock source. Table 5-28  
+lists the permitted auxiliary clock frequency rang e. The minimum and maximum frequencies listed in 
+the table indicate the limits, and do not indicate a requirement to support the entire frequency range. 
+Reference clock (REFCLK; see Section 5.1.2 ) can be used if it is always on. Spread-Spectrum Clocking 
+(SSC) is permitted. AUXCLK has redu ced tolerances compared to REFCLK.
+§ §Table 5-28. AUXCLK Frequency Parameters
+Symbol DescriptionLimits
+Unit Notes
+Min Rec Max
+FAUXCLK AUXCLK Frequency 25 100 800 MHz

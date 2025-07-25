@@ -1,0 +1,312 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 13
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figures
+1-1 A Package Composed of CPU Dies, Accelerator Die(s), 
+and I/O Tile Die Connected through UCIe ..........................................................36
+1-2 UCIe enabling long-reach connectivity at Rack/Pod Level .....................................37
+1-3 Standard Package interface .............................................................................37
+1-4 Advanced Package interface: Example 1 ............................................................381-5 Advanced Package interface: Example 2 ............................................................38
+1-6 Advanced Package interface: Example 3 ............................................................38
+1-7 Example of UCIe-3D........................................................................................391-8 UCIe Layers and functionalities ........................................................................40
+1-9 Physical Layer components ..............................................................................41
+1-10 Single module configuration: Advanced Packag e .................................................42
+1-11 Single module configuration: Standard Package .................................................43
+1-12 Two-module configuration for Standard Package ................................................43
+1-13 Four-module configuration for Standard Package ................................................431-14 Example of a Two-module Configuration for Advanced Package ............................44
+1-15 One-port Sideband-only Link ............................................................................44
+1-16 Two-port Sideband-only Link ............................................................................441-17 Four-port Sideband-only Link............................................................................45
+1-18 Block Diagram for UCIe Retimer Connection ......................................................45
+2-1 Color-coding Convention in Flit Format Byte Map Figures .....................................50
+2-2 68B Flit Format on FDI ....................................................................................54
+3-1 Functionalities in the Die-to-Die Adapter ...........................................................56
+3-2 Example Configurations ..................................................................................59
+3-3 Stages of UCIe Link Initialization ......................................................................60
+3-4 Parameter Exchange for CXL or PCIe (i.e., “68B Flit Mode” 
+or “CXL 256B Flit Mode” is 1 in {FinCap.Adapter}) ..............................................64
+3-5 Both Stacks are CXL or PCIe.............................................................................663-6 Stack 0 is PCIe, Stack 1 is Streaming ................................................................67
+3-7 Stack 0 is Streaming, Stack 1 is PCIe ................................................................67
+3-8 Both Stacks are Streaming........................... ....................................................68
+3-9 Stack 0 is Streaming, Stack 1 is CXL .................................................................69
+3-10 Format 1: Raw Format ....................................................................................70
+3-11 Format 2: 68B Flit Format ...............................................................................733-12 Format 2: 68B Flit Format PDS Example 1 .........................................................74
+3-13 Format 2: 68B Flit Format PDS Example 2 — Extra 0s Padded 
+to Make the Data Transfer a Multiple of 256B .... .................................................74
+3-14 Format 3: Standard 256B End Header Flit Format for PCIe ...................................76
+3-15 Format 3: Standard 256B End Header Flit Format for Streaming Protocol ...............76
+3-16 Format 3: Standard 256B End Header Flit Format 
+for Management Transport Protocol ...................................................................76
+3-17 Format 4: Standard 256B Start Header Flit Format 
+for CXL.cachemem or Streaming Protocol ..........................................................77
+3-18 Format 4: Standard 256B Start Header Flit Format for CXL.io or PCIe ...................77
+3-19 Format 4: Standard 256B Start Header Flit Format 
+for Management Transport Protocol ...................................................................77
+3-20 Format 5: Latency-Optimized 256B without Optional Bytes Flit Format for CXL.io ....80
+3-21 Format 5: Latency-Optimized 256B without Optional Bytes Flit Format 
+for CXL.cachemem and Streaming Protocol ........................................................81
+3-22 Format 5: Latency-Optimized 256B without Optional Bytes Flit Format 
+for Management Transport Protocol ...................................................................81
+--- Page 2 ---
+Figures
+UCIe Specification Revision 2.0, Version 1.0 14
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 3-23 Format 6: Latency-Optimized 256B with Optional Bytes Flit Format 
+for CXL.io or PCIe ..........................................................................................81
+3-24 Format 6: Latency-Optimized 256B with Optional Bytes Flit Format 
+for CXL.cachemem .........................................................................................82
+3-25 Format 6: Latency-Optimized 256B with Optional Bytes Flit Format 
+for Streaming Protocol ....................................................................................82
+3-26 Format 6: Latency-Optimized 256B with Optional Bytes Flit Format 
+for Management Transport Protocol ...................................................................82
+3-27 State Machine Hierarchy Examples ...................................................................88
+3-28 Example of Hierarchical PM Entry for CXL ...........................................................90
+3-29 Diagram of CRC Calculation .............................................................................913-30 Successful Parity Feature negotiation betw een Die 1 Tx and Die 0 Rx ....................95
+3-31 Unsuccessful Parity Feature negotiation between Die 1 Tx and Die 0 Rx .................96
+4-1 Bit arrangement within a byte transfer ..............................................................97
+4-2 Byte map for x64 interface ..............................................................................984-3 Byte map for x32 interface ..............................................................................98
+4-4 Byte map for x16 interface ..............................................................................98
+4-5 Byte to Lane mapping for Standard package x16 degraded to x8 ..........................994-6 Valid framing example .................................................................................. 100
+4-7 Clock gating ................................................................................................. 100
+4-8 Example 64-bit Sideband Serial Packet Transfer ............................................... 1014-9 Sideband Packet Transmission: Back-to-Back .... ............................................... 101
+4-10 Example 64-bit Sideband Serial Packet Tr ansfer in Sideband Performant Mode ..... 102
+4-11 Sideband Packet Transmission: Back-to-Ba ck in Sideband Performant Mode ......... 102
+4-12 Data Lane remapping possibilities to fix pote ntial defects .............. ......... ............ 105
+4-13 Data Lane remapping: Mux chain ................................................................... 106
+4-14 Example of Single Lane failure remapping ....................................................... 1084-15 Example of Single Lane remapping implementation ........................................... 108
+4-16 Example of Two Lane failure remapping .......................................................... 110
+4-17 Example of Two Lane remapping implementation ............................................. 1104-18 Clock and Track repair .................................................................................. 114
+4-19 Clock and track repair: Differential Rx ........... .................................................. 114
+4-20 Clock and track repair: Pseudo Differential Rx .................................................. 114
+4-21 Clock and Track Lane repair scheme ............................................................... 115
+4-22 Clock and track repair: CKP repair .................................................................. 115
+4-23 Clock and track repair: CKN repair ................................................................. 1164-24 Clock and track repair: Track repair .............. .................................................. 116
+4-25 Valid repair: Normal Path .............................................................................. 116
+4-26 Valid Repair: Repair Path .............................................................................. 1174-27 Test and training logic .................................................................................. 118
+4-28 Lane failure detection ................................................................................... 118
+4-29 All Lane error detection ................................................................................. 1194-30 LFSR implementation .................................................................................... 120
+4-31 LFSR alternate implementation ...................................................................... 121
+4-32 Example Retimer bring up when performing speed/width match ......................... 1284-33 Link Training State Machine ........................................................................... 130
+4-34 MBINIT: Mainband Initialization and Repair Fl ow ............................................... 136
+4-35 Example Sideband Management Transport Protocol Negotiation – 
+Single-module Scenario ................................................................................ 138
+4-36 Example Sideband Management Transport Protocol Negotiation – 
+Two-module Scenario ................................................................................... 139
+4-37 Example Sideband MPM Logical Flow with Two Modules and No Module Reversal ... 141
+4-38 Example Sideband MPM Logical Flow with Two Modules and Module Reversal ....... 141
+4-39 MBINIT “Stall” Example 1 .............................................................................. 1434-40 MBINIT “Stall” Example 2 .............................................................................. 144
+--- Page 3 ---
+Figures
+UCIe Specification Revision 2.0, Version 1.0 15
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 4-41 Mainband Training......................................................................................... 155
+4-42 Example of Byte Mapping for Matching Module IDs ........................................... 171
+4-43 Example of Byte Mapping for Differing Module IDs ............................................ 171
+4-44 Example of Width Degradation with Byte Mapping for Differing Module IDs .......... 1724-45 Example of Byte Mapping with Module Disable ................................................. 172
+4-46 Decision Flow Chart for Multi-module Advanc ed Package ................................... 173
+4-47 Decision Flow Chart for Multi-module Standard Package .................................... 174
+4-48 Implementation Example Showin g Two Different Operating Modes 
+of the Same Hardware Implementation ........................................................... 177
+4-49 RDI Byte-to-Module Assignment Example for x64 Interop with x32 ..................... 178
+4-50 Example of Encapsulated MTPs Transmitted on Sideband Link 
+without Sideband PMO .................................................................................. 179
+4-51 Example of a Large Management Packet Split into Two Encapsulated 
+MTPs, with No Segmentation, No Sideband PMO, and with 
+Two Link Management Packets between the Two Encapsulated MTPs ................... 179
+5-1 Example Common Reference Clock.................................................................. 181
+5-2 x64 or x32 Advanced Package Module ............................................................. 183
+5-3 x16 or x8 Standard Package Module ............................................................... 1835-4 Transmitter ................................................................................................. 185
+5-5 Transmitter driver example circuit ................ .................................................. 186
+5-6 Transmitter de-emphasis .............................................................................. 1885-7 Transmitter de-emphasis waveform................................................................. 188
+5-8 Receiver topology ........................................................................................ 189
+5-9 Receiver Termination Map for Table 5-6 (Tx Swing = 0.4 V) ............................... 1915-10 Receiver termination .................................................................................... 191
+5-11 Receiver termination map for Table 5-7 (TX Swing = 0.85 V) ............................. 192
+5-12 Example CTLE ............................................................................................. 1935-13 Clocking architecture .................................................................................... 194
+5-14 Track Usage Example .................................................................................... 195
+5-15 Example Eye diagram ................................................................................... 1975-16 Example Eye Simulation Setup........................................................................ 198
+5-17 Circuit for VTF calculation .............................................................................. 199
+5-18 Loss and Crosstalk Mask ............................................................................... 2015-19 Viewer Orientation Looking at the Defined UC Ie Bump Matrix ............................. 201
+5-20 10-column x64 Advanced Package Bump Map .................................................. 203
+5-21 16-column x64 Advanced Package Bump Map .................................................. 2045-22 8-column x64 Advanced Package Bump Map .................................................... 205
+5-23 10-column x64 Advanced Package Bump map: Signal exit order ......................... 206
+5-24 10-column x64 Advanced Package Bump Map Example 
+for 32 GT/s Implementation ........................................................................... 207
+5-25 16-column x64 Advanced Package Bump Map Example 
+for 16 GT/s Implementation ........................................................................... 208
+5-26 8-column x64 Advanced Package Bump Map Example 
+for 32 GT/s Implementation ........................................................................... 209
+5-27 10-column x32 Advanced Package Bump Map .................................................. 2115-28 16-column x32 Advanced Package Bump Map .................................................. 211
+5-29 8-column x32 Advanced Package Bump Map .................................................... 212
+5-30 10-column x32 Advanced Package Bump Map: Signal Exit Order ........................ 212
+5-31 10-column x32 Advanced Package Bump Map Example 
+for 32 GT/s Implementation ........................................................................... 213
+5-32 16-column x32 Advanced Package Bump Map Example 
+for 16 GT/s Implementation ........................................................................... 214
+5-33 8-column x32 Advanced Package Bump Map Example 
+for 32 GT/s Implementation ........................................................................... 215
+--- Page 4 ---
+Figures
+UCIe Specification Revision 2.0, Version 1.0 16
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5-34 Example of Normal and Mirro red x64-to-x32 Advanced Package 
+Module Connection ....................................................................................... 218
+5-35 Example of Normal and Mirro red x32-to-x32 Advanced Package 
+Module Connection ....................................................................................... 219
+5-36 Naming Convention for One-, Two-, and Four-module Advanced Package 
+Paired with “Standard Die Rotate” Configurations ............................................. 220
+5-37 Naming Convention for One-, Two-, and Four-module Advanced Package 
+Paired with “Mirrored Die Rotate” Configurations .............................................. 220
+5-38 Examples for Advanced Packag e Configurations Paired with 
+“Standard Die Rotate” Counterparts, with a Different Number of Modules ............ 221
+5-39 Examples for Advanced Packag e Configurations Paired with 
+“Mirrored Die Rotate” Counterparts, with a Different Number of Modules ............. 222
+5-40 Standard Package Bump Map: x16 interface .................................................... 225
+5-41 Standard Package x16 interface: Signal exit order ............................................ 225
+5-42 Standard Package Bump Map: x32 interface .................................................... 2255-45 Standard Package reference configuration ........................................................ 226
+5-43 Standard Package x32 interface: Signal exit routing ......................................... 226
+5-44 Standard Package cross section for stacked module .......................................... 2265-46 Standard Package Bump Map: x8 Interface ...................................................... 227
+5-47 Naming Convention for One-, Two-, and Four-module Standard Package 
+Paired with “Standard Die Rotate” Configurations ............................................. 228
+5-48 Naming Convention for One-, Two-, and Four-module Standard Package 
+Paired with “Mirrored Die Rotate” Configurations .............................................. 229
+5-49 Examples for Standard Package Configurations Paired with 
+“Standard Die Rotate” Counterparts, with a Different Number of Modules ............ 230
+5-50 Examples for Standard Package Configurations Paired with 
+“Mirrored Die Rotate” Counterparts, with a Different Number of Modules ............. 231
+5-51 Additional Examples for Standard Package Configurations Paired with 
+“Mirrored Die Rotate” Counterparts, with a Different Number of Modules ............. 231
+5-52 Example of a Configuration for Standard Package, with Some Modules Disabled ... 233
+5-53 UCIe-S Sideband-only Port Bump Map ............................................................ 2345-54 UCIe-S Sideband-only Port Supported Configurations ........................................ 234
+5-55 Data Lane repair resources ............................................................................ 236
+5-56 Data Lane repair .......................................................................................... 2365-57 Valid Framing .............................................................................................. 237
+5-58 Data, Clock, Valid Levels for Half-rate Clocking: 
+Clock-gated Unterminated Link ...................................................................... 238
+5-59 Data, Clock, Valid Levels for Quarter-rate Clocking: 
+Clock-gated Unterminated Link ...................................................................... 238
+5-60 Data, Clock, Valid Levels for Half-rate Clocking: 
+Continuous Clock Unterminated Link ............... ................................................ 238
+5-61 Data, Clock, Valid Gated Levels for Half-rate Clocking: 
+Terminated Link ........................................................................................... 239
+5-62 Data, Clock, Valid Gated Levels for Quarter-rate Clocking: 
+Terminated Link............................................................................................ 239
+5-63 Data, Clock, Valid Gated Levels for Half-rate Clocking: 
+Continuous Clock Terminated Link .................................................................. 239
+5-64 Sideband signaling ....................................................................................... 240
+6-1 Example of 3D Die Stacking............................................................................ 242
+6-2 UCIe-3D Illustration ...................................................................................... 2436-3 UCIe-3D PHY................................................................................................ 244
+6-4 Start Edge and Sample Edge .......................................................................... 245
+6-5 Dtx and Drx Spec Range for 4 GT/s ................................................................. 247
+6-6 UCIe-3D Module Bump Map............................................................................ 248
+6-7 x70 Module .................................................................................................. 2496-8 Bundle Repair............................................................................................... 250
+--- Page 5 ---
+Figures
+UCIe Specification Revision 2.0, Version 1.0 17
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 7-1 Format for Register Access Request ................................................................ 257
+7-2 Format for Register Access Completions .......................................................... 258
+7-3 Format for Messages without Data .................................................................. 259
+7-4 Format for Messages with data payloads ......................................................... 2667-5 Common Fields in MPM Header of all MPM with Data Messages on Sideband ......... 274
+7-6 Encapsulated MTP on Sideband ...................................................................... 275
+7-7 Vendor-defined Management Port Gateway Message with Data on Sideband ........ 276
+7-8 Common Fields in MPM Header of all MPM without Data Messages on Sideband .... 277
+7-9 Management Port Gateway Capabilities MPM on Sideband .................................. 2777-10 Credit Return MPM on Sideband ..................................................................... 278
+7-11 Init Done MPM on Sideband ........................................................................... 279
+7-12 PM MPM on Sideband .................................................................................... 2797-13 Vendor-defined Management Port Gatewa y MPM without Data on Sideband ......... 280
+7-14 Example Flow for Remote Register Access Request 
+(Local FDI/RDI Credit Checks Are Not Explicitly Shown) ..................................... 282
+8-1 Example UCIe Chiplet that Supports Manageability ........................................... 286
+8-2 Example SiP that Supports Manageability ........................................................ 287
+8-3 UCIe Manageability Protocol Hierarchy ............ ................................................ 288
+8-4 Relationship Between the Various Types of Management Entities ........................ 289
+8-5 UCIe Management Transport Packet ............................................................... 290
+8-6 Management Network ID Format .................................................................... 2948-7 Access Control Determination in a Responder Management Entity ....................... 300
+8-8 Memory Map for Management Entities ............. ................................................ 303
+8-9 Management Capability Structure Organization .. .............................................. 304
+8-10 Vendor Defined Management Capability Struct ure Organization .......................... 304
+8-11 Management Capability Directory ................................................................... 305
+8-12 Capability Pointer ....... ........... ............ ........... .......... ........... .......... ........... ...... 305
+8-13 Chiplet Capability Structure Organization ......... ................................................ 307
+8-14 Chiplet Capability Structure ........................................................................... 307
+8-15 Management Port Structure ........................................................................... 3108-16 Route Entry ................................................................................................. 314
+8-17 Access Control Capability Structure ................................................................ 316
+8-18 Standard Asset Class Access Table ................................................................. 3188-19 Vendor Defined Asset Class Access Table ......................................................... 319
+8-20 Security Clearance Group Capability Structure ................................................. 322
+8-21 Security Clearance Group Context .................................................................. 3238-22 UCIe Memory Access Request Packet Format ................................................... 324
+8-23 UCIe Memory Access Response Packet ............................................................ 328
+8-24 UCIe Memory Access Protocol Capability Struct ure ............................................ 329
+8-25 UCIe Sideband Management Path Architecture ................................................ 332
+8-26 UCIe Mainband Management Path Architecture ................................................. 333
+8-27 Supported Configurations for Management Port Gateway Connectivity 
+to D2D Adapter on Mainband ......................................................................... 335
+8-28 Common Fields in MPM Header of all MPM with Data Messages on Mainband ........ 3368-29 Encapsulated MTP on Mainband ...................................................................... 337
+8-30 Vendor-defined Management Port Gateway Message with Data on Mainband ........ 338
+8-31 Common Fields in MPM Header of all MPM without Data Messages on Mainband .... 3398-32 Management Port Gateway Capabilities MPM on Mainband ................................. 339
+8-33 Init Done MPM on Mainband .......................................................................... 340
+8-34 Vendor-defined Management Port Gateway Message without Data on Mainband ... 340
+8-35 Sideband Management Transport Initialization Phase Example 
+with RxQ-ID=0 and One VC (VC0) .................................................................. 343
+8-36 Sideband Management Transport Initialization Phase Example 
+with RxQ-ID=0, 1 and One VC (VC0) .............................................................. 344
+--- Page 6 ---
+Figures
+UCIe Specification Revision 2.0, Version 1.0 18
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 8-37 Sideband Management Transport Initialization Phase Example 
+with RxQ-ID=0 and Two VCs (VC0, VC1) ......................................................... 345
+8-38 Mainband Management Transp ort Initialization Phase Example 
+with RxQ-ID=0 and One VC (VC0) .................................................................. 348
+8-39 Mainband Management Transp ort Initialization Phase Example 
+with RxQ-ID=0, 1 and One VC (VC0) .............................................................. 348
+8-40 Mainband Management Transp ort Initialization Phase Example 
+with RxQ-ID=0 and Two VCs (VC0, VC1) ......................................................... 349
+8-41 Example Illustration of a Large MT P Transmitted over Multiple RxQ-IDs 
+on Sideband with Segmentation ..................................................................... 352
+8-42 Conceptual Illustration of Sideband Mult i-module Ordering with Three RxQs ......... 354
+8-43 Example Illustration of a Large MTP Split into Multiple Smaller 
+Encapsulated-MTPs for Transport over Sideband, without Segmentation .............. 356
+8-44 Management Flit NOP Message on Mainband .... ................................................ 358
+8-45 Management Transport Credit Return DW ORD (CRD) Format on Mainband ........... 358
+8-46 Valid MPM Header Start Locations for Various Flit Formats ................................ 360
+8-47 Example Mapping of MPMs and NOPs in Flit of Format 3 ................................... 361
+8-48 Example Mapping of MPMs and NOPs in Flit of Format 5 .................................. 3618-49 Example MPM Mapping to Management Flit for Format 3 
+with MPM Rollover to Next Flit ....................................................................... 362
+8-50 UDA Overview in Each Chiplet – Illustration ..................................................... 364
+8-51 Vendor-defined Test and Debug UDM .............................................................. 366
+8-52 UCIe-based Chiplet Testing/Debugging at Sort ................................................. 3678-53 UCIe-based Testing of Chiplets in an SiP ......................................................... 368
+8-54 UCIe-based System Testing/Debug ................................................................. 369
+8-55 DMH/DMS Address Mapping ........................................................................... 3708-56 DMH Capability Register Map ..... ............ ............ .......... ........... ........... ............ 371
+8-57 Empty Spoke Register Map ............................................................................ 374
+8-58 Common DMS Registers for All Non-empty Spokes Register Map ........................ 3748-59 DMS Register Map for UCIe Spoke Types ......................................................... 379
+8-60 DMS Register Map for Vendor-defined Spoke Types .......................................... 383
+9-1 Software view Example with Root Ports and Endpoints ...................................... 388
+9-2 Software view Example with Switch and Endpoints ........................................... 3899-3 Software view Example of UCIe Endpoint ........................................................ 390
+9-4 UCIe Link DVSEC ......................................................................................... 392
+9-5 UCIe Link Health Monitor (UHM) DVSEC ........................................................... 4349-6 UCIe Test/Compliance Register Block .............................................................. 436
+10-1 Example configurations using RDI .................................................................. 453
+10-2 Example Waveform Showing Handling of Level Transition ................................... 462
+10-3 Data Transfer from Adapter to Physical Layer . .................................................. 463
+10-4 lp_irdy asserting two cycles before lp_valid ...................................................... 464
+10-5 lp_irdy asserting at the same cycle as lp_valid .................................................. 464
+10-6 RDI State Machine ....................................................................................... 46510-7 Example flow of Link bring up on RDI .............................................................. 466
+10-8 Successful PM entry flow ............................................................................... 469
+10-9 PM Abort flow .............................................................................................. 46910-10 PM Exit flow ................................................................................................ 470
+10-11 RDI PM Exit Example Showing Interactions with LTSM ....................................... 470
+10-12 Example configurations using FDI ................................................................... 47110-13 Example Waveform Showing Handling of Level Transition ................................... 481
+10-14 Data Transfer from Protocol Layer to Adapter . .................................................. 482
+10-15 Example for pl_flit_cancel for Latency-Optimized Flits 
+and CRC Error on First Flit Half ..................... .................................................. 483
+10-16 Example for pl_flit_cancel for Latency-Optimized Flits 
+and CRC Error on Second Flit Half .................................................................. 483
+--- Page 7 ---
+Figures
+UCIe Specification Revision 2.0, Version 1.0 19
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 10-17 Example for pl_flit_cancel for Latency-Optimized Flits 
+and CRC Error on Second Flit Half, Alternate Implementation Example ................ 483
+10-18 Example for pl_flit_cancel for Standard 256B Flits ............................................ 48410-19 FDI State Machine ........................................................................................ 484
+10-20 FDI Bring up flow ......................................................................................... 486
+10-21 PM Entry example for CXL or PCIe protocols .................................................... 489
+10-22 PM Entry example for symmetric protocol ........................................................ 489
+10-23 PM Abort Example ........................................................................................ 49010-24 PM Exit Example .......................................................................................... 490
+10-25 CXL.io Standard 256B Start Header Flit Format Example ................................... 491
+10-26 FDI (or RDI) Byte Mapping for 64B Datapath to 256B Flits.................................. 49210-27 FDI (or RDI) Byte Mapping for 128B Datapath to 256B Flits ............................... 492
+10-28 FDI Byte Mapping for 128B Datapath for 68B Flit Format.................................... 492
+10-29 RDI Byte Mapping for 128B Datapath for 68B Flit Format.................................... 49310-30 LinkReset Example ....................................................................................... 504
+10-31 LinkError example ........................................................................................ 505
+10-32 Example of L2 Cross Product with Retrain on RDI .............................................. 50610-33 L2 Exit Example for RDI................................................................................. 507
+11-1 Examples of Standard and Advanced Package setups for DUT and Golden Die 
+Compliance Testing ...................................................................................... 509
+B-1 AIB interoperability ...................................................................................... 514

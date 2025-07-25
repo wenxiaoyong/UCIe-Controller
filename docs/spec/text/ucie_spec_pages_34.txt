@@ -1,0 +1,38 @@
+
+--- Page 1 ---
+Reference Documents
+UCIe Specification Revision 2.0, Version 1.0 34
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Reference Documents
+Revision History
+Table 4  lists the significant changes in different revisions.
+§ §Table 3. Reference Documentsa
+a. References to these documents throughout this specification relate to the versions/revisions listed here.Document Document Location
+PCI Express® Base Specification
+(PCIe Base Specification)
+Revision 6.2www.pcisig.com
+Compute Express Link Specification
+(CXL Specification)
+Revision 3.1computeexpresslink.org
+ACPI Specification 
+(version 6.5 or later)www.uefi.org
+Industry Council on ESD Targets 
+white paperswww.jedec.org, reference JEP196
+www.esdindustrycouncil.org/ic/en, reference White Paper 2 Part II
+www.esda.org, reference White Paper 2 Part II
+Table 4. Revision History
+Revision Date Description
+2.0 August 6, 2024•Chapter 6.0, UCIe-3D  and related support for UCIe 3D
+•Chapter 8.0, System Architecture  and related support for:
+—Section 8.1, “UCIe Manageability” 
+—Section 8.2, “Management Transport Packet (MTP) Encapsulation” 
+—Section 8.3, “UCIe Debug and Test Architecture (UDA)” 
+• di/dt risk mitigation during clock gating
+• Incorporation of Errata and bug fixes over 1.1
+1.1 July 10, 2023• Streaming Flit Format Capabilities (A llows Streaming protocols to use Adapter 
+Retry/CRC)
+• Enhanced Multi-Protocol Multiplexing (Allows dynamic multiplexing of different 
+protocols on the same Adapter)
+• Support for x32 Advanced Package Modules• Support for UCIe Link Health Monitoring• Definition of Hardware capabilities to enable Compliance
+• di/dt risk mitigation during clock gating
+• Incorporation of Errata and bug fixes over 1.0
+1.0 February 17, 2022 Initial release.

@@ -1,0 +1,374 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 25
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Terminology
+Table 1. Terms and Definitions (Sheet 1 of 8)
+Term Definition
+Ack Acknowledge
+ACPI Advanced Configuration and Power Interface
+Addr Address
+Advanced PackageThis packaging technology is used for performance optimized applications and short reach 
+interconnects.
+AFE Analog Front End
+ALMP ARB/MUX Link Management Packet (as defined in CXL Specification )
+APMW Advanced Package Module Width
+ARB/MUX Arbiter/Multiplexer (as defined in CXL Specification )
+AssetAny data or mechanism used to access data that  should be protected from illicit access, use, 
+availability, disclosure, alteration, destruction, or theft.
+ATE Automated Test Equipment
+B2B Back-to-BackBAR Base Address Register
+BDF Bus Device Function
+BE Byte EnableBEI BAR Equivalent Indicator
+BER Bit Error Ratio
+BFM Bus Functional Modelbubble Gap in data transfer and/or signal transitions. Measured in number of clock cycles.
+bundleTx group or Rx group for UCIe-3D interconnects that contains data, clock, power, and ground. 
+A 3D Module consists of a Tx bundle and an Rx bundle.
+C4 bump Controller Collapse Chip Connect bump
+CA Completer Abort
+CDM Charged Device Model
+chipletIntegrated circuit die that contains a well-defined subset of functionality that is designed to be 
+combined with other ch iplets in a package.
+clear
+clearedIf clear or reset is used and no value is pr ovided for a bit, it is interpreted as 0b.
+CLM Current Lane Map
+CMLS Common Maximum Link Speed
+CoWoS Chip on Wafer on SubstrateCPU Central Processing Unit
+CRC Cyclic Redundancy Check
+CXL Compute eXpress LinkCXL 68B Flit Mode This term is used to reference 68B  Flit Mode related Protocol features defined in CXL Specification .
+CXL 256B Flit Mode This term is used to reference 256B  Flit Mode related Protoc ol features defined in CXL Specification .
+D2C Data-to-ClockD2D Die-to-Die
+DCC Duty Cycle Correction
+--- Page 2 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 26
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 DDR Double Data Rate Memory
+DevID Device IDDFx Design for Debug or Design for Test
+DLLP Data Link Layer Packet (as defined in PCIe Base Specification )
+DLP In Flit modes, the Data Link Layer Payload within a flit (as defined in PCIe Base Specification ).
+DMHDFx Management Hub. DFx entity that provides enumeration/global control/status of DFx 
+capabilities in a chiplet.
+DMSDFx Management Spoke. DFx entity that implements  a specific test/debug functionality within a 
+DMH.
+DMS-IDStatic design time ID assigned to a DMS for ID-routed messages within a DMH. Interchangeably 
+used with the term Spoke-ID.
+Domain Reset 
+(domain reset)Used to refer to a hardware mechanism that sets or returns all UCIe registers and state machines 
+associated with a given UCIe Link to their initialization values as specified in this document. It is 
+required for both sides of the Link to have an ov erlapping time window such that they are both in 
+domain reset concurrently.
+DP Downstream Port
+DSP Downstream Switch Port (as defined in CXL Specification )
+DVFS Dynamic Voltage Frequency Scaling
+DVSEC Designated Vendor-Specific Extended Capability (as defined in PCIe Base Specification )
+DWORDDouble Word. Four bytes. When used as an addre ssable quantity, a Double Word is four bytes of 
+data that are aligned on a four-byte boundary (i.e.,  the least significant two bits of the address are 
+00b).
+E2E End to endEM Eye Margin
+EMIB Embedded Multi-die Interconnect Bridge
+EML Eye Margin LeftEMR Eye Margin Right
+EMV Eye Margin Valid
+Encapsulated MTP
+eMTPEncapsulated Management Transport Packet. The resulting packet after Encapsulation .
+EncapsulationProcess of splitting an MTP or Vendor defined messages (exchanged between Management Port 
+Gateways on both ends of a link) into smaller pieces to meet any required payload length 
+restrictions or for any other reasons like credit availability, adding a 2-DWORD header to each piece and if required, adding a 1-DWORD data padding at the end of an MTP to transmit the MTP over 
+sideband or mainband UCIe link. In the case of an  MTP, the resulting packet after Encapsulation is 
+called the Encapsulated MTP.
+Endpoint
+EPAs defined in PCIe Base Specification .
+eRCD Exclusive Restricted CXL Device (as defined in CXL Specification )
+eRCH Exclusive Restricted CXL Host (as defined in CXL Specification )
+ESD Electro-Static DischargeF2B Face-to-Back
+F2F Face-to-Face
+FDI Flit-Aware Die-to-Die InterfaceFEC Forward Error Correction
+FEXT Far-End CrossTalk
+FH Flit HeaderTable 1. Terms and Definitions (Sheet 2 of 8)
+Term Definition
+--- Page 3 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 27
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 FIFO First In, First Out
+FIR Finite Impulse ResponseFIT Failure In Time. 1 FIT = 1 device failure in 10
+9 hours.
+Flit Link Layer unit of transfer (as defined in CXL Specification ).
+Flit_Marker
+FMFlit Marker (as defined in PCIe Base Specification )
+FW Firmware
+FW-CLK Forwarded Clock over the UCIe Link for mainband data Lanes
+HMLS Highest Maximum Link Speed of next-lower configuration.
+Hub See DMH.
+HW Hardware
+IL Insertion Loss
+I/O Input/Output
+IPGeneric term used to refer to architecture bl ocks that are defined within the specification 
+(e.g., D2D adapter, PHY, etc.).
+IPA Ignore Prohibited AccessISI Inter-Symbol Interference
+KPI Key Performance Indicator
+LaneA pair of signals mapped to physical bumps, on e for Transmission, and one for Reception. A xN 
+UCIe Link is composed of N Lanes.
+LCLK Refers to the clock at which the Logical Ph ysical Layer, Adapter and RDI/FDI are operating.
+LCRC Link CRCLFSR Linear Feedback Shift Register
+Link
+UCIe LinkA Link or UCIe Link refers to the set of two UC Ie components and their interconnecting Lanes which 
+forms a dual-simplex communications  path between the two components.
+LSM Adapter Link State Machine 
+LTSM Link Training State Machine
+LTSSM Link Training and Status State Machine (as defined in PCIe Base Specification )
+LSB Least Significant BitMainband
+MBConnection that constitutes the main data path of UCIe. Consists of a forwarded clock, a data valid 
+pin, and N Lanes of data per module.
+Management BridgeType of Management Entity that bridges a Management Network within an SiP to another network 
+that may be internal or external to the SiP.
+Management DirectorManagement Element that is responsible for discovering, configuring, and coordinating the overall 
+management of the SiP and acts as the manageability Root of Trust (RoT).
+Management DomainOne or more chiplets in an SiP that are interconnected by a Management Network and support UCIe 
+Manageability.
+Management Element Type of Management Entity that  can perform one or more management functions.
+Management EntityAddressable entity on the Management Network that can send and/or receive UCIe Management 
+Transport packets. A Management Element, a Mana gement Port, and a Management Bridge are all 
+a type of Management Entity.
+Management Flit A Flit that carries a Management Port Message (MPM) .
+Management Link 
+Encapsulation MechanismMechanism that defines how UCIe Management Tran sport packets are transferred across a point-to-
+point management link.Table 1. Terms and Definitions (Sheet 3 of 8)
+Term Definition
+--- Page 4 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 28
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Management NetworkNetwork within and between chiplets that is capa ble of transporting UCIe Management Transport 
+packets.
+Management PortManagement Entity that facilitates management communication between chiplets using a chiplet-
+to-chiplet management link.
+Management Port Gateway
+(MPG)Entity that provides the bridging functionality when transporting an MTP from/to a local SoC 
+management fabric (which is an SoC-specific implementation) to/from a UCIe link.
+Management Port Message 
+(MPM)Sideband or mainband message that relates to encapsulation.
+Management Protocol Protocol carried on top of the UCIe Management Transport.Management ResetType of reset that causes all UCIe manageability and manageability structures in a chiplet to be 
+reset to their default state.
+MCLS Number of active Modules Current Link Speed
+MMIO Memory mapped Input/OutputMMPL Multi-module PHY Logic
+ModuleUCIe main data path on the physical bumps is organized as a group of Lanes called a Module. For 
+Standard Package, 16 Lanes constitute a single Module. For Advanced Package, 64 Lanes constitute a single Module.
+MSB Most Significant Bit
+MTP Management Transport PacketNak Negatively acknowledge
+NEXT Near-End CrossTalk
+NOP No OperationNVMe Non-Volatile Memory express
+One-Time Programmable Any data storage mechanism that is  capable of being programmed only once (e.g., fuse).
+P2P Peer to peerPacket A block of data transmitted across a network.
+PCIe (PCI Express) Peripheral Component Interconnect Express (defined in PCIe Base Specification )
+PCIe Flit Mode This term is used to reference Flit Mode related Protocol features defined in PCIe Base Specification .
+PCIe non-Flit ModeThis term is used to reference non-Flit Mo de related Protocol features defined in PCIe Base 
+Specification .
+PDOS Permanent Denial of Service
+PDS Pause of Data Stream
+PHY Physical Layer (PHY and Physical Layer are used interchangeable throughout the Specification)PI Phase Interpolator
+PLL Phase-Locked Loop
+PMPower Management states, used to refer to behavior and/or rules related to Power Management 
+states (covers both L1 and L2).
+PMO Sideband Performant Mode Operation
+QWORDQuad Word. Eight bytes. When used as an addressa ble quantity, a Quad Word is eight bytes of data 
+that are aligned on an eight-byte boundary (i.e., th e least significant three bits of the address are 
+000b).
+RAC Read Access ControlRCD Restricted CXL Device (as defined in CXL Specification )
+RCH Restricted CXL Host (as defined in CXL Specification )
+RCiEP Root Complex Integrated EndpointTable 1. Terms and Definitions (Sheet 4 of 8)
+Term Definition
+--- Page 5 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 29
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 RCKN_P
+RXCKN
+rxcknPhysical Lane for Clock Receiver Phase-2
+RCKP_P
+RXCKPrxckpPhysical Lane for Clock Receiver Phase-1
+RCRB Root Complex Register Block
+RDI Raw Die-to-Die Interface
+RD_P[N]
+RD_PN
+RXDATA[N]rxdataNNth Physical Lane for Data Receiver
+remote Link partnerThis term is used throughout this specification to denote the logic associated with the far side of the 
+UCIe Link; to denote actions or messages sent or received by the Link partner of a UCIe die.
+Replay
+RetryRetry and Replay are used interchangeably to refer to the Link level reliability mechanisms.
+ReservedThe contents, states, or information are not defined at this time. Using any Reserved area (for 
+example, packet header bit-fields, configuration register bits) is not permitted. Reserved register fields must be read only and must return 0 (all  0s for multi-bit fields) when read. For packets 
+transmitted and received over the UCIe Link (mai nband or sideband), the Reserved bits must be 
+cleared to 0b by the sender and ignored by the receiver. Reserved encodings for register and packet fields must not be used. Any implementation dependence on a Reserved field value or encoding will 
+result in an implementation that is not UCIe-comp liant. The functionality of such an implementation 
+cannot be guaranteed in this or any future revision of this specification.
+For registers, UCIe uses the “RsvdP” or “RsvdZ” attributes for reserved fields, as well as Rsvd, and 
+these follow the same definition as PCIe Base Specification for hardware as well as software.
+reset If reset or clear is used and no value is provided for a bit, it is interpreted as 0b.
+RID Revision ID
+RL Register LocatorRoot Complex As defined in PCIe Base Specification .
+Root Port
+RPAs defined in PCIe Base Specification .
+RoT Root of Trust
+RRDCK_P
+RXCKRDrxckRDPhysical Lane for redundant Clock/Track Receiver
+RRD_P[N]
+RRD_PN
+RXDATARD[N]
+rxdataRD[N]Nth Physical Lane for redundant Data Receiver
+RRDVLD_P
+RXVLDRDrxvldRDPhysical Lane for redundant Valid Receiver
+RTRK_P
+RXTRK
+rxtrkPhysical Lane for Track Receiver
+RVLD_P
+RXVLD
+rxvldPhysical Lane for Valid Receiver
+Rx ReceiverTable 1. Terms and Definitions (Sheet 5 of 8)
+Term Definition
+--- Page 6 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 30
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 RXCKSB
+rxcksbPhysical Lane for sideband Clock Receiver
+RXCKSBRD
+rxcksbRDPhysical Lane for redundant sideband Clock Receiver
+RXDATASB
+rxdatasbPhysical Lane for sideband Data Receiver
+RXDATASBRD
+rxdatasbRDPhysical Lane for redundant sideband Data Receiver
+SBFE Sideband Feature Extensions
+{<SBMSG>}Sideband message requests or responses are referred to by their names enclosed in curly brackets. 
+See Chapter 7.0  for the mapping of sideband message names to relevant encodings. An asterisk in 
+the <SBMSG> name is used to denote a group of me ssages with the same prefix or suffix in their 
+name.
+SC Successful Completion
+SD Security Director. Management Element that may configure security parameters.
+SegmentationProcess of taking a large MTP, splitting it into smaller “segments” and sending those segments on 
+multiple sideband links  or mainband stacks.
+SERDES Serializer/Deserializer
+serial packetA 64-bit serial packet is defined on the sideband I/O interface to the remote chiplet as shown in 
+Figure 4-8 .
+set If set is used and no valu e is provided for a bit, it is interpreted as 1b.
+SFES Sideband Feature Extensions Supported
+Sideband
+SBConnection used for parameter exchanges, register accesses for debug/compliance and 
+coordination with remote partner for Link training and management. Consists of a forwarded clock 
+pin and a data pin in each direction. The clock is  fixed at 800 MHz regardless of the main data path 
+speed. The sideband logi c for the UCIe Physical Layer must be on auxiliary power and an “always 
+on” domain. Each module has its own set of sideband pins.
+SiP System in Package. Collection of chiplets packaged as a unit.
+SM State Machine
+SO Sideband-only
+SoC System on a Chip
+Spoke See DMS.
+Standard PackageThis packaging technology is used for low cost and long reach interconnects using traces on organic 
+package/substrate
+Strobe Used interchangeably with clock for sideband clock
+SW SoftwareTC Traffic Class
+TCKN_P
+TXCKN
+txcknPhysical Lane for Clock Transmitter Phase-2
+TCKP_P
+TXCKPtxckpPhysical Lane for Clock Transmitter Phase-1
+TCM Tightly coupled mode
+TDPI Test, Debug, Pattern, and InfrastructureTable 1. Terms and Definitions (Sheet 6 of 8)
+Term Definition
+--- Page 7 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 31
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 TD_P[N]
+TD_PN
+TXDATA[N]txdataNNth Physical Lane for Data Transmitter
+TLP Transaction Layer Packet (as defined in PCIe Base Specification )
+TRD_P[N]
+TRD_PNTXDATARD[N]
+txdataRD[N]Nth Physical Lane for redundant Data Transmitter
+TRDCK_P
+TXCKRD
+txckRDPhysical Lane for redundant Clock/Track Transmitter
+TRDVLD_P
+TXVLDRDtxvldRDPhysical Lane for redundant Valid Transmitter
+Trx Transceiver
+TSV Through-Silicon Via
+TTRK_P
+TXTRK
+txtrkPhysical Lane for Track Transmitter
+TVLD_P
+TXVLDtxvldPhysical Lane for Valid Transmitter
+Tx Transmitter
+TXCKSB
+txcksbPhysical Lane for sideband Clock Transmitter
+TXCKSBRD
+txcksbRDPhysical Lane for redundant sideband Clock Transmitter
+TXDATASB
+txdatasbPhysical Lane for sideband Data Transmitter
+TXDATASBRD
+txdatasbRDPhysical Lane for redundant sideband Data Transmitter
+TXEQ Transmitter Equalization
+UCIe Universal Chiplet Interconnect expressUCIe-3D Universal Chiplet Interconnect express for 3D packaging
+UCIe-A Used to denote x64 Advanced Package module.
+UCIe-A x32Used to denote x32 Advanced Package module. See Chapter 5.0  for UCIe-A x32 Advanced Package 
+bump matrices, and interoperability between x32 to x32 and x32 to x64 module configurations.
+UCIe-S Used to denote x16 Standard Package module.
+UCIe chiplet A chiplet  that complies with the UCIe specification.
+UCIe DFx Architecture
+UDADFx architecture specified for chiple ts and SiPs that implement UCIe.
+UCIe DFx Message
+UDMGeneric term for all UCIe Management Transport pa ckets with Protocol ID set to ‘Test and Debug 
+Protocols’.
+UCIe dieThis term is used throughout this specification to denote the logic associated with the UCIe Link on 
+any given chiplet with a UCIe Link connection. It is used as a common noun to denote actions or 
+messages sent or received by an implementation of UCIe.Table 1. Terms and Definitions (Sheet 7 of 8)
+Term Definition
+--- Page 8 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 32
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 UCIe Flit ModeOperating Mode in which CRC bytes are inserted and checked by the D2D Adapter. If applicable, 
+Retry is also performed by the D2D Adapter.
+UCIe LinkA UCIe connection between two chiplets. These chiplets are Link partners in the context of UCIe 
+since they communicate with each other using a common UCIe Link.
+UCIe Mainband 
+Management PortChiplet port that implements th e Management Link Encapsulation Mechanism and can transfer UCIe 
+Management Transport packets across a point-to-point UCIe mainband link.
+UCIe Management 
+Transport ProtocolProtocol used to transfer UCIe Management Transport packets between management entities.
+UCIe Raw Format Operating format in which all the by tes of a Flit are populated by the Protocol Layer.
+UCIe Sideband 
+Management PortChiplet port that implements th e Management Link Encapsulation Mechanism and can transfer UCIe 
+Management Transport packets across a point-to-point UCIe sideband link.
+UCLS UCIe Link Structure
+UEDT UCIe Early Discovery Table
+UHM UCIe Link Health MonitorUIE Uncorrectable Internal Error
+UiRB UCIe Register Block
+UiSRB UCIe Structure Register BlockUMAP UCIe Memory Access Protocol
+Unit Interval
+UIGiven a data stream of a repeating pattern of alte rnating 1 and 0 values, the Unit Interval is the 
+value measured by averaging the time interval be tween voltage transitions, over a time interval 
+sufficiently long to make all intentional frequency modulation of the source clock negligible.
+UP Upstream Port
+UR Unsupported RequestUSP Upstream Switch Port
+VH Virtual Hierarchy (as defined in CXL Specification )
+vLSM Virtual Link State MachineVref Reference voltage for receivers
+VTF Voltage Transfer Function
+WAC Write Access Control
+zero Numerical value of 0 in a bit, field, or register, of appropriate width for that bit, field, or register.Table 1. Terms and Definitions (Sheet 8 of 8)
+Term Definition
+--- Page 9 ---
+Terminology
+UCIe Specification Revision 2.0, Version 1.0 33
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table 2. Unit of Measure Symbols
+Symbol Unit of Measure
+bb i t
+Bb y t edB decibel
+fF femtofarad
+GB/s gigabytes per secondGHz gigahertz
+GT/s gigatransfers per second
+KB/s kilobytes per secondMB/s megabytes per second
+MHz megahertz
+mm millimeterms millisecond
+MT/s megatransfers per second
+mUI milli-Unit intervalmV millivolt
+mVpp millivolt peak-to-peak
+um micrometerus microsecond
+ns nanosecond
+pJ picojoulepk peak
+ppm parts per million
+ps picosecondss e c o n d
+TB/s terabytes per second
+Vv o l t

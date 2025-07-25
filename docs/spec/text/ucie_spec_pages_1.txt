@@ -1,0 +1,70 @@
+
+--- Page 1 ---
+Universal Chiplet Interconnect 
+Express™ (UCIe™)
+Specification
+August 6, 2024
+Revision 2.0, Version 1.0
+--- Page 2 ---
+UCIe Specification Revision 2.0, Version 1.0 2
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 LEGAL NOTICE FOR THIS PUBLICLY AVAILABLE SPECIFICATION FROM UNIVERSAL CHIPLET INTERCONNECT 
+EXPRESS, INC.
+© 2022–2024 UNIVERSAL CHIPLET INTERCONNECT EXPRESS, INC. ALL RIGHTS RESERVED.
+This Universal Chiplet Interconnect Express, Inc. Specification (this “ UCIe Specification ” or this “ document ”) is owned by and 
+is proprietary to Universal Chiplet Interconnect Express, Inc., a Delaware nonprofit corporation (sometimes referred to as “ UCIe ” 
+or the “ UCIe Consortium ” or the “ Company ”) and/or its successors and assigns.
+NOTICE TO USERS WHO ARE MEMBERS OF UNIVERSAL CHIPLET INTERCONNECT EXPRESS, INC. :
+If you are a Member of Universal Chiplet Interconnect Express, Inc. (herein referred to as a “ UCIe Member ”), and even if you 
+have received this publicly available versi on of this UCIe Specification after agreeing to the UCIE Consortium’s Evaluation Cop y 
+Agreement (a copy of which is available at www.uciexpress.org/specifications , each such UCIE Member must also be in 
+compliance with all of the following UCIe Consortium docu ments, policies and/or procedures (collectively, the “ UCIe Governing 
+Documents ”) in order for such UCIe Member’s use and/or implementation of this UCIe Specification to receive and enjoy all of 
+the rights, benefits, privileges and protections of UCIe Consortium membership: (i) the UCIe Consortium’s Intellectual Property  
+Policy; (ii) the UCIe Consortium’s Bylaws; (iii) any and all other UCIe Consortium policies and procedures; and (iv) the UCIe Member’s Participation Agreement.
+NOTICE TO NON-MEMBERS OF UNIVERSAL CHIPLET INTERCONNECT EXPRESS, INC.
+:
+If you are not a UCIe Member and have received this publicly available version of this UCIe Specification, your use of this 
+document is subject to your compliance with, and is limited by, all of the terms and conditions of the UCIe Consortium’s Evaluation Copy Agreement (a copy of which is available at www.uciexpress.org/specifications
+).
+In addition to the restrictions set forth in the UCIe Consortium ’s Evaluation Copy Agreement, any references or citations to th is 
+document must acknowledge Universal Chiplet Interconnect Express, Inc.’s sole and exclusive copyright ownership of this UCIe 
+Specification. The proper copyright ci tation or reference is as follows: “© 2022–2024 UNIVERSAL CHIPLET INTERCONNECT 
+EXPRESS, INC. ALL RIGHTS RESERVED.”  When making any such citation or reference to this document you are not permitted 
+to revise, alter, modify, make any derivatives of, or otherwise amend the referenced portion of this document in any way withou t 
+the prior express written permission of Un iversal Chiplet Interconnect Express, Inc.
+Except for the limited rights explicitly given to a non-UCIe Memb er pursuant to the explicit provisions of the UCIe Consortium’ s 
+Evaluation Copy Agreement which governs the publicly available version of this UCIe Sp ecification, nothing contained in this UC Ie 
+Specification shall be deemed as granting (either expressly or impliedly) to any party that is not  a UCIe Member: (i) any kind of 
+license to implement or use this UCIe Specification or any portion or content described or contained therein, or any kind of li cense 
+in or to any other intellectual property owned or controlled by the UCIe Consortium, including without limitation any trademark s 
+of the UCIe Consortium; or (ii) any benefits and/or rights as a UCIe Member under any UCIe Governing Documents. For clarity, 
+and without limiting the foregoing notice in any way, if you are not a UCIe Member but still elect to implement this UCIe 
+Specification or any portion described herein, you are hereby given notice that your election to do so does not give you any of  the 
+rights, benefits, and/or protections of the UCIe Members, includ ing without limitation any of the rights, benefits, privileges or 
+protections given to a UCIe Member under the UC Ie Consortium’s Intellectual Property Policy.
+LEGAL DISCLAIMERS AND ADDITIONAL NOTICE TO ALL  PARTIES :
+THIS DOCUMENT AND ALL SPECIFICATIO NS AND/OR OTHER CONTENT PROVIDED  HEREIN IS PROVIDED ON AN “ AS IS ” BASIS. 
+TO THE MAXIMUM EXTENT PERMITTED BY A PPLICABLE LAW, UNIVERSAL CHIPLET INTERC ONNECT EXPRESS, INC. (ALONG WITH 
+THE CONTRIBUTORS TO THIS DOCUMENT) HEREBY DISCLAIM  ALL REPRESENTATIONS, WARRANTIES AND/OR COVENANTS, 
+EITHER EXPRESS OR IMPLIED, STATUTORY OR AT COMMON LAW,  INCLUDING, BUT NOT LIMITE D TO, THE IMPLIED WARRANTIES 
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURP OSE, TITLE, VALIDITY, AND/OR NON-INFRINGEMENT.
+In the event this UCIe Specification makes any references (including without limitation any incorporation by reference) to anot her 
+standard’s setting organization’s or any other party’s (“ Third Party ”) content or work, including without limitation any 
+specifications or standards of any such Third Party (“ Third Party Specification ”), you are hereby notified that your use or 
+implementation of any Third Party Specificatio n: (i) is not governed by any of the UCIe Governing Documents; (ii) may require 
+your use of a Third Party’s patents, copyrights or other intellectual property rights, which in turn may require you to independently obtain a license or other consent from that Third Party in order to have full rights to implement or use that Thi rd 
+Party Specification; and/or (iii) may be governed by the intellectual property policy or other policies or procedures of the Th ird 
+Party which owns the Third Party Specification. Any trademarks or service marks of any Third Party which may be referenced in this UCIe Specification are owned by the respective owner of such marks.
+The UCIe ™ and UNIVERSAL CHIPLET INTERCONNECT EXPRESS ™ trademarks and logos (the “ UCIe Trademarks
+”) are 
+trademarks owned by the UCIe Consortium. The UCIe Consortium reserves all rights in and to  all of its UCIe Trademarks.
+NOTICE TO ALL PARTIES REGARDING THE PCI-SIG UNIQUE VALUE PROVIDED IN THIS SPECIFICATION :
+NOTICE TO USERS : THE UNIQUE VALUE THAT IS PROV IDED IN THIS SPECIFICATION FOR USE IN VENDOR DEFINED MESSAGE 
+FIELDS, DESIGNATED VENDOR SPECIFIC EXTENDED CAPABILITIES, AND ALTERNATE PROTOCOL NEGOTIATION ONLY AND MAY 
+NOT BE USED IN ANY OTHER MANNER, AND A USER OF THE UNIQUE VALUE MAY NOT USE THE UNIQUE VALUE IN A MANNER 
+THAT (A) ALTERS, MODIFIES, HARMS OR DAMAGES THE TECHNI CAL FUNCTIONING, SAFETY OR  SECURITY OF THE PCI-SIG 
+ECOSYSTEM OR ANY PORTION THEREOF, OR (B) COULD OR WOULD REASONABLY BE DETERMINED TO ALTER, MODIFY, HARM OR 
+DAMAGE THE TECHNICAL FUNCTIONING, SAFETY OR SECURITY OF THE PCI-SIG ECOSYSTEM OR ANY PORTION THEREOF (FOR PURPOSES OF THIS NOTICE, “ PCI-SIG ECOSYSTEM
+” MEANS THE PCI-SIG SPECIFICATIONS, MEMBERS OF PCI-SIG AND THEIR 
+ASSOCIATED PRODUCTS AND SERVICES THAT INCORPORATE ALL OR A PORTION OF A PCI-SIG SPECIFICATION AND EXTENDS 
+TO THOSE PRODUCTS AND SERVICES INTERFACING WITH PCI-SIG MEMBER PRODUCTS AND SERVICES).

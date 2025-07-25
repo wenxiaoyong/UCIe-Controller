@@ -1,0 +1,62 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 514
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Appendix B AIB Interoperability
+Implementations are permitted to design a superset  stack to be interoperable with UCIe/AIB PHY. 
+This section details the UCIe interoperability criteria with AIB.
+B.1 AIB Signal Mapping
+B.1.1 Data path
+Data path signal mapping for AI B 2.0 and AIB 1.0 are shown in Table B-1  and Table B-2  respectively. 
+AIB sideband is sent over an asynchronous path on UCIe main band.
+B.1.2 Always high Valid
+Always high Valid is an optional feature that is only  applicable to AIB interoperability applications. This 
+must be negotiated prior to main band Link trai ning through parameter exchange. Raw mode must be 
+used in such applications.
+B.1.3 Sideband
+AIB sideband is sent using UCIe main band si gnals. UCIe sideband is not required in AIB 
+interoperability mode and it is disabled (Transmitters are Hi-Z and Receivers are disabled).
+Figure B-1. AIB interoperability
+Die-to-Die Adapter (Raw Mode) 
+PHY Logic (AIB)Raw D2D interface 
+E le ctrical/AF E
+Sideband 
+(x 4)Data x64Sideband 
+Valid (tied to 1)
+Track (Not required)FW-CLK
+DisabledIO ClockLogic Clock
+Logic Clock
+--- Page 2 ---
+AIB Interoperability
+UCIe Specification Revision 2.0, Version 1.0 515
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 B.1.4 Raw Die-to-Die interface
+AIB Phy logic block shown in Figure B-1  presents a subset of RDI to next layer up.
+Note: More details will be shown in a later revision of this specification
+Table B-1. AIB 2.0 Datapath ma pping for Advanced Package
+UCIe Interface AIB 2.0 Note
+TXDATA[39:0] TX[39:0]
+TXDATA[47:40] AIB Sideband Tx Asynchronous path
+TXDATA[63:48] N/A Disabled (Hi-Z)
+RXDATA[39:0] RX[39:0]RXDATA[47:40]
+AIB Sideband Rx Asynchronous path
+RXDATA[63:48] N/A
+TXDATASB
+N/A Disabled (Hi-Z)RXDATASBTXCKSBRXCKSBTXDATASBRDRXDATASBRD
+Table B-2. AIB 1.0 Datapath ma pping for Advanced Package
+UCIe Interface AIB 1.0 Note
+TXDATA[19:0] TX[19:0]
+TXDATA[42:20] AIB Sideband Tx Asynchronous path
+TXDATA[63:43] N/A Disabled (Hi-Z)
+RXDATA[19:0] RX[19:0]RXDATA[42:20]
+AIB Sideband Rx Asynchronous path
+RXDATA[63:43] N/A
+TXDATASB
+N/A Disabled (Hi-Z)RXDATASBTXCKSBRXCKSBTXDATASBRDRXDATASBRD
+--- Page 3 ---
+AIB Interoperability
+UCIe Specification Revision 2.0, Version 1.0 516
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 B.2 Initialization
+AIB Phy logic block shown in Figure B-1  contains all the AIB Link logic and state machines. Please see 
+AIB specification (Section 2 and Section 3) for initialization flow.
+B.3 Bump Map
+Note: More details will be shown in a fu ture revision this specification
+§ §

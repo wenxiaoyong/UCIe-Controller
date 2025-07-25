@@ -1,0 +1,97 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 508
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 11.0 Compliance
+The goal of Compliance testing is to validate the mainband supported features of a Device Under Test 
+(DUT) against a known good reference UCIe implementation. Device support for Compliance Testing is optional, however a device that does not support capabilities listed in this chapter may not be able 
+to participate in the Compliance program. Different layers of UCIe (Physical, Adapter, Protocol) will be 
+checked independently with a suite of tests for compliance testing.
+The system setup for compliance testing is composed of the following:
+• Reference UCIe design (Golden Die): This is a kn own good UCIe implementation across all layers 
+of the UCIe stack.
+• DUT: One or more DUTs that will be tested with the reference design. It is required that these 
+have cleared the testing requirements of die sort/pre-bond before they are brought for 
+compliance testing.
+• In the case of Advanced Package configuration, a known good silicon bridge or interposer that 
+connects the Golden Die with the DUT. In the case of Standard Package configuration, a known 
+good package for connecting the Golden Die to the DUT.
+UCIe implementations that suppor t compliance testing must implement the Compliance/Test Register 
+Block as outlined in Chapter 9.0  and adhere to the requiremen ts outlined in this chapter.
+The above components are integrated together in a test package (see Figure 11-1 ), which is then 
+used for running Compliance and Interoperability tests.
+UCIe sideband plays a critical role for enabling comp liance testing by allowing compliance software to 
+access registers from different UCIe components (e.g ., Physical Layer, D2D Adapter, etc.) for setting 
+up tests as well as monitoring status. It is expected that UCIe sideband comes up without requiring 
+any FW initialization.
+This specification defines the required hardware capa bilities of the UCIe stack in the DUT. A separate 
+document will be published later to describe the following:
+• Compliance test setup, including the channel model and package level details
+• Test details
+• Golden Die details including form factor and system-level behavior.
+This chapter uses the terms ‘software’ and ‘complia nce software’ interchangeably. Any use of the term 
+‘software’ in this chapter means compliance software that is either running on the Golden Die, or on 
+an external controller that is connected to the Golden Die via test/JTAG port.
+Software, prior to testing compliance for any option al UCIe capability, must read the corresponding 
+Capability register (e.g., PHY Ca pability register described in Section 9.5.3.22 ) to ensure that the DUT 
+implements the capability.
+--- Page 2 ---
+Compliance
+UCIe Specification Revision 2.0, Version 1.0 509
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 11.1 Protocol Layer Compliance
+Protocol Layer Compliance testing seeks to test the UCIe protocol stack for compliance to the 
+associated protocol layer specification.
+For PCIe and CXL Protocol Laye rs, UCIe leverages the protocol compliance defined in those 
+specifications for the respective transaction laye rs. Implementations must follow the requirements 
+and capabilities outlined in PCIe Base Specification  and CXL Specification , respectively.
+For Streaming protocols, because Protocol Layer interoperability is specific to the protocol being 
+streamed, compliance testing of the Protocol Layer is beyond the scope of this specification.
+11.2 Adapter Compliance
+This Specification defines the hardware capabilities  that are required in the DUT for exercising and 
+testing the different functionalities of the Adap ter. The Golden Die Adapter must have all the 
+capabilities of the DUT, support all the Flit Formats from Chapter 3.0 , and must have the capability to 
+inject both consistent and inconsistent sideba nd messages (for Paramete r exchanges, Register 
+accesses and state transitions) to test DUT behavior for various error scenarios (e.g., timeouts, etc.).
+The capabilities listed in this section must be su pported by the Adapter in  the DUT if the Adapter 
+supports any of the Flit Formats defined in Chapter 3.0 . These capabilities are applicable to Adapters 
+of all UCIe device types (including Retimers). Ea ch of the capabilities also have their respective Figure 11-1. Examples of Standard and Advanc ed Package setups for DUT and Golden Die 
+Compliance Testing
+Package SubstrateGolden Die DUT DieGolden Die
+Package SubstrateInterposer (e.g., CoWoS)DUT Die
+
+--- Page 3 ---
+Compliance
+UCIe Specification Revision 2.0, Version 1.0 510
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Control and Status registers, which are used to enable software to test various combinations of flows 
+and test criteria.
+• Ability to Inject Test or NOP Flits: On the Transm itter, the injection behavior is defined by the Flit 
+Tx Injection Control register (see Table 9-73 ). For all injected Flits, CRC is computed, and if CRC 
+error injection is enabled, CRC errors are injected accordingly. It is allowed for the Adapter to be 
+set up to inject NOP Flits or Test Flits. NOP Flit follows the identical layout as defined in 
+Chapter 3.0 . Test Flits carry a special encoding of 01b in bits [7:6] of Byte 1 of the Flit Header 
+that is applicable for all Flit Formats that the Adapter supports. Unlike NOP Flits, Test Flits go 
+through the Tx Retry buffer if Retry is enabled. One of the purposes of defining the Test Flits is to 
+test the Retry Flows independently, regardless of  whether the Protocol Layer is enabled. The 
+Payload in these Flits carry specific patterns that  are determined by the fields in the Flit Tx 
+Injection Control register. Software is permitted to enable flit injection in mission mode as well 
+while interleaving with regular Protocol Flits using the appropriate programming (see the register 
+fields in Table 9-73 ). At the Receiver, these Flits are not forwarded to the Protocol Layer. The 
+Receiver cancels these using the pl_flit_cancel  signal on FDI or any other mechanism; 
+however, CRC must be checked the same as with regular Flits, and any errors must trigger the 
+Retry Flows as applicable.
+• Injection of Link State Request or Response side band messages. This is controlled using the Link 
+State Injection registers defined in the Link State Injection Control Stack 0 and Link State 
+Injection Control Stack 1 registers (see Table 9-75  and Table 9-76 , respectively). Single Protocol 
+stack implementations use the Stack 0 register. So ftware must place the Adapter in Compliance 
+mode (by writing 10b to the ‘Compliance Mode’ fi eld in the Adapter Compliance Control register).
+• Retry injection control as defined in the Retry Injection Control register (see Table 9-77 ).
+11.3 PHY Compliance
+This specification defines the hardware capabilities that are required in the Device Under Test (DUT) 
+for exercising and testing the different functionalit ies of the Physical Layer. The Golden Die must 
+support capabilities to force timeouts on all applicable sideband messages as well as state residence timers.
+The registers and associated functionality defined in Section 9.5.4  and the UHM DVSEC Capability 
+defined in Section 9.5.3.36  are used for Compliance testing. These registers provide the following 
+functionality:
+• Timing margining• Voltage margining, when supported
+• BER measurement
+• Lane-to-Lane skew for a given module at both the Receiver and Transmitter• TX Equalization (EQ) as defined in Section 5.3.3
+§ §

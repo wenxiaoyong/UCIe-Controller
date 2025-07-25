@@ -1,0 +1,232 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 20
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Tables
+1 Terms and Definitions......................................................................................25
+2 Unit of Measure Symbols..................................................................................333 Reference Documents .....................................................................................34
+4 Revision History .............................................................................................34
+1-1 Characteristics of UCIe on Standard Package .....................................................37
+1-2 Characteristics of UCIe on Advanced Package ....................................................38
+1-3 Characteristics of UCIe-3D ...............................................................................391-4 UCIe 2D and 2.5D Key Performance Targets ......................................................47
+1-5 UCIe-3D Key Performance Targets ....................................................................47
+1-6 Groups for different bump pitches ....................................................................48
+2-1 Specification to protocol mode requirements... ....................................................50
+3-1 Capabilities that Must Be Negotiated between Link Partners .......... ......... ........ ......61
+3-2 Flit Header for Format 2 without Retry ..............................................................71
+3-3 Flit Header for Format 2 with Retry ...................................................................71
+3-4 Flit Header for Format 3, Format 4, Format  5, and Format 6 without Retry .............78
+3-5 Flit Header for Format 3, Format 4, Format 5, and Format 6 with Retry .................79
+3-6 Summary of Flit Formats .................................................................................83
+3-7 Protocol Mapping and Implementation Requirements ..........................................843-8 Truth Table for Determining Protocol ................................................................85
+3-9 Truth Table 1..................................................................................................87
+3-10 Truth Table 2 .................................................................................................87
+4-1 Valid framing for Retimers ............................................................................. 100
+4-2 Lane ID: Advanced Package module ............................................................... 103
+4-3 Lane ID: Standard Package Module ................................................................ 104
+4-4 LFSR seed values ......................................................................................... 1194-5 Data-to-Clock Training Parameters ................................................................. 124
+4-6 State Definitions for Initialization .............. ..................................................... 129
+4-7 Per Lane ID Pattern ...................................................................................... 1504-8 Per Lane ID Pattern Examples ........................................................................ 151
+4-9 Standard Package Logical Lane Map ................................................................ 154
+4-10 Runtime Link Test Status Register based Re train encoding ................................. 167
+4-11 Retrain encoding .......................................................................................... 167
+4-12 Retrain exit state resolution ........................................................................... 167
+4-13 Messages exchanged that are used to dete rmine resolution for Example 1............ 175
+4-14 Messages exchanged that are used to dete rmine resolution for Example 2............ 176
+4-15 Messages exchanged that are used to dete rmine resolution for Example 3............ 176
+4-16 Capability Register and Link Training Parameter Values 
+for RDI Byte-to-Module Assignment Example for x64 Interop with x32 ................. 178
+5-1 REFCLK Frequency PPMs and SSC PPMs ........................................................... 181
+5-2 Electrical summary ....................................................................................... 1845-3 Transmitter Electrical Parameters ................. .................................................. 186
+5-4 Transmitter de-emphasis values ..................................................................... 188
+5-5 Receiver Electrical parameters ..................... .................................................. 190
+5-6 Maximum channel reach for unterminated Receiver (Tx Swing = 0.4 V) ............... 191
+5-7 Maximum Channel reach for unterminated Receiver (TX swing = 0.85V) .............. 192
+5-8 Forwarded clock frequency and phase ............................................................. 194
+5-9 I/O Noise and Clock Skew ............................................................................. 196
+5-10 Eye requirements ......................................................................................... 1975-11 Channel Characteristics.................................................................................. 200
+--- Page 2 ---
+Tables
+UCIe Specification Revision 2.0, Version 1.0 21
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5-12 x64 Advanced Package Module Signal List ....................................................... 200
+5-13 Bump Map Options and the Recommended Bump Pitch Range and Max Speed ...... 206
+5-14 Maximum Systematic Lane-to-lane Length Mismatch in um between 
+the Reference Bump Maps in the Implementation Note ...................................... 216
+5-15 x64 and x32 Advanced Package Connectivity Matrix .......................................... 217
+5-16 Summary of Advanced Package Module Connection Combinations 
+with Same Number of Modules on Both Sides ................................................... 221
+5-17 Summary of Advanced Package Module Connection Combinations 
+with Different Number of Modules on Both Sides .............................................. 222
+5-18 IL and Crosstalk for Standard Package: Wi th Receiver Termination Enabled ......... 223
+5-19 IL and Crosstalk for Standard Package: No Rx Termination ................................ 223
+5-20 Standard Package Module Signal List ............................................................... 2235-21 Summary of Standard Package Module Connection Combinations 
+with Same Number of Modules on Both Sides .................................................. 229
+5-22 Summary of Standard Package Module Connection Combinations 
+with Different Number of Modules on Both Sides .............................................. 232
+5-23 Summary of Degraded Links when Standard Package Module-pairs Fail ................ 233
+5-24 Tightly Coupled Mode: Eye Mask .................................................................... 235
+5-25 Tightly Coupled Mode Channel for Advanced Package ........................................ 2355-26 Raw BER requirements ................................................................................. 237
+5-27 Sideband Parameters summary ...................................................................... 240
+5-28 AUXCLK Frequency Parameters....................................................................... 241
+6-1 UCIe-3D Key Performance Indicators............... ................................................ 243
+6-2 Timing and Mismatch Specification .................................................................. 245
+6-3 ESD Specification for ≤ 10 um Bump Pitch ....................................................... 248
+6-4 Energy Efficiency Target ................................................................................ 248
+7-1 Opcode Encodings Mapped to Packet Types ..................................................... 253
+7-2 FDI sideband: srcid and dstid encodings on FDI ................................................ 254
+7-3 RDI sideband: srcid and dstid encodings on RDI ............................................... 254
+7-4 UCIe Link sideband: srcid and dstid encodings for UCIe Link .............................. 2557-5 Field descriptions for Register Access Requests ................................................ 256
+7-6 Mapping of Addr[23:0] for Different Requests .................................................. 257
+7-7 Field Descriptions for a Completion ................................................................. 2587-8 Message Encodings for Messages without Data ................................................. 259
+7-9 Link Training State Machine related Message encodings 
+for messages without data ............................................................................ 262
+7-10 Message encodings for Messages with Data ..................................................... 266
+7-11 Link Training State Machine related encodings ................................................. 2687-12 Supported MPM with Data Messages on Sideband ............................................. 274
+7-13 Common Fields in MPM Header of all MPM with Data Messages 
+on Sideband................................................................................................. 274
+7-14 Encapsulated MTP on Sideband Fields .............................................................. 275
+7-15 Vendor-defined Management Port Gateway Message 
+with Data on Sideband Fields.......................................................................... 276
+7-16 Supported MPM without Data Messages on Sideband ........................................ 2767-17 Common Fields in MPM Header of all MPM without Data Messages on Sideband ..... 277
+7-18 Management Port Gateway Capabilities MPM Header Fields on Sideband............... 277
+7-19 Credit Return MPM Header Fields on Sideband .................................................. 2787-20 Init Done MPM Header Fields on Sideband ........................................................ 279
+7-21 PM MPM Header Fields on Sideband ................................................................. 279
+7-22 MPM Header Vendor-defined Management Port Gateway Message 
+without Data on Sideband .............................................................................. 280
+--- Page 3 ---
+Tables
+UCIe Specification Revision 2.0, Version 1.0 22
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 8-1 UCIe Management Transport Packet Fields ...................................................... 290
+8-2 Traffic Class Characteristics ......................... .................................................. 292
+8-3 Management Protocol IDs .............................................................................. 294
+8-4 Management Protocol use of Access Control Mechanism .................................... 2988-5 Asset Types ................................................................................................. 301
+8-6 Asset Contexts ............................................................................................ 301
+8-7 Standard Security Asset Classes ..................................................................... 301
+8-8 UCIe-defined Management Capability IDs ........................................................ 304
+8-9 Management Capability Directory Fields .......................................................... 3058-10 Capability Pointer Fields ......... ............ ........... .......... ........... .......... ........... ...... 306
+8-11 Chiplet Capability Structure Fields .................................................................. 308
+8-12 Management Port Structure Fields .................................................................. 3108-13 Route Entry Fields ........................................................................................ 314
+8-14 Access Control Capability Structure Fields ........................................................ 316
+8-15 Read Access Control (RAC) Structure Field De scription ...................................... 320
+8-16 Write Access Control (WAC) Structure Field Description ..................................... 321
+8-17 Security Clearance Group Capability Structure Fields ......................................... 322
+8-18 Security Clearance Group Context Fields ......................................................... 3238-19 UCIe Memory Access Request Packet Fields ..................................................... 325
+8-20 UCIe Memory Access Response Packet Fields ................................................... 328
+8-21 UCIe Memory Access Protocol Capability Struct ure Fields ................................... 329
+8-22 MPM Opcodes on Mainband ........................................................................... 336
+8-23 Supported MPM with Data Messages on Mainband ............................................ 336
+8-24 Common Fields in MPM Header of all MPM with Data Messages 
+on Mainband ................................................................................................ 336
+8-25 Encapsulated MTP on Mainband Fields.............................................................. 3378-26 Vendor-defined Management Port Gateway Message 
+with Data on Mainband Fields ......................................................................... 338
+8-27 Supported MPM without Data Messages on Mainband ........................................ 338
+8-28 Common Fields in MPM Header of all MPM without Data Messages on Mainband..... 339
+8-29 Management Port Gateway Capabilities MPM Header Fields on Mainband .............. 3398-30 Init Done MPM Header Fields on Mainband........................................................ 340
+8-31 MPM Header Vendor-defined Management Port Gateway Message 
+without Data on Mainband.............................................................................. 341
+8-32 Version........................................................................................................ 371
+8-33 Capability ID, Ver....... .................. ............ ........... ........... ............ ......... .......... 371
+8-34 Debug Capability......... ........... ............ ........... .......... ........... .......... ........... ...... 372
+8-35 Debug Control .............................................................................................. 372
+8-36 Debug Status ............................................................................................... 3728-37 DMH_Length_Low ......................................................................................... 372
+8-38 DMH_Length_High ........................................................................................ 372
+8-39 DMH Extended Capability Pointer Low .............................................................. 3738-40 DMH Extended Capability Pointer High ............................................................. 373
+8-41 DMS_Starting_Low........................................................................................ 373
+8-42 DMS_Starting_High....................................................................................... 3738-43 DMS_Next_Low Address ................................................................................ 374
+8-44 DMS_Next_High Address................................................................................ 374
+8-45 Spoke Vendor ID........................................................................................... 3758-46 Spoke Device ID ........................................................................................... 375
+8-47 DMS_Next_Low Address ................................................................................ 376
+8-48 DMS_Next_High Address................................................................................ 376
+8-49 Spoke Revision ID......................................................................................... 376
+8-50 DMS-ID ....................................................................................................... 3778-51 Associated DMS-ID[0, 1, 2]............................................................................ 377
+8-52 Spoke Capability........................................................................................... 377
+--- Page 4 ---
+Tables
+UCIe Specification Revision 2.0, Version 1.0 23
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 8-53 Spoke Control............................................................................................... 377
+8-54 Spoke Status................................................................................................ 378
+8-55 DMS Register Space Length Low ..................................................................... 378
+8-56 DMS Register Space Length High..................................................................... 3788-57 DMS Extended Capability Pointer Low .............................................................. 378
+8-58 DMS Extended Capability Pointer High ............................................................. 378
+8-59 Port ID ........................................................................................................ 380
+8-60 Adapter_Physical_Layer_Ptr_Low .................................................................... 380
+8-61 Adapter_Physical_Layer_Ptr_High ................................................................... 3808-62 Compliance_Test_Ptr_Low.............................................................................. 381
+8-63 Compliance_Test_Ptr_High............................................................................. 381
+8-64 Impl_Spec_Adapter_Ptr_Low.......................................................................... 3828-65 Impl_Spec_Adapter_Ptr_High ......................................................................... 382
+8-66 Impl_Spec_Physical_Layer_Ptr_Low ................................................................ 382
+8-67 Impl_Spec_Physical_Layer_Ptr_High................................................................ 382
+9-1 Software view of Upstream and Downstream Device at UCIe interface ................. 385
+9-2 SW discovery of UCIe Links ........................................................................... 386
+9-3 Summary of location of various UCIe Link re lated registers ................................ 387
+9-4 Register Attributes ....................................................................................... 3919-5 UCIe Link DVSEC - PCI Express Extended Capability Header ............................... 393
+9-6 UCIe Link DVSEC - Designated Vendor Specific  Header 1, 2 ............................... 393
+9-7 UCIe Link DVSEC - Capability Descriptor .......................................................... 3949-8 UCIe Link DVSEC - UCIe Link Capability ........................................................... 395
+9-9 UCIe Link DVSEC - UCIe Link Control............................................................... 396
+9-10 UCIe Link DVSEC - UCIe Link Status................................................................ 3989-11 UCIe Link DVSEC - Link Event Notification Control ............................................. 401
+9-12 UCIe Link DVSEC - Error Notification Control... .................................................. 402
+9-13 UCIe Link DVSEC - Register Locator 0, 1, 2, 3 Low ............................................ 4059-14 UCIe Link DVSEC - Register Locator 0, 1, 2, 3 High .......................................... 406
+9-15 UCIe Link DVSEC - Sideband Mailbox Index Low................................................ 406
+9-16 UCIe Link DVSEC - Sideband Mailbox Index High............................................... 4079-17 UCIe Link DVSEC - Sideband Mailbox Data Low................................................. 407
+9-18 UCIe Link DVSEC - Sideband Mailbox Data High ................................................ 407
+9-19 UCIe Link DVSEC - Sideband Mailbox Control.................................................... 4089-20 UCIe Link DVSEC - Sideband Mailbox Status ..................................................... 408
+9-21 UCIe Link DVSEC - Requester ID..................................................................... 408
+9-22 UCIe Link DVSEC - Associated Port Numbers .................................................... 4099-23 UiSRB DVSEC - PCI Express Extended Capability Header .................................... 409
+9-24 UiSRB DVSEC - Designated Vendor Specific Header 1, 2..................................... 410
+9-25 UiSRB DVSEC - UiSRB Base Address ............................................................... 4109-26 D2D/PHY Register Block - UCIe Register Block Header (Offset 0h) ...................... 411
+9-27 Uncorrectable Error Status Register ................................................................ 411
+9-28 Uncorrectable Error Mask Register................................................................... 4129-29 Uncorrectable Error Severity Register .............................................................. 413
+9-30 Correctable Error Status Register ................. .................................................. 413
+9-31 Correctable Error Mask Register ...................................................................... 4149-32 Header Log 1 Register ................................................................................... 414
+9-33 Header Log 2 Register ................................................................................... 415
+9-34 Error and Link Testing Control Register ............................................................ 417
+9-35 Runtime Link Testing Parity Log 0 Register ..... .................................................. 418
+9-36 Runtime Link Testing Parity Log 1 Register ..... .................................................. 418
+9-37 Runtime Link Testing Parity Log 2 Register ..... .................................................. 418
+9-38 Runtime Link Testing Parity Log 3 Register ..... .................................................. 419
+9-39 Advertised Adapter Capability Log Register....... .......... ........... .......... ........... ...... 419
+--- Page 5 ---
+Tables
+UCIe Specification Revision 2.0, Version 1.0 24
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9-40 Finalized Adapter Capability Log Register.......................................................... 419
+9-41 Advertised CXL Capability Log Register ............................................................ 419
+9-42 Finalized CXL Capability Log Register ............................................................... 419
+9-43 Advertised Multi-Protocol Capability Log Regist er............................................... 420
+9-44 Finalized Multi-Protocol Capability Log Register ................................................. 420
+9-45 Advertised CXL Capability Log Register for Stac k 1 ............................................ 420
+9-46 Finalized CXL Capability Log Register for Stack 1............................................... 420
+9-47 Physical Layer Capability Register............... ..................................................... 421
+9-48 Physical Layer Control Register .................. ..................................................... 422
+9-49 Physical Layer Status Register ................... ..................................................... 423
+9-50 Phy Init and Debug Register ........................................................................... 424
+9-51 Training Setup 1 Register............................................................................... 4259-52 Training Setup 2 Register............................................................................... 425
+9-53 Training Setup 3 Register............................................................................... 426
+9-54 Training Setup 4 Register............................................................................... 4269-55 Current Lane Map Module 0 Register................................................................ 427
+9-56 Current Lane Map Module 1 Register................................................................ 427
+9-57 Current Lane Map Module 2 Register................................................................ 4279-58 Current Lane Map Module 3 Register................................................................ 427
+9-59 Error Log 0 Register ...................................................................................... 428
+9-60 Error Log 1 Register ...................................................................................... 4299-61 Runtime Link Test Control .............................................................................. 429
+9-62 Runtime Link Test Status Register.............. ..................................................... 431
+9-63 Mainband Data Repair Register ....................................................................... 4319-64 Clock, Track, Valid and Sideband Repair Register............................................... 433
+9-65 UHM DVSEC - Designated Vendor Specific Header 1, 2 (Offsets 04h and 08h) ....... 434
+9-66 UHM Status.................................................................................................. 4359-67 EML_Lnx_Mody............................................................................................. 435
+9-68 EMR_Lnx_Mody ............................................................................................ 435
+9-69 UCIe Register Block Header (Offset 0h)............................................................ 4379-70 D2D Adapter Test/Compliance Register Block Offset (Offset 10h)......................... 437
+9-71 PHY Test/Compliance Register Block Offset (Offset 14h)..................................... 437
+9-72 Adapter Compliance Control (Offset 20h from D2DOFF)...................................... 4389-73 Flit Tx Injection Control (Offset 28h from D2 DOFF) ........................................... 439
+9-74 Adapter Test Status....................................................................................... 440
+9-75 Link State Injection Control Stack 0 ................................................................ 4419-76 Link State Injection Control Stack 1 ................................................................ 442
+9-77 Retry Injection Control .................................................................................. 442
+9-78 Physical Layer Compliance Control 1.............. .................................................. 444
+9-79 Physical Layer Compliance Control 2.............. .................................................. 446
+9-80 Physical Layer Compliance Status 1 ............... .................................................. 447
+9-81 Physical Layer Compliance Status 2 ............... .................................................. 447
+9-82 Physical Layer Compliance Status 3 ............... .................................................. 448
+9-83 UEDT Header ............................................................................................... 450
+9-84 UCIe Link Structure (UCLS) ............................................................................ 450
+10-1 RDI signal list .............................................................................................. 453
+10-2 RDI Config interface extensions for Management Transport ................................ 458
+10-3 FDI signal list .............................................................................................. 472
+10-4 Requests Considered in Each State by Lower Layer ........................................... 497
+A-1 CXL Registers for UCIe devices ....................................................................... 511
+A-2 PCIe Registers for UCIe devices ...................................................................... 512
+B-1 AIB 2.0 Datapath mapping for Advanced Package ............................................. 515
+B-2 AIB 1.0 Datapath mapping for Advanced Package ............................................. 515

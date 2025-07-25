@@ -1,0 +1,82 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 511
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Appendix A CXL/PCIe Regist er applicability to UCIe
+A.1 CXL Registers ap plicability to UCIe
+All CXL-defined DVSECs fully apply in the context of UCIe when operating in Raw Format. When 
+operating in non-Raw Format, a few register definiti ons need to be reinterpreted in the context of 
+UCIe. See below for details. Note that regardless of  the Raw Format or non-Raw Format, device/port 
+configurations with CXL 1.1 compliance is not permitted as was discussed in Chapter 9.0 .
+A.2 PCIe Register applicability to UCIe
+All PCIe specifications defined DVSEC apply in the context of UCIe as well. There are a few Link and 
+PHY layer registers/bits though that are N/A or need  to be reinterpreted in the context of UCIe. They 
+are listed below.Table A-1. CXL Registers for UCIe devices
+Register Block Register Bits Comments
+DVSEC CapabilityDVSEC Flex Bus Port 
+Control3,4 See next row for how these bits are handled
+DVSEC Flex Bus Port 
+Status3, 4This bit just mirrors bits 3, 4 in Flex bus port 
+control register, to mimic legacy behavior.
+11, 12 Hardwired to 0
+From 14h-1Fh N/A
+--- Page 2 ---
+CXL/PCIe Register applicability to UCIe
+UCIe Specification Revision 2.0, Version 1.0 512
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table A-2. PCIe Registers for UCIe devices
+Register 
+BlockRegister Bits Comments
+PCIe 
+capabilityPCI Express 
+Capabilities Register8Slot implemented – set to 0. And hence follow rules for implementing other 
+slot related registers/bits at various locations in the PCIe capability register 
+set.
+Device capabilities 
+Register8:6 N/A and can be set to any value
+Link Capabilities 
+Register3:0 Max Link Speed: Set to 0011b indicating 8GT/s
+9:4 Max Link Width: 01 0000b, indicating x1611:10 ASPM support: 01b/11b encodings disallowed
+14:12 N/A
+17:15L1 Exit Latency: Devices/Ports must set this bit based on whether they are 
+connected to a retimer or not, and also the retimer based exit latency might 
+not be known at design time as well. To assist with this, these bits need to be 
+made HWInit from a device/port perspective so system FW can set this at boot time based on the specific retimer based latencies.
+18 N/A and hardwired to 0
+Link Control Register6HW ignores what is written here but follow any base spec rules for bit 
+attributes.
+7HW ignores what is written here but follow any base spec rules for bit 
+attributes.
+8 Set to RO 0
+9 Set to RO 0
+10, 11, 
+12HW ignores what is written in these bi ts but follows any base spec rules for 
+bit attributes.
+Link Status Register3:0 Current Link speed: Set to 0011b indicating 8GT/s
+9:4 Negotiated Link width: x1615 Hardwired to 0
+Link Capabilities 2 
+Register7:1 Set to 000 0111b
+15:9 Set to 00h
+PCIe 
+CapabilityLink Capabilities 2 
+Register22:16 Set to 00h
+24:23 Set to 00b just to appear compliant
+Link Control 2 
+Register3:0Target Link speed: Writes to this register are ignored by UCIe hardware, but 
+HW follows the base spec rules for bit attributes
+4HW ignores what is written in this bit but follows any base spec rules for bit 
+attributes.
+5 HW autonomous speed disable – Set to RO 0
+15:6 N/A for UCIe. HW should follow base spec rules for register bit attributes.
+Link Status 2 Register 9:0 Set to RO 0
+PCIe 
+Extended CapabilitySecondary PCI 
+Express Extended CapabilityAllImplement per the base spec, but HW  ignores all commands from SW and 
+also sets all equalization control registry entries to 0.
+--- Page 3 ---
+CXL/PCIe Register applicability to UCIe
+UCIe Specification Revision 2.0, Version 1.0 513
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 A.3 PCIe/CXL registers that need to be part of D2D
+• PCIe Link Control Register
+— Bits 13, 5, 4, and 1:0 are relevant for D2D operation
+• CXL DVSEC Flex Bus Port Received Modified TS Data Phase1 Register• CXL DVSEC Flex Bus Port Control• CXL DVSEC Flex Bus Port Status
+• CXL ARB/MUX registers
+§ §

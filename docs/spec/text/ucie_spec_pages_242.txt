@@ -1,0 +1,326 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 242
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 6.0 UCIe-3D
+6.1 Introduction
+Three-dimensional heterogeneously integrated technologies present an opportunity for the 
+development of new electronic systems with adva ntages of higher bandwidth and lower power as 
+compared to 2D and 2.5D architectures. 3D will  enable applications where the scale of data 
+movement is impractical for monolithic, 2D, or 2.5D approaches.
+Universal Chiplet Interconnect express for 3D pa ckaging (UCIe-3D) is designed as a universally 
+applicable interface for 3D die-to-die communication. Figure 6-1  illustrates an example of two dies 
+stacked in a 3D configuration. UCIe-3D uses a two- dimensional array of interconnect bumps for data 
+transmission between dies.
+6.2 UCIe-3D Features and Summary
+While the UCIe 2D and 2.5D models strive for se amless plug-and-play interoperability, the UCIe-3D 
+model necessitates a more-integrated approach due to the inherent characteristics of packaging 
+technology. The objective is to offer a range of options or a “menu” from which users can select what 
+best suits their needs. The primary objectives an d general methodology for UCIe-3D are as follows:
+• Circuit and logic must fit within the bump area (i.e ., UCIe will continue to be bump-limited). Given 
+the high density, this will translate to lower operating frequencies and a much-simplified circuit 
+(e.g., at 1-um bump-pitch, the UCIe-3D area amor tized on a per-lane basis must be less than 1 
+um2).
+• No D2D adapter. Low BER due to low-frequency and almost zero-channel distance — No CRC/ 
+replay is needed.
+• A hardened minimal PHY such as a simple invert er/driver. The SoC Logic connects directly to the 
+PHY.Figure 6-1. Example of 3D Die Stacking
+
+--- Page 2 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 243
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 • All debug/testability hooks are located within a common block (across all UCIe-3D Links) that is 
+connected to the SoC Logic network inside the chiplet.
+• Lane repair becomes a bundle-wide repair that is orchestrated by the SoC Logic.
+Table 6-1  summarizes the key performance indicators of the proposed UCIe-3D.Figure 6-2. UCIe-3D Illustration
+Table 6-1. UCIe-3D Key Performance Indicators
+Characteristics/KPIs UCIe-S UCIe-A UCIe-3D Comments for UCIe-3D
+Characteristics
+Data Rate
+(GT/s)4, 8, 12, 16, 24, 32 up to 4• Equal to SoC Logic Frequency — power 
+efficiency is critical.
+Width
+(each cluster)16 64 80 • Options of reduced width to 70, 60, ….
+Bump Pitch
+(um)100 to 130 25 to 55≤ 10 (optimized)
+> 10 to 25 (functional)• Must scale such that UCIe-3D fits with 
+the bump area.
+• Must support hybrid bonding.
+Channel Reach
+(mm)≤ 25 ≤ 23 D  v e r t i c a l• F2F bonding initially; 
+F2B, B2B, multi-stack possible.
+Target for Key Metrics
+BW Die Edge
+(GB/s/mm)28 to 224 165 to 1,317 N/A (vertical)
+BW Density
+(GB/s/mm2)22 to 125 188 to 1,350 4,000 at 9 um• 4 TB/s/mm2 at 9 um
+• Approximately 12 TB/s/mm2 at 5 um
+• Approximately 35 TB/s/mm2 at 3 um
+• Approximately 300 TB/s/mm2 at 1 um
+Power Efficiency Target 
+(pJ/b)0.50 0.25 < 0.05 at 9 um• Conservatively estimated at 9-um pitch.
+• < 0.02 for 3-um pitch.
+Low-power Entry/Exit0.5 ns at ≤ 16 GT/s
+0.5 ns to 1 ns at ≥ 24 GT/s0 ns • No preamble or postamble.
+Latency 
+(Tx + Rx)< 2 ns (PHY + Adapter) 0.125 ns at 4 GT/s • 0.5 UI, half of flop to flop.
+Reliability 
+(FIT)0 < FIT << 1 • BER < 1E-27.
+ESD 30-V CDM 5-V CDM –> ≤ 3V• 5-V CDM at introduction. No ESD for 
+wafer-to-wafer hybrid bonding possible.SoC 
+LogicPHY
+SoC 
+LogicPHY
+SoC 
+LogicPHY
+SoC 
+LogicPHY
+SoC 
+LogicPHY
+SoC 
+LogicPHY
+SoC LogicPHY
+SoC 
+LogicPHY
+SoC 
+LogicPHYTDPI
+0 1 2
+3 4 5
+6 7 8
+0 1 2
+3 4 5
+6 7 8X
+(a) (b)
+Chiplets connected across each SoC with UCIe-3D. 
+A failure in UCIe-3D in either die results in the 
+remaining SoCs being routing around the failure.Each chiplet has its own system controller logic, 
+I/Os, etc. Each SoC Logic connects to one or more 
+UCIe-3D PHY. The common test, debug, pattern,and infrastructure (TDPI) block orchestrates 
+training, testing, debug, etc. across chiplets.
+--- Page 3 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 244
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 6.3 UCIe-3D Tx, Rx, and Clocking
+Figure 6-3  presents the Transceiver (Trx) architecture of UCIe-3D. A matched architecture as shown 
+in Figure 5-4 , Figure 5-8 , and Figure 5-13  offers optimal supply noise re jection. However, this comes 
+at the cost of increased power consumption. The architecture depicted in Figure 6-3  circumvents this 
+power penalty while maintaining the same level of supply noise rejection. The UCIe-3D specification 
+will establish target values and tolerances for clock distribution delays D1 and D2.
+It is important to highlight that UCIe-3D uses a rise-to-fall timing approach, differing from the typical 
+on-die logic design that uses a rise-to-rise timing approach. The primary distinction between these two scenarios is that on-die logic must factor in  the delay caused by comb inational logic, whereas 
+UCIe-3D features matched data and clock buffer de lays, resulting in a near-zero differential. As 
+depicted in Figure 6-4 , rise-to-fall timing yields the most-optimal timing margin for zero-delay 
+differential.Figure 6-3. UCIe-3D PHY
+Data Tx
+ChannelData Rx
+Clock Tx Clock Rx
+80x
+CLKClkTree ClkTreeD1 D2
+--- Page 4 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 245
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 6.4 Electrical Specification
+6.4.1 Timing Budget
+Consideration of various factors such as jitter, noise, mismatch, and error terms are crucial for the link 
+timing budget. Table 6-2  outlines the UCIe-3D specification parameters that are pertinent to link 
+timing. Pulse width deviation from 50% clock period includes both static error (duty-cycle error) and 
+dynamic error (pulse-width jitter). Lane-to-lane sk ews account for the variation between data lanes, 
+and Data/Clock differential delays account for the clock to center of distribution of data lanes.Figure 6-4. Start Edge and Sample Edge
+Table 6-2. Timing and Mismatch Specification (Sheet 1 of 2)
+Specification Name Min Typ Max UnitUI = 250 ps 
+at 4 GT/sNote
+Eye Closure due to Channel Ch 0.1 UI 25 psa
+Pulse-width Deviation 
+from 50% Clock PeriodJpw 0.08 UI pk-to-pk 20 ps
+Tx Lane-to-Lane Skew Stx 0.12 UI pk-to-pk 30 ps
+Rx Lane-to-Lane Skew Srx 0.12 UI pk-to-pk 30 ps
+Tx Data/Clock Differential Delay Dtx Dtx_min Dtx_typ Dtx_max ps max – min = 50 psb
+Rx Data/Clock Differential Delay Drx Drx_min Drx_typ Drx_max ps max – min = 50 ps
+Alpha Factor (Tx and Rx) αtrx 1.5c
+Vcc Noise nvcc 10 % pk-to-pkd
+Clock delay1 UI
+Rx Data Eye
+Rx CLK (rise) Rx CLK (fall) 
+sample0.5 UIData delay0.5 UITx CLK (rise) start Tx CLK (fall)
+Optimal sampling when
+Data delay = Clock delay
+--- Page 5 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 246
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Parameters Dtx and Drx are Vcc-dependent functions. Equation 6-1  defines their typical values.
+Equation 6-1.
+where, unit of Dtx_typ and Drx_typ is ps and unit of Vcc is V.
+Equation 6-2  and Equation 6-3  define the minimum spec curve of Dtx and Drx, respectively.
+Equation 6-2.
+Dtx_min  = max ( Dtx_typ – 0.08 UI, 0)
+Equation 6-3.
+Drx_min  = max ( Drx_typ – 0.08 UI, 0)
+Equation 6-4  and Equation 6-5  define the maximum spec curve of Dtx and Drx, respectively.
+Equation 6-4.
+Dtx_max  = Dtx_typ + 0.12 UI
+Equation 6-5.
+Drx_max  = Drx_typ + 0.12 UITx Data/Clock Differential RJ Jrtx 0.05 UI pk-to-pk at BER 12.5 ps
+Rx Data/Clock Differential RJ Jrrx 0.05 UI pk-to-pk at BER 12.5 ps
+Sampling Aperture Ap 0.03 UI 7.5 ps
+a. Eye closure due to channel includes inter-symbol interference (ISI) and crosstalk.
+b. Defined as clock to mean data, min/typ/max values are shown below.
+c. Alpha factor is defined as foll ows for Tx and Rx, respectively:
+d. This is equivalent to a variation of ±5% in Vcc. Careful mitiga tion is particularly needed when disturbances external to UCIe
+occur, such as electromagnetic coupling from through-silicon vias (TSVs).Table 6-2. Timing and Mismatch Specification (Sheet 2 of 2)
+Specification Name Min Typ Max UnitUI = 250 ps 
+at 4 GT/sNote
+dDrx
+DrxdVcc
+VccdDtx
+DtxdVcc
+VccαTx  = αRx =
+Dtx_typ = D rx_typ =Vcc
+0.0153 Vcc2 + 0.0188 Vcc – 0.0084
+--- Page 6 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 247
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 6-5  illustrates a plot of the spec range for 4 GT/s.
+The equation for delay time, derived from the gene ral theory of buffer chain, incorporates a term 
+proportional to Vcc and a quadratic Vcc dependence in the denominator. This equation is fitted to a 
+specific process and design. A typical design is expe cted to have the same trend, and remain within 
+the boundaries of the upper and lower curves. It is  not required to align with the central curve.
+Equation 6-6  is essential in closing the timing budget, subsequently leading to the defined 
+specification limit.
+Equation 6-6.
+When there is a change in Vcc, as in the case of  a dynamic voltage frequency scaling (DVFS) scenario, 
+the specification range for Dtx and Drx adjusts correspondingly. This offers a degree of design 
+flexibility because the delay does not need to conf orm to a fixed band across the entire Vcc range. 
+Given that the range from maximum to minimum remains constant, the timing margin remains 
+unaffected.
+6.4.2 ESD and Energy Efficiency
+Data and clock signals shall comply with a mask on an eye diagram that specifies the following:
+• Minimum voltage swing
+• Minimum duration during which the output voltage will be stable
+• Maximum permitted overshoot and undershoot
+The Tx output swing range is between 0.40 V and 0.75 V.Figure 6-5. Dtx and Drx Spec Range for 4 GT/s
+020406080100120
+0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85Dtx and Drx (ps)
+Vcc (V)Spec Typ
+Spec Max
+Spec Min
+Ch + J pw + S tx + S rx + √Jrtx2 + J rrx2 + A p
++ [max  (Dtx) – min  (Dtx) + max  (Drx) – min  (Drx)] (1 + αtrxnvcc) < 1 UI
+--- Page 7 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 248
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table 6-3  defines the ESD targets.
+The feasibility of 0-V ESD should be explored for th e special case of wafer-to-wafer hybrid bonding. 
+For more details, see the Industry Council on ESD Targets white papers.
+For > 10 um to < 25 um bump pitches, higher ESD can be permitted. The exact target will be 
+published in a future revision of the specification.
+Table 6-4  lists the Energy Efficiency targets.
+6.4.3 UCIe-3D Module and Bump Map
+Figure 6-6  depicts a potential bump map for UCIe-3D. The arrangement of the signals is such that the 
+same PHY can be utilized on both the to p die and bottom die. The unit used in Figure 6-6  is the bump 
+pitch. The estimated area for a x80 module (enc ompassing both Tx and Rx) in a 9-um pitch is 
+approximately 0.02 mm2. It is important to note that the area scales with the square of the bump 
+pitch.
+The UCIe-3D standard does not prescribe a mand atory bump pitch; however, a 9-um pitch is 
+recommended at introduction. As the technology advances, additional specific recommended pitch 
+values will be established.Table 6-3. ESD Specification for ≤ 10 um Bump Pitch
+Parameter Minimum
+Discharge voltage (CDM) 5 V
+Discharge peak current 40 mA
+Table 6-4. Energy Efficiency Target
+Bump Spacing
+(um)Energy Efficiency at 4 GT/s
+(pJ/bit)
+90 . 0 5
+30 . 0 2
+10 . 0 1
+9 to 25 To be published in a futu re revision of the specification.
+Figure 6-6. UCIe-3D Module Bump Map
+21 R00 R01 R02 R03 R04 VSS R05 R06 R07 R08 R09
+20 R10 R11 R12 R13 R14 VSS R15 R16 R17 R18 R19
+19 VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD
+18 R20 R21 R22 R23 R24 VSS R25 R26 R27 R28 R29
+17 R30 R31 R32 R33 R34 VSS R35 R36 R37 R38 R39
+16 R40 R41 R42 R43 R44 RXCK R45 R46 R47 R48 R49
+15 VSS VSS VSS VSS VSS VSS VSS VSS VSS VSS VSS
+14 R50 R51 R52 R53 R54 VSS R55 R56 R57 R58 R59
+13 R60 R61 R62 R63 R64 VSS R65 R66 R67 R68 R69
+12 R70 R71 R72 R73 R74 VSS R75 R76 R77 R78 R79
+11 VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD
+10 T70 T71 T72 T73 T74 VSS T75 T76 T77 T78 T79
+9 T60 T61 T62 T63 T64 VSS T65 T66 T67 T68 T69
+8 T50 T51 T52 T53 T54 VSS T55 T56 T57 T58 T59
+7 VSS VSS VSS VSS VSS VSS VSS VSS VSS VSS VSS
+6 T40 T41 T42 T43 T44 TXCK T45 T46 T47 T48 T49
+5 T30 T31 T32 T33 T34 VSS T35 T36 T37 T38 T39
+4 T20 T21 T22 T23 T24 VSS T25 T26 T27 T28 T29
+3 VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD
+2 T10 T11 T12 T13 T14 VSS T15 T16 T17 T18 T19
+1 T00 T01 T02 T03 T04 VSS T05 T06 T07 T08 T09
+123456789 1 0 1 1
+
+--- Page 8 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 249
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Although UCIe-3D does not inherently predefine an ad apter, users have the flexibility to allocate some 
+data lanes within the module for adapter functions as  required, such as Valid, Data Mask, Parity, and 
+ECC. UCIe-3D does not necessitate a sideband for init ialization. If a low-bandwidth data link similar to 
+sideband is required, it is up to the implementati on to determine how to assign a group of lanes for 
+the purpose. Bit replication or other forms of red undancy can be used to guarantee link reliability.
+If modules are physically adjacent, extra VDDs can be added between them to provide physical 
+separation, shielding, and additional power delivery.
+Along with x80, the bump map of x70 Module is depicted in Figure 6-7 . Bump maps of additional 
+Module widths may be incorporated in a future upda te to this specification if needed, using similar 
+layout.
+6.4.4 Repair Strategy
+Defect size (more exactly, Si area impacted by a si ngle defect) is defined by a probability distribution. 
+The size is influenced by factors such as number s of I/Os in SoC, packaging technology used, and 
+bump pitch. A standard needs to cover technologies from multiple companies, scalable to future bump 
+pitches, as well as different SoC si zes. Lane repair based on fixed defect size is not practical for an 
+effective standard.
+Given these considerations, a bundle repair strategy is proposed for UCIe-3D. This involves reserving 
+bundles within the SoC for repair purposes, which can be rerouted to serve as backup in the event of 
+a failure, as illustrated in Figure 6-8 . The figure shows the cases of no repair, 1-bundle repair, and 4-
+bundle repairs. For a densely packed 2D UCIe Module array, it is recommended to reserve two full Modules (equivalent to four bundles) to repair a single failure. This assumes an alternating 
+arrangement of Tx and Rx bundles in at least one direction. Each Module is  equipped with one Tx 
+bundle (comprising a x80 Tx + Clock) and on e Rx bundle (comprising a x80 Rx + Clock).Figure 6-7. x70 Module
+
+--- Page 9 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 250
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 To scale the general case of a large number of UC Ie links, the following mathematical model can be 
+used to compute the repair requirements:
+Parameters:
+•D0 represents the defect density of the interconnect, expressed in terms of the number of failures 
+per unit area
+• A signifies the total UCIe-3D area of the chip•δ denotes the acceptable yield loss
+The model suggests reserving 2k full Modules, wh ere k is determined by the subsequent equation.
+Equation 6-7.
+Equation 6-8.
+The calculations in Equation 6-7  and Equation 6-8  assume that large interconnect defects that are 
+comparable to bundle size are relatively rare. More  spare bundles may be needed if density of large 
+defects exceeds a limit such that Equation 6-9  does not hold.Figure 6-8. Bundle Repair
+1 – ∑ Pi (AD 0) < δ
+i = 0k
+Pi (x) =    e-xx i
+i! 
+--- Page 10 ---
+UCIe-3D
+UCIe Specification Revision 2.0, Version 1.0 251
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Equation 6-9.
+where, D1 is the density of defects with diameter greater than the bundle dimension. The exact 
+amount can be determined by simulation.
+When UCIe-3D links are not densely packed, stra tegic placement of spacing between bundles can 
+effectively reduce the number of repair bundles required. For ex ample, with sufficient spacing 
+between rows, the occurrence of a single defect elim inating four bundles can be prevented. However, 
+the precise determination of this spacing is highly dependent on the specific technology in use, and 
+thus, falls beyond the scope of this specification. Th e specification merely highlights this as a potential 
+option.
+The initiation of repair is anticipated to originate from the SoC Logic, which is external to the UCIe-3D 
+PHY, and therefore is not elaborated on in this co ntext. The implementation can be specific to the 
+system.
+6.4.5 Channel and Data Rate Extension
+While the immediate focus of UCIe-3D is on Face-to-Fa ce hybrid bonding, the proposed architecture is 
+designed to be adaptable for Face-to-Back, Back-to-Back, and multi-stack configurations. 
+Comprehensive channel and circuit simulations are ne cessary to determine the optimal data rate for 
+these scenarios. Reduction of 10% or less in data rate is expected for Face-to-Back and Back-to-Back 
+configurations.
+§ §1 – e-AD < δ1

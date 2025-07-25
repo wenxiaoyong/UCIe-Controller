@@ -1,0 +1,2649 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 385
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.0 Configuration and Parameters
+9.1 High-level Software View of UCIe
+A key goal  of UCIe is to l ev er age all  the softw are in vestments made for PCIe and CXL while stil l
+defining the interface in an extensible way for future  innovative solutions. To that end, UCIe SW view
+of the protocol layer is consistent with the associated protocol. For example, the host DownstreamPort for UCIe that is capable of supporting CXL protocols will appear to software as a Root Port with
+CXL DVSEC capability and relevant PCIe capabilities.  Similarly, a host downstream port for UCIe that
+is capable of supporting PCIe prot ocol only, will appear to software as a Root Port with relevant PCIe
+capabilities only. Host side or device side view of  software for Streaming protocol is implementation-
+specific since the protocol itself is implementation -specific. It is though strongly recommended that
+ecosystem implementations define streaming solution s leveraging the SW hooks already in place for
+supporting CXL and PCIe. The Upstream Ports that  c o n n e c t  t o  a  U C I e  R o o t  P o r t  c a n  b e  a  P C I e
+endpoint, PCIe Switch, a CXL endpoint-device, or a CXL Switch. This allows for UCIe solution to be
+fully backward compatible to pre-UCIe software. Th e remainder of this chapte r talks about SW view of
+UCIe when paired with PCIe or CXL protocol layers.
+UCIe specification allows for a single UCIe Link to  be shared by multiple protocol stacks. In this
+version of the spec, this sharing is limited to at most 2 protocol stacks. Shared Link layer is a new
+concept from Software perspective and requires new discovery/control mechanisms. The mechanism
+by which UCIe-aware SW discovers UCIe ca pability is described in the next section.
+Table 9-1  shows the legal/illegal combinations of Upstre am and Downstream devices/ports at a given
+UCIe interface, from a SW viewpoint.
+All the CXL/PCIe legacy/advanced capabilities/register s defined in the respective specifications apply
+t o  U C I e  h o s t  a n d  d e v i c e s  a s  w e l l .  S o m e  Link and PHY layer specific registers in PCIe Base
+Specification  do not apply in UCIe context and these are listed in the appendix. In addition, two newTable 9-1. Software view of Upstream and Downstream Device at UCIe interface
+Downstream 
+Component: SW 
+ViewUpstream Component: SW View
+PCIe RP, PCIe 
+Switch DSPa
+a. PCIe RP = As defined in PCIe Base SpecificationCXL-RP, CXL 
+Switch DSPb
+b. CXL RP/Switch DSP = Standard PCIe RP/Switch-DSP with additional CXL Flexbus Port DVSEC capabilityCXL Downstream 
+Port RCRBc
+c. CXL Downstream Port RCRB = CXL Link at host or at Switch DSP that is enumerated via CXL defined
+Downstream Port RCRB (instead of via a Root Port)Streaming Device
+PCIe EP, PCIe 
+Switch USPValid Valid Illegal
+Vendor defined CXL Upstream 
+Port RCRBd
+d. CXL Upstream Port RCRB = CXL upstream port that is enumerated via CXL defined RCRB with CXL Upstream
+Port RCRB and that has a RCiEP below it.Illegal Illegal Illegal
+CXL EP Valid Valid Illegal
+Streaming Device Vendor defined
+--- Page 2 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 386
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 DVSEC capabilities and four other MMIO mapped register blocks are defined to deal with UCIe-specific
+Adapter and Physical Layer capabilities.
+9.2 SW Discovery of UCIe Links
+UCIe-aware Firmware/Software ma y discover the presence and capabilities of UCIe Links in the 
+system per Table 9-2 .
+9.3 Register Location Deta ils and Access Mechanism
+• 2  U C I e  D V S E C  c a p a b i l i t i e s  ( U C I e  L i n k  D V S E C ,  U i S R B  D V S E C )  a n d  f o u r  o t h e r  M M I O - m a p p e d
+register blocks are defined in this version of the Specification.
+• UCIe Link DVSEC capability is located in UiRB for host root ports and in UiSRB for Switch
+downstream ports.
+• UiRB region is defined at a static location on th e host side and its size is enumerated in the UEDT
+structure. Only UCIe Link related registers are permitted in this region and designs must notimplement non-UCIe related fu nctionality in this region.
+• There is a unique UiRB base address for each UCIe Link, in the host• UiSRB region base address is provided in the UiSR B DVSEC capability. This region is part of a BAR
+region of Switch Dev0/Fn0 USP.
+• For scalability/flexibility reasons, multiple UiSR B DVSEC capabilities can exist in a Switch USP
+function. In case of multiple UiSRB DVSEC capabili ties in the USP. a given DSP UCIe Link can only
+be described in one of the UiSRB structures.
+• Configuration space registers are accessed using configuration reads and configuration writes.
+Register Blocks are in memory mapped region s and are accessed using standard memory reads
+and memory writes.
+• UCIe Retimer registers are not directly accessible from host SW. They can be accessed only by
+way of a Mailbox mechanism over the sideband interface (hence the terms SB-MMIO  and SB-Table 9-2. SW discovery of UCIe Links
+UCIe Links How discovered? Salient Points
+In HostHost specific Register Block 
+called UiRB, containing UCIe 
+Link DVSEC Capability• UiRB is at a host defined static location.
+• Each UCIe Link has a separate UiRB Base address and these are 
+enumerated to OS via UCIe Early discovery table (UEDT)a
+• Association of a UCIe Link to 1 or more Root ports is described in 
+UEDT, allowing for UCIe-aware SW to understand the potential 
+shared nature of the UCIe Link.
+a. UEDT structure is standardized as  part of the ACPI specification.In EndpointsDev0/Fn0 of the device 
+carries a UCIe Link DVSEC 
+Capability.• In multi-stack implementations, Dev0/Fn0 of the endpoint in only 
+one of the stacks carries the UCIe Link DVSEC Capability.
+In Switch USPDev0/Fn0 of the USP carrying 
+a UCIe Link DVSEC Capability• In multi-stack implementations, Dev0/Fn0 of the USP in only one of 
+the stacks carries the UCIe Link DVSEC Capability.
+In Switch DSPDev0/Fn0 of the Switch USP 
+carrying one ore more UiSRB 
+DVSEC Capability• UCIe Links below the switch are described in UiSRB whose base 
+address is provided in the UiSRB DVSEC Capability
+• A UCIe Link DVSEC capability per downstream UCIe Link is present 
+in the UiSRB
+• Association of a UCIe Link to 1 or more Switch DSPs is described as 
+part of the UCIe Link DVSEC Capa bility, allowing for UCIe-aware 
+SW to understand the potential shar ed nature of the UCIe interface
+Note: It is legal for a Switch USP to carry the UiSRB DVSEC capability 
+but not a UCIe Link DVSEC Capability
+--- Page 3 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 387
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Config  in Table 9-3 ). The Mailbox mechanism is available via RP/DSP UCIe Link DVSEC Capability
+to access the UCIe Retimer registers on the Retimer closest to the host. For accessing UCIe
+Retimer registers on the far end Retimer, the same Mailbox mechanism is also available in the
+UCIe Link DVSEC capability of EP/USP. See Section 9.5.1.11  and Section 9.5.1.12  for details of
+the Mailbox mechanism.
+• For debug and runtime Link health monitoring reasons, host SW can also access the UCIe related
+registers in any partner die on the sideband interface, using the same Mailbox mechanism. For
+brevity purposes, that is not shown in Table 9-3 . Note that register accesses over sideband are
+limited to only the UCIe-related Capability regi sters (the two DVSECs currently defined in the
+spec) and the four defined UCIe Register Blocks. Nothing else on the remote die are accessible via
+the sideband mechanism.
+Table 9-3  summarizes the location of various register  blocks in each native UCIe port/device.
+Henceforth a “UCIe port/device/EP/Switch” is used to  refer to a standard PCIe or CXL port/device/EP/
+Switch with UCIe Link DVSEC Capability.
+Table 9-3. Summary of location of va rious UCIe Link related registers
+RegisterWhere the Register Resides
+Comments
+RP Switch USPSwitch 
+DSPEPUCIe 
+Retimer
+UCIe Link DVSEC UiRB Config space UiSRBConfig 
+SpaceSideband 
+Config SpaceRegisters that define the basic 
+UCIe interface related details
+UCIe D2D/PHY 
+Register BlockUiRBSwitch USP-BAR 
+RegionUiSRBEP-BAR 
+RegionSB-MMIO 
+SpaceRegisters that define lower-
+level functionality for the D2D/PHY interface of a typical UCIe 
+implementation
+UCIe Test/
+Compliance 
+Register BlockUiRBSwitch USP-BAR 
+RegionUiSRBEP-BAR 
+RegionSB-MMIO 
+SpaceRegisters for Test/Compliance 
+of UCIe interface
+UCIe Implementation 
+Specific 
+Register BlockUiRBSwitch USP-BAR 
+RegionUiSRBEP-BAR 
+RegionSB-MMIO 
+SpaceRegisters for vendor specific 
+implementation
+--- Page 4 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 388
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.4 Software view Examples
+Figure 9-1  summarizes all the details of UCIe related DVSEC Capabilities and SW discovery, for an
+implementation consisting of Root Ports and En dpoints. This example has a host with 2 UCIe
+downstream Links that each carry traffic from 2 Root Ports.
+Figure 9-1. Software view Exampl e with Root Ports and Endpoints
+
+--- Page 5 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 389
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Example in Figure 9-2  has a Switch with 2 UCIe Links on its downstream side and each UCIe Link 
+carries traffic from 2 Switch DSPs.
+Figure 9-2. Software view Exam ple with Switch and Endpoints
+UiSRB in Switch USP BAR region
+UCIe Link0 DEVSEC
+(Basic UCIe Link 
+related 
+functionality)HeaderUCIe0 PHY/D2DHeaderUCIe0 Comp/TestHeaderUCIe0 D2D 
+Implementation 
+Specific
+From UiSRB DVSECReg Locator
+UCIe0
+Type 1 Header
+DevN, Fn0
+UCIe0Switch DSP
+Type 1 Header
+DevN, Fn0Switch DSP
+Type 0 Header
+Dev0, Fn0
+EPType 0 Header
+Dev0, Fn0
+EPUCIeUCIe1
+Type 1 Header
+DevN, Fn0
+UCIe1Switch DSP
+Type 1 Header
+DevN, Fn0Switch DSP
+Type 0 Header
+Dev0, Fn0
+EPType 0 Header
+Dev0, Fn0
+EPUCIeUCIe Link DVSEC
+UCIe Link DVSECNext CapUCIe Link1 DEVSEC
+(Basic UCIe Link 
+related 
+functionality)HeaderUCIe1 PHY/D2DHeaderUCIe1 Comp/TestHeaderUCIe1 D2D 
+Implementation 
+Specific
+Reg Locator
+Next Cap=0hReservedHeaderUCIe1 PHY 
+Implementation 
+SpecificReserved
+Logical link Logical link Logical link Logical linkHeaderUCIe0 PHY 
+Implementation 
+Specific
+--- Page 6 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 390
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Example in Figure 9-3  shows details UCIe registers in an implementation where two EPs are sharing a 
+common UCIe Link.
+Figure 9-3. Software view Example of UCIe Endpoint
+
+--- Page 7 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 391
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5 UCIe Registers
+Table 9-4  summarizes the attributes for the register bi ts defined in this chapter. Unless otherwise 
+specified, the definition of thes e attributes is consistent with PCIe Base Specification  and CXL 
+Specification .
+All numeric values in various data structures, indivi dual registers and register fields defined in this 
+chapter are always encoded in little endian format, unless stated otherwise.
+9.5.1 UCIe Link DVSEC
+This is the basic capability register set that is required to operate a UCIe Link. And this is one of two
+DVSEC capabilities defined for UCIe in the first gene ration. Not all the registers in the capability are
+applicable to all device/port types. The applicable registers for each device/port type are indicated in
+the right side of Figure 9-4 . Software may use the presence of th is DVSEC to differentiate between a
+UCIe device vs. a standard PCIe or CXL device. Software may use this DVSEC to differentiate between
+a UCIe Root Port and a standard PCIe or CXL Root Port.Table 9-4. Register Attributes
+Attribute Description
+RO Read Only
+ROS Read Only Stickya
+a. Definition of ‘sticky’ follows the underlying protocol defi nition if any of the Protocol stacks are PCIe or CXL. For
+Streaming, the sticky registers are recommended to preserve their value even if the Link is down. In all
+scenarios, Domain Reset must initia lize these to their default values.RW Read-Write
+RWLRead Write Lock
+Follow RW behavior until locked. When locked, the bit value cannot be altered by 
+software. The locking condition associated with each RWL field is specified as part of 
+the field definition.
+RWORead-Write-One-To-Lock
+Field becomes RO after writing 1 to it. Cleared by management reset.
+RWS Read Write Stickya
+RW1C Read-Write-One-To-Clear
+RW1CS Read-Write-One-To-Clear-Stickya
+HWInit Hardware Initializedb
+b. Typically, this register attribute is used for functionali ty/capability that can vary with package integration. For
+example, a chiplet that is capable of 32 GT/s maximu m speed might be routed to achieve a maximum speed
+of 16 GT/s in a given package implementation. To account for such scenarios, the Max link speed field in theUCIe Link Capability register has the HWInit attribute and its value could be configured by a package-level
+strap or device/system firmware to reflec t the maximum speed of that implementation.RsvdP Reserved and Preserved
+RsvdZ Reserved and Zero
+--- Page 8 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 392
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Figure 9-4. UCIe Link DVSEC
+PCI Express Extended Capability Header 
+a
+a. Applies to UCIe-EP, UCIe-USP, UCIe-Retimer.b
+b. Applies to UCIe-EP, UCIe-USP  when paired with a retimer.c
+c. Applies to UCIe-RP.d
+d. Applies to UCIe-DSP.Designated Vendor Specific Header 1
+Capability Descriptor Designated Vendor Specific Header 2
+UCIe Link Capability
+UCIe Link Controle
+e. Software writes to this register need to be broadcast to both D2D Adapter and PHY blocks because some registers could be
+implemented in either block or both blocks.UCIe Link Status
+Error Notification Control Link Event Notification Control
+Register Locator 0 Low
+Register Locator 0 High
+…
+…
+Reserved
+Sideband Mailbox Index Low
+Sideband Mailbox Index High
+Sideband Mailbox Data Low
+Sideband Mailbox Data High
+Reserved Sideband Mailbox Status Sideband Mailbox Control
+Requester ID/Reserved
+Reserved
+Associated Port Numbers (1-N)
+…
+--- Page 9 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 393
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.1 PCI Express Extended Capability Header  (Offset 0h)
+Set as follows for UCIe Link DVSEC. All bits in this register are RO.
+9.5.1.2 Designated Vendor Specific Header 1, 2 (Offsets 4h and 8h)
+A few things to note on the various fields described in Table 9-6 . DVSEC Revision ID field represents
+the version of the DVSEC structure. The DVSEC Revi sion ID is incremented whenever the structure is
+extended to add more functionalit y. Backward compatibility shall be  maintained during this process.
+For all values of n, DVSEC Revision ID n+1 structur e may extend Revision ID n by replacing fields that
+are marked as reserved in Revisi on ID n, but must not redefine the meaning of existing fields.
+Software that was written for a lower Revision ID may continue to operate on UCIe DVSEC structures
+with a higher Revision ID, but will not be able to take advantage of new functionality.
+All bits in this register are RO.Table 9-5. UCIe Link DVSEC - PCI Express Extended Capability Header
+Field Bit Location Value Comments
+Capability ID 15:0 0023h Value for PCI Express DVSEC capability
+Revision ID 19:16 1h Latest revision of the DVSEC capability
+Next Capability Offset 31:20Design 
+DependentFor UCIe Link DVSEC in UiRB : Set to point 
+to the next capability associated with this 
+UCIe Link. In this revision of the spec, this 
+field points to the MSI capability.
+The offset is in granularity of Bytes from the 
+base address of UiRB. For example, if this is set to 100h, the next capability is located at 
+offset of 100h from the base of UiRB.
+UCIe Link DVSEC in UiSRB : Set to point to 
+the UCIe Link DVSEC capability of the next 
+UCIe Link associated with a downstream port of the switch. The last UCIe Link DVSEC 
+capability will set this offset to 0h indicating 
+there are no more UCIe Links on downstream ports.
+The offset is in granularity of Bytes from the 
+base address of UiSRB. For example, if this is 
+set to 100h, the next DVSEC capability for the 
+next Link is located at offset of 100h from the base of UiSRB.
+Retimer:  Set to 0h
+Others : design dependent
+Table 9-6. UCIe Link DVSEC - Designated Vendor Specific Header 1, 2
+Register Field Bit Location Value
+Designated Vendor-Specific Header 1 
+(offset 04h)DVSEC Vendor ID 15:0 D2DEh
+DVSEC Revision 19:16 0h
+Length 31:20Device dependent. 
+See Section 9.5.1.19  
+for some examples.
+Designated Vendor-Specific Header 2 
+(offset 08h)DVSEC ID 15:0 0h
+--- Page 10 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 394
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.3 Capability Descriptor (Offset Ah)
+Provides a way for SW to discover which optional capabilities are implemented by the UCIe Port/
+Device.
+Table 9-7. UCIe Link DVSE C - Capability Descriptor
+Bit Attribute Description
+2:0 RONumber of Register locators
+0h: 2 Register Locators
+1h: 3 Register Locators2h: 4 Register Locators
+…
+6h: 8 Register locators7h: 1 Register Locator
+For this revision of UCIe, only values 0h, 1h, 2h and 7h are valid.
+3RO(RP/DSP), 
+HWInit(EP/USP), 
+RsvdP(Retimer)Sideband mailbox Registers Present
+0h: No sideband mailbox register set present in this capability1h: Sideband mailbox register set present in this capability
+For RP/DSP, default value of this is 1.
+EP/USP must set this bit when they are paired with a retimer and must 
+clear this bit in all other scenarios.
+7:4RO(DSP), RsvdP 
+(Others)Number of Switch DSPs associated with this UCIe Link
+Applies only to UCIe Link DVSEC in UiSRB.
+The specific ‘port number’ values of each Switch downstream port 
+associated with this UCIe Link is called out in the Associated Port 
+Number register(s) in this capability.
+0h: 1 Port
+1h: 2 ports…
+Fh: 16 ports
+‘Port Number’ is bits 31:24 of the PCIe  Link capabilities register of the 
+downstream port.
+For first generation of UCIe, only values 0h and 1h are legal.
+15:8 RsvdP Reserved
+--- Page 11 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 395
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.4 UCIe Link DVSEC - UCIe  Link Capability (Offset Ch)
+Basic characteristics of the UCIe Link are discovered by SW using this register.
+Table 9-8. UCIe Link DVSEC - UCIe Link Capability (Sheet 1 of 2)
+Bit Attribute Description
+0R ORaw Format
+If set, indicates the Link can support Raw Format.
+3:1 HWInitMax Link Width
+0h: x16
+1h: x32
+2h: x643h: x1284h: x256
+7h: x8
+Others - Reserved
+7:4 HWInitMax Link Speeds
+0h: 4 GT/s
+1h: 8 GT/s2h: 12 GT/s
+3h: 16 GT/s4h: 24 GT/s
+5h: 32 GT/s
+Others: Reserved
+8RO (Retimer), 
+RsvdP (others)Retimer - Set by retimer to indicate it to SW
+9RsvdP (Retimer), 
+RO (others)Multi-protocol capable
+a
+0 - single stack capable
+1 - multi-protocol capable
+Only 2 stacks max is possible
+10 ROAdvanced Packaging
+0 = Standard package mode for UCIe Link
+1 = Advanced package mode for UCIe Link
+11 RO68B Flit Format for Streaming Protocol
+If set, indicates 68B Flit Format is supported for Streaming protocol. This 
+is only set if at least one of the Protocol Layers is Streaming protocol.
+12 ROStandard 256B End Header Flit  Format for Streaming Protocol
+If set, indicates Standard 256B End Header Flit Format is supported for 
+Streaming protocol. This is only set if at least one of the Protocol Layers 
+is Streaming protocol.
+13 ROStandard 256B Start Header Flit  Format for Streaming Protocol
+If set, indicates Standard 256B Start Header Flit Format is supported for 
+Streaming protocol. This is only set if at least one of the Protocol Layers 
+is Streaming protocol.
+14 ROLatency-Optimized 256B Flit Format without Optional Bytes for 
+Streaming Protocol
+If set, indicates Latency-Optimized 256B without Optional Bytes Flit 
+Format is supported for Streaming protocol. This is only set if at least 
+one of the Protocol Layers is Streaming protocol.
+15 ROLatency-Optimized 256B Flit Format with Optional Bytes for 
+Streaming Protocol
+If set, indicates Latency-Optimized 256B with Optional Bytes Flit Format 
+is supported for Streaming protocol. This is only set if at least one of the 
+Protocol Layers is Streaming protocol.
+16 ROEnhanced Multi-protocol Capable
+0 = Not capable of multi-protocol with different protocols1 = Capable of multi-protocol with different protocols
+17 ROStandard Start Header Flit for PCIe Protocol
+If set, indicates Standard Start Header  256B Flit Format is supported for 
+PCIe protocol. This is only set if at least one of the Protocol Layers is PCIe protocol.
+--- Page 12 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 396
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.5 UCIe Link DVSEC - UCIe  Link Control (Offset 10h)
+Basic UCIe Link control bits are in this register.18 ROLatency-Optimized Flit with Optional Bytes for PCIe Protocol
+If set, indicates that the Latency-Optimized Flit Format with Optional 
+Bytes is supported for PCIe. This is only set if at least one of the Protocol 
+Layers is PCIe protocol.
+19 RO‘Runtime Link Testing Parity’ Feature Error Signaling
+If set, design supports signaling errors detected during Runtime link 
+testing with parity as Correctable errors. If cleared, this error signaling 
+mechanism is not supported.
+20 HWInitAPMW (Advanced Package Module Width)
+If set, indicates the Advanced Pack age Module size is x32 or a x64 
+module operating in x32 mode (decided at integration time).
+If reset, indicates x64 Advanced Package Module.
+21 RO/RsvdPx32 Width Support in x64 Module
+If set, indicates that a x64 Advanced Package Module can operate in x32 
+mode; otherwise, it cannot operate in x32 mode.
+For x32 Advanced Package Modu le, this bit is reserved.
+22 HWInitSPMW (Standard Package Module Width)
+If 1, indicates the Standard Package Module size is a x8 module, or a 
+x16 module operating in x8 mode  (decided at integration time).
+If 0, indicates x16 Standard Package Module.
+23 ROSideband Performant Mode Operation (PMO)
+When set, indicates that the side band supports performant mode 
+operation. When cleared, performant mode operation is not supported.
+31:24 RsvdP Reserved
+a. This bit was named and referred to as “Multi-stack” in r1.1 and prior revisions of the spec.
+Table 9-9. UCIe Link DVSEC - UCIe Link Control (Sheet 1 of 3)
+Bit Attribute Description
+0RW (RP/DSP), 
+HWInit (Others)Raw Format Enable : If set, enables the Link to negotiate Raw Format 
+during Link training.
+Default value of this is 0b for RP and firmware/SW sets this bit based on 
+system usage scenario.
+Switch DSP can set the default via implementation-specific mechanisms 
+such as straps/FW/etc., to account of system usage scenario (like UCIe 
+retimer). This allows for the DSP Link to train up without Software 
+intervention and be UCIe-unaware-OS compatible.
+1RW (RP/DSP), 
+RO (EP/DSP), RsvdP (Retimer)Multi-protocol enablea: When set, multi-protocol training is enabled 
+else not.
+Default is same as ‘Multi-protocol Capable’ bit in UCIe Link Capability 
+register.
+5:2RW (RP/DSP), 
+RsvdP (Others)Target Link Width
+0h: Reserved
+1h: x8
+2h: x163h: x32
+4h: x64
+5h: x1286h: x256
+Others are Reserved.
+Default is same as ‘Max Link Width’ field in UCIe Link Capability Register.Table 9-8. UCIe Link DVSEC - UCIe Link Capability (Sheet 2 of 2)
+Bit Attribute Description
+--- Page 13 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 397
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9:6RW (RP/DSP), 
+RsvdP (Others)Target Link Speed
+0h: 4 GT/s
+1h: 8 GT/s2h: 12 GT/s
+3h: 16 GT/s
+4h: 24 GT/s5h: 32 GT/s
+Others: Reserved
+Default is same as ‘Max Link speed’ field in UCIe Link Capability Register.
+10RW, with auto 
+clear (RP/DSP), 
+RsvdP (Others)Start UCIe Link training  - When set to 1, Link training starts with Link 
+Control bits programmed in this register and with the protocol layer 
+capabilities. Bit is automatically cleared when Link training completes with either success or error. The status register captures the final status 
+of the Link training. Note that if the Link is up when this bit is set to 1 
+from 0, the Link will go through full  training through Link Down state 
+thus resetting everything beneath the Link. If Link Status (in UCIe Link 
+Status register) is 0b and the link is already in training (i.e., the link 
+training state machine is in between RESET and ACTIVE states), when this bit transitions from 0 to 1, link does not restart the training and this 
+bit’s transition from 0 to 1 is ignored.
+Primary usage intended for this bit is for initial Link training out of reset 
+on the host side.
+Note: For downstream ports of a switch with UCIe, local HW/FW has to 
+autonomously initiate Link traini ng after a conventional reset, 
+without waiting for higher level SW to start the training via this bit, to ensure backward compatibility.
+Default is 0.
+11RW with auto 
+clear (RP/DSP), RsvdP (Others)Retrain UCIe Link  - When set to 1, Link that is already up 
+(Link_status=up) will be retrained without going through Link Down 
+state. SW can use this bit to potentially recover from Link errors. If the Link is down (Link_status=down) when this bit is set, there is no effect 
+from this bit being set. SW should use the ‘Start UCIe Link training’ bit in 
+case the Link is down. The Link_status bit in the status register can be read by software to determine whethe r to use this bit or not. Note that 
+when retrain happens, the Link speed or width can change because of 
+reliability reasons, and it will be captured through the appropriate status bit in the Link Status register.
+Bit is automatically cleared when Link retraining completes with either 
+success or error (as reported via the appropriate status bits in the Link 
+Status register) or if the Link retrain did not happen at all for the reason 
+stated earlier.
+Default is 0.
+12 RW/ROUnused  - Implementations are encouraged  to implement this as an RO 
+bit with a default value of 0. However, for backward compatibility, 
+implementations are permitted to impl ement this as an RW bit with a 
+default value of 1. Writes to this bit have no effect on link functionality.
+13 RW68B Flit Format for Streaming Protocol
+If set, enables 68B Flit Format advertisement if the corresponding 
+capability is supported.
+Default is same as the ‘68B Flit Format for Streaming Protocol’ bit in the 
+UCIe Link Capability register.
+14 RWStandard 256B End Header Flit  Format for Streaming Protocol
+If set, enables Standard 256B End Header Flit Format advertisement if 
+the corresponding capability is supported.
+Default is same as the ‘Standard 256B End Header Flit Format for 
+Streaming Protocol’ bit in the UCIe Link Capability register.
+15 RWStandard 256B Start Header Flit  Format for Streaming Protocol
+If set, enables Standard 256B Start He ader Flit Format advertisement if 
+the corresponding capability is supported.
+Default is same as the ‘Standard 256B Start Header Flit Format for 
+Streaming Protocol’ bit in the UCIe Link Capability register.Table 9-9. UCIe Link DVSEC - UCIe Link Control (Sheet 2 of 3)
+Bit Attribute Description
+--- Page 14 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 398
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.6 UCIe Link DVSEC - UCIe Link Status (Offset 14h)
+Basic UCIe Link status bits are in this register.16 RWLatency -Optimized 256B Flit Fo rmat without Optional Bytes for 
+Streaming Protocol
+If set, enables Latency-Optimized 256B Flit Format without Optional 
+bytes advertisement if the corres ponding capability is supported.
+Default is same as the ‘Latency-Optimized 256B Flit Format without for 
+Streaming Protocol’ bit in the UCIe Link Capability register.
+17 RWLatency-Optimized 256B Flit Format with Optional Bytes for 
+Streaming Protocol
+If set, enables Latency-Optimized 256B  Flit Format with Optional bytes 
+advertisement if the corresponding capability is supported.
+Default is same as the ‘Latency-Optimized 256B Flit Format for 
+Streaming Protocol’ bit in the UCIe Link Capability register.
+18RW (RP/DSP),
+RO (EP/USP),
+RsvdP (Retimer)Enhanced Multi-Protocol Enable
+When set, enhanced multi-protocol training is enabled else not. 
+Enhanced Multi-Protocol permits 2 stacks with the same or different protocols.
+Default is same as ‘Enhanced Multi-Protocol Capable’ bit in UCIe Link 
+Capability register.
+19 RWStandard Start Header Flit for PCIe Protocol
+If set, enables Standard Start Header  256B Flit Format for PCIe protocol.
+Default is same as ‘Standard Start He ader Flit for PCIe Protocol’ bit in 
+UCIe Link Capability register.
+20 RWLatency-Optimized Flit with Optional Bytes for PCIe Protocol
+If set, enables the Latency-Optimized Flit Format with Optional Byte for 
+PCIe.
+Default is same as ‘Latency-Optimized Flit with Optional Bytes for PCIe 
+Protocol’ bit in UCIe Link Capability register.
+21 RWSideband Performant Mode Operation (PMO)
+When set, Sideband Performant Mode Operation is enabled for 
+negotiation; otherwise, it is not.
+Default is the same as the Capability bit.
+31:22 RsvdP Reserved
+a. This bit was named and referred to as “Multi-stack” in r1.1 and prior revisions of the spec.
+Table 9-10. UCIe Link DVSEC - UCIe Link Status (Sheet 1 of 3)
+Bit Attribute Description
+0R ORaw Format Enabled : If set, indicates the Adapter negotiated Raw 
+Format operation with remote Link partner. This bit is only valid when Link Status bit in this register indicates ‘Link Up’.
+1RsvdZ (Retimer), 
+RO (Others)Multi-protocol enableda: When set, multi-protocol training has been 
+enabled with remote training partner. This bit is only valid when Link Status bit in this register indicates ‘Link Up’.
+2RsvdZ (Retimer), 
+RO (Others)Enhanced Multi-protocol Enabled
+When set, multi-protocol training has been enabled with remote training 
+partner. This bit is only valid when Link Status bit in this register 
+indicates ‘Link Up’.
+3R Ox32 Advanced Package Module Enabled
+When set, indicates that the Advanced  Package operating module size is 
+x32.
+6:4 RsvdZ ReservedTable 9-9. UCIe Link DVSEC - UCIe Link Control (Sheet 3 of 3)
+Bit Attribute Description
+--- Page 15 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 399
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 10:7 ROLink Width enabled
+0h: x4
+1h: x82h : x16
+3h : x32
+4h : x645h : x128
+6h : x256
+This has meaning only when Link status bit shows Link is up.
+14:11 ROLink Speed enabled
+0h: 4GT/s1h: 8GT/s
+2h: 12GT/s
+3h: 16GT/s4h: 24GT/s
+5h: 32GT/s
+Others: ReservedThis field has meaning only when Link status field shows Link is up
+15 ROLink Status
+0 - Link is down.
+1 - Link is up
+This bit indicates the status of the mainband.Transitioning a Link from down to up requires a full Link training, which 
+can be achieved using one of these methods:
+• Start Link training via the bits in the UCIe Link Control register of 
+the upstream device
+• Using the protocol layer reset bit associated with the Link, like the 
+SBR bit in the BCTL register of the RP P2P space
+• Using the protocol layer Link Disable bit associated with the Link, 
+like the Link Disable bit in the Link CTL register of the PCIe capability register in the RP P2P space, and then releasing the disable.
+Notes: If the Link is actively retraining, this bit reflects a value of 1.
+This bit is a consolidated status of the RDI and FDI (i.e., if both 
+the RDI and FDI are up, then this bi t is set to 1; otherwise, this 
+bit is cleared to 0).
+In multi-stack implementations, this bit is a consolidated status 
+of the RDI and any of the FDIs (i.e ., if RDI is up and any of the 
+FDIs is up, then this bit is set to 1; otherwise, this bit is cleared to 
+0).
+16 ROLink Training/Retraining
+1b - Currently Link is training or retraining
+0b - Link is not training or retraining
+17RW1C (RP/DSP), 
+RsvdZ (Others)Link Status changed
+1b - Link either transitioned from up to down or down to up.0b - No Link status change since the last time SW cleared this bit
+18RW1C (RP/DSP), 
+RsvdZ (Others)HW autonomous BW changed
+UCIe autonomously changed the Link width or speed to correct Link 
+reliability related issues.
+19 RW1CSDetected UCIe Link correctable error
+Further details of specific type of correctable error is found in Table 9-30  
+register.
+20 RW1CSDetected UCIe Link Unco rrectable Non-fatal error
+Further details of specific type of Uncorrectable error is found in 
+Table 9-27  register.Table 9-10. UCIe Link DVSEC - UCIe Link Status (Sheet 2 of 3)
+Bit Attribute Description
+--- Page 16 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 400
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 21 RW1CSDetected UCIe Link Un correctable Fatal error
+Further details of specific type of Uncorrectable error is found in 
+Table 9-27  register.
+25:22 ROFlit Format Status
+This field and the Flit Format field in the Header Log 2 register in the 
+D2D/PHY register block (see Section 9.5.3.8 ) are mirror copies. This 
+field indicates the negotiated Flit Format. This field is only valid when 
+Link Status bit in this register indicates ‘Link Up’.
+26 ROSideband Performant Mode Operation (PMO)
+When set, Sideband Performant Mode Operation was successfully 
+negotiated and is operational.
+When cleared, legacy mode sideband operation is active. Sideband 
+Performant Mode is not operational.
+This bit has meaning only when either Link status indicates link is up (in 
+UCIe Link Status register of UCIe Link DVSEC capabilit y) or management 
+port capability indicates Port Status as ‘Link Not Up’ (see Table 8-12 ).
+31:27 RsvdZ Reserved
+a. This bit was named and referred to as “Multi-stack” in r1.1 and prior revisions of the spec.Table 9-10. UCIe Link DVSEC - UCIe Link Status (Sheet 3 of 3)
+Bit Attribute Description
+--- Page 17 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 401
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.7 UCIe Link DVSEC - Link Event Notification Control (Offset 18h)
+Link event notification related controls are in this register.
+9.5.1.8 UCIe Link DVSEC - Error No tification Control (Offset 1Ah)
+Link error notification related controls are in this register.
+Note: This register only controls the propagation of the error condition and it has no impact 
+on the setting of the appropriate status bi ts in the Link Status register, when the 
+relevant error happens.Table 9-11. UCIe Link DVSEC - Link Event Notification Control
+Bit Attribute Description
+0RW(RP/DSP), 
+RsvdP (Others)‘Link Status changed’ UCIe Link Event Interrupt enable
+0: Reporting of this event via interrupt is not enabled1: Reporting of this event via interrupt is enabled.
+Default is 0
+1RW(RP/DSP), 
+RsvdP (Others)‘HW autonomous BW changed’ UCIe Link Event Interrupt enable
+0: Reporting of this event via interrupt is not enabled
+1: Reporting of this event via interrupt is enabledDefault is 0
+10:2 RsvdP Reserved
+15:11RO(RP/DSP), 
+RsvdP(Others)Link Event Notification Interrupt number
+This field indicates which MSI vector (for host UCIe Links), or MSI/MSI-X 
+vector (for switch DSP UCIe Links) is used for the interrupt message generated in association with the events that are controlled via this 
+register.
+For MSI, the value in this field in dicates the offset between the base 
+Message Data and the interrupt message that is generated. Hardware is 
+required to update this field so that  it is correct if the number of MSI 
+Messages assigned to the Function changes when software writes to the Multiple Message Enable field in th e Message Control Register for MSI. 
+For first generation of UCIe, maximum 2 interrupt vectors could be 
+requested for UCIe related functionality and the ‘Link event’ is one of them.
+For MSI-X (applicable only for interrup ts from Switch DSPs with UCIe 
+Links), the value in this field indicate s which MSI-X Table entry is used to 
+generate the interrupt message. The entry must be one of the first 32 
+entries even if the Function implements more than 32 entries. For a 
+given MSI-X implementation, the entry must remain constant.
+For UCIe related interrupts, a swit ch should reques t its interrupt 
+requirements from either MSI or  MSI-X capability but not both.
+--- Page 18 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 402
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 Table 9-12. UCIe Link DVSEC - Error No tification Control (Sheet 1 of 3)
+Bit Attribute Description
+0RW(RP/DSP), 
+RsvdP (Others)‘Correctable error detected’ protocol layer based reporting 
+enable
+0: Reporting of this error via prot ocol layer mechanism is not enabled
+1: Reporting of this error via pr otocol layer mechanism is enabled
+Default is 0
+When enabled, the reported PCIe/CXL protocol layer correctable error 
+type is 'Correctable internal error’.
+This bit is applicable for only RP/DSP.
+1R W‘Correctable error detected’ UCIe Link Error Interrupt enable
+RP/DSP
+0: Reporting of this error via UCIe Link Error interrupt is not enabled
+1: Reporting of this error via UCIe Link Error interrupt is enabled
+EP/USP
+0: Reporting of this error via sideband error message is not enabled1: Reporting of this error via sideband error message is enabled
+Note that in the case of EP/USP connected to a retimer, their sideband 
+error message targets the retimer and how the retimer sends it across to 
+the partner retimer is vendor specific.
+Retimer connected to RP/DSP0: Reporting of this error via sideband error message to RP/DSP is not 
+enabled
+1: Reporting of this error via sideband error message to RP/DSP is 
+enabled
+Retimer connected to EP/USP0: Reporting of this error to the partner retimer is disabled.
+1: Reporting of this error to the partner retimer is enabled. The specific 
+mechanism for reporting the error to the partner retimer is vendor-
+specific.
+Default is 0
+2RW(RP/DSP), 
+RsvdP (Others)‘Uncorrectable non-fatal error de tected’ protocol layer based 
+reporting enable
+0: Reporting of this error via prot ocol layer mechanism is not enabled
+1: Reporting of this error via pr otocol layer mechanism is enabled
+Default is 0
+This bit is applicable for only RP/DSP.
+--- Page 19 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 403
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 3R W‘Uncorrectable non-fatal error detected’ UCIe Link Error 
+Interrupt enable
+RP/DSP
+0: Reporting of this error via UCIe Link Error interrupt is not enabled1: Reporting of this error via UCIe Link Error interrupt is enabled
+EP/USP
+0: Reporting of this error via sideband error message is not enabled
+1: Reporting of this error via sideband error message is enabled
+Note that in the case of EP/USP connected to a retimer, their sideband 
+error message targets the retimer and how the retimer sends it across to the partner retimer is vendor specific.
+Retimer connected to RP/DSP
+0: Reporting of this error via sideband error message to RP/DSP is not 
+enabled
+1: Reporting of this error via sideband error message to RP/DSP is 
+enabled
+Retimer connected to EP/USP
+0: Reporting of this error to the partner retimer is disabled.
+1: Reporting of this error to the partner retimer is enabled. The specific 
+mechanism for reporting the error to the partner retimer is vendor specific.
+Default is 0
+4RW (RP/DSP), 
+RsvdP (Others)‘Uncorrectable fatal error detected’ protocol layer based 
+reporting enable
+0: Reporting of this error via prot ocol layer mechanism is not enabled
+1: Reporting of this error via pr otocol layer mechanism is enabled
+Default is 0
+When enabled, the reported PCIe/CXL protocol layer uncorrectable error 
+type is 'Uncorrectable internal error'
+This bit is applicable for only RP/DSP.Table 9-12. UCIe Link DVSEC - Error No tification Control (Sheet 2 of 3)
+Bit Attribute Description
+--- Page 20 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 404
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5R W‘Uncorrectable fatal error detect ed’ UCIe Link Error Interrupt 
+enable
+RP/DSP
+0: Reporting of this error via UCIe Link Error interrupt is not enabled
+1: Reporting of this error via UCIe Link Error interrupt is enabled
+EP/USP
+0: Reporting of this error via sideband error message is not enabled1: Reporting of this error via sideband error message is enabled
+Note that in the case of EP/USP connected to a retimer, their sideband 
+error message targets the retimer and how the retimer sends it across to 
+the partner retimer is vendor specific.
+Retimer connected to RP/DSP0: Reporting of this error via sideband error message to RP/DSP is not 
+enabled
+1: Reporting of this error via sideband error message to RP/DSP is 
+enabled
+Retimer connected to EP/USP0: Reporting of this error to the partner retimer is disabled.
+1: Reporting of this error to the partner retimer is enabled. The specific 
+mechanism for reporting the error to the partner retimer is vendor 
+specific.
+Default is 0
+10:6 RsvdP Reserved
+15:11 RW/ROLink Error Notification Interrupt number
+This field indicates which MSI vector (for host UCIe Links), or MSI/MSI-X 
+vector (for switch DSP UCIe Links) is used for the interrupt message 
+generated in association with the events that are controlled via this 
+register.
+For MSI, the value in this field in dicates the offset between the base 
+Message Data and the interrupt message that is generated. Hardware is 
+required to update this field so that  it is correct if the number of MSI 
+Messages assigned to the Function changes when software writes to the 
+Multiple Message Enable field in th e Message Control Register for MSI. 
+For first generation of UCIe, maximum 2 interrupt vectors could be 
+requested for UCIe related functionality and the ‘Error’ is one of them.
+For MSI-X (applicable only for interrup ts from Switch DSPs with UCIe 
+Links), the value in this field indicate s which MSI-X Table entry is used to 
+generate the interrupt message. The entry must be one of the first 32 
+entries even if the Function implements more than 32 entries. For a given MSI-X implementation, the entry must remain constant.
+For UCIe related interrupts, a swit ch should reques t its interrupt 
+requirements from either MSI or  MSI-X capability but not both.
+It is strongly recommended that this field be implemented as RO but for 
+backward compatibility reasons, it is  also permitted to be implemented 
+as RW. This field has no meaning for Switch USP and EP.Table 9-12. UCIe Link DVSEC - Error No tification Control (Sheet 3 of 3)
+Bit Attribute Description
+--- Page 21 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 405
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.9 UCIe Link DVSEC - Register Locator 0, 1, 2, 3 Low 
+(Offset 1Ch and when Register Locators 1, 2, 3 
+are present Offsets 24h, 2Ch, and 34h respectively)
+The starting address of the MMIO-mapped regist er blocks for D2D/PHY, Compliance/Test and 
+Implementation-specifics are located by SW via these registers.
+Note: All register blocks start with a header section that indicates the size of the block in 
+multiples of 4 KB.
+Table 9-13. UCIe Link DVSEC - Register Locator 0, 1, 2, 3 Low
+Bit Attribute Description
+2:0 RORegister BIR
+For UCIe DVSEC capability in host UiRB, Switch UiSRB and in UCIe 
+Retimer, this field is reserved.
+For others, its defined as follows:
+Indicates which one of a Dev0/Fn0 Base Address Registers, located 
+beginning at 10h in Configuration Space, or entry in the Enhanced 
+Allocation capability with a matching BAR Equivalent Indicator (BEI), is used to map the UCIe Register blocks into Memory Space.
+Defined encodings are:
+• 0 Base Address Register 10h
+• 1 Base Address Register 14h
+• 2 Base Address Register 18h• 3 Base Address Register 1Ch
+• 4 Base Address Register 20h
+• 5 Base Address Register 24h
+All other Reserved.
+The Registers block must be wholly contained within the specified BAR. 
+For a 64-bit Base Address Register, the Register BIR indicates the lower 
+DWORD.
+6:3 RORegister Block Identifier
+• Identifies the type of UCIe register blocks. Defined encodings are:0h 
+UCIe D2D/PHY Register Block
+• 1h UCIe Test/Compliance Register Block• 2h D2D Adapter Implementation specific register block
+• 3h PHY Implementation sp ecific register block
+• All other encodings are reserved
+The same register block identifier value cannot be repeated in multiple 
+Register Locator entries.
+11:7 RsvdP Reserved
+31:12 RORegister Block Offset
+Addr[31:12] of the 4-KB aligned offset  from the starting address of the 
+Dev0/Fn0 BAR pointed to by the Register BIR field (for EP, Switch USP) or from the start of UiRB/UiSRB region (for hosts/Switch).
+This field is reserved for retimers.
+--- Page 22 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 406
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.10 UCIe Link DVSEC - Register Locator 0, 1, 2, 3 High 
+(Offset 20h and when Register Locators 1, 2, 3 
+Are Present Offsets 28h, 30h, and 38h respectively)
+Addr[63:32] of the starting address of the MMIO-mapped register blocks for D2D/PHY, Compliance/
+Test and Implementation-specifics are located by SW via these registers.
+Note: All register blocks start with a header section that indicates the size of the block in 
+multiples of 4 KB.
+9.5.1.11 UCIe Link DVSEC - Sideband Mailbox Index Low 
+(Offset is design dependent)
+Mailbox registers are to be implemented by all host s with UCIe Links. Switches with downstream UCIe
+Li nks  and  EP /USP , w he n pai red  wi th UCI e  R e ti me r ,  should also implement this register. Note that
+accesses to mailbox are inherently non-atomic in natu re and hence it is up to higher-level software to
+coordinate access to any mailbox-related register so that one agent does not step on another agent
+using the mailbox mechanism. Those mechanisms for software coordination are beyond the scope of
+this specification.Table 9-14. UCIe Link DVSEC - Register Locator 0, 1, 2, 3 High
+Bit Attribute Description
+63:32 RORegister Block Offset
+Addr[63:32] of the 4-KB aligned offset  from the starting address of the 
+Dev0/Fn0 BAR pointed to by the Register BIR field (for EP, Switch USP) or from the start of UiRB/UiSRB region (for hosts/Switch).
+This field is reserved for retimers.
+Table 9-15. UCIe Link DVSEC - Sideband Mailbox Index Low
+Bit Attribute Description
+4:0 RWOpcode
+00000b 32b Memory Read
+00001b 32b Memory Write00100b 32b Configuration Read
+00101b 32b Configuration Write
+01000b 64b Memory Read01001b 64b Memory Write01100b 64b Configuration Read
+01101b 64b Configuration Write
+OthersReservedDefault 00100
+12:5 RWBE[7:0]
+Default Fh
+31:13 RWAddr[18:0] of Sideband Accesses
+Format for this field is as defined in the sideband interface definition in 
+Chapter 7.0 .
+Note: The address offset defined as part of this address field is DWORD 
+aligned for 32bit accesses and QWORD aligned for 64bit accesses.
+Default is 0.
+--- Page 23 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 407
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.12 UCIe Link DVSEC - Si deband Mailbox Index High 
+(Offset is design dependent)
+Mailbox registers are to be implemented by all host s with UCIe Links. Switches with downstream UCIe
+Li nks  and  EP /USP , w he n pai red  wi th UCI e  R e ti me r ,  should also implement this register. Note that
+accesses to mailbox are inherently non-atomic in natu re and hence it is up to higher-level software to
+coordinate access to any mailbox-related register so that one agent does not step on another agentusing the mailbox mechanism. Those mechanisms for software coordination are beyond the scope of
+this specification.
+9.5.1.13 UCIe Link DVSEC - Sideband Mailbox Data Low 
+(Offset is design dependent)
+9.5.1.14 UCIe Link DVSEC - Sideband Mailbox Data High 
+(Offset is design dependent)Table 9-16. UCIe Link DVSEC - Sideband Mailbox Index High
+Bit Attribute Description
+4:0 RWAddr[23:19] of Sideband Accesses
+Format for this field is as defined in the sideband interface definition in 
+Chapter 7.0 .
+Default is 0.
+31:5 RsvdP Reserved
+Table 9-17. UCIe Link DVSEC - Sideband Mailbox Data Low
+Bit Attribute Description
+31:0 RWFor sideband write opcodes, this carries the write data [31:0] to the 
+destination.
+For sideband read opcodes, this carries the data read from the 
+destination when the Write/Read Tr igger bit in the Mailbox Control 
+register is cleared, after it was initia lly set. This field’s value is undefined 
+until the Write/Read trigger bit is cleared on reads.
+Table 9-18. UCIe Link DVSEC - Sideband Mailbox Data High
+Bit Attribute Description
+31:0 RWFor sideband write opcodes, this carries the write data [63:32] to the 
+destination.
+For sideband read opcodes, this carries the data read from the 
+destination when the Write/Read Tr igger bit in the Mailbox Control 
+register is cleared, after it was initia lly set. This field’s value is undefined 
+until the Write/Read trigger bit is cleared on reads.
+For 32b Writes/Reads, this register does not carry valid data.
+--- Page 24 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 408
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.15 UCIe Link DVSEC - Sideband Mailbox Control 
+(Offset is design dependent)
+9.5.1.16 UCIe Link DVSEC - Sideband Mailbox Status 
+(Offset is design dependent)
+9.5.1.17 UCIe Link DVSEC - Requeste r ID (Offset is design dependent)Table 9-19. UCIe Link DVSEC - Sideband Mailbox Control
+Bit Attribute Description
+0RW, with auto 
+clearWrite/Read trigger : When this bit is written to a 1 from a value of 0, 
+the mailbox generates traffic on the sideband interface, using the 
+contents of the Mailbox Header and Data registers. This bit automatically clears when the write or read access triggered by this bit being set, is 
+complete on the sideband bus. SW can poll this bit to know when the 
+write/read has actually completed at th e destination. It can then go read 
+the Mailbox data register for the read data.
+7:1 RsvdP Reserved
+Table 9-20. UCIe Link DVSEC - Sideband Mailbox Status
+Bit Attribute Description
+1:0RW1C(RP/DSP), 
+RW1C(EP/USP), when 
+implementedWrite/Read status
+00b: CA received01b: UR received
+10b: Reserved
+11b: SuccessThis bit has valid value only when the Write/Read Trigger bit is cleared 
+from being a 1 prior to it.
+7:2 RsvdZ Reserved
+Table 9-21. UCIe Link DVSEC - Requester ID
+Bit Attribute Description
+23:0RW(RP)/RsvdP 
+(Others)Applicable only for ho st side UCIe Links.
+Segment No: Bus No: Dev No: Fn No for MSIs triggered on behalf of the 
+associated UCIe Link
+Note: For MSIs issued on behalf of UCIe Links on downstream ports of 
+switches, the Switch USP BDF is used.
+UCIe Link DVSEC capabilities in UiSRB implement this as RO 0.
+31:24 RsvdP Reserved
+--- Page 25 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 409
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.1.18 UCIe Link DVSEC - Associated Port Numbers 
+(Offset is design dependent)
+These registers apply only to UCIe Link DVSEC capabilities present in UiSRB.
+9.5.1.19 Examples of setting the Length field 
+in DVSEC for various Scenarios
+Example#1: UCIe EP supporting 2 Register Locators and not associated with a UCIe-Retimer, would
+set the length field in DVSEC capability to indicate 48B.
+Example#2: Host UiRB supporting 3 register locators would set the length to indicate 84B.
+Example#3: Switch UiSRB supporting 3 register locators and associated with just 1 DSP port to a
+UCIe Link, would set the length to indicate 85B.
+9.5.2 UCIe Switch Register Bl ock (UiSRB) DVSEC Capability
+This capability can only be present in the config sp ace of the upstream port of a Switch. There can be 
+multiple of these in the same USP config space.
+9.5.2.1 PCI Express Extended Capability Header  (Offset 0h)
+Set as follows for UCIe Switch Register Bloc k DVSEC. All bits in this register are RO.
+9.5.2.2 Designated Vendor Specific Header 1, 2 (Offsets 4h and 8h)
+A few things to note on the various fields described in Table 9-6 . DVSEC Revision ID field represents
+the version of the DVSEC structure. The DVSEC Revi sion ID is incremented whenever the structure is
+extended to add more functionalit y. Backward compatibility shall be  maintained during this process.
+For all values of n, DVSEC Revision ID n+1 structur e may extend Revision ID n by replacing fields that
+are marked as reserved in Revisi on ID n, but must not redefine the meaning of existing fields.
+Software that was written for a lower Revision ID may continue to operate on UCIe DVSEC structures
+with a higher Revision ID, but will not be able to take advantage of new functionality.
+All bits in this register are RO.Table 9-22. UCIe Link DVSEC - Associated Port Numbers
+Bit Attribute Description
+7:0 ROPort Number 1  - ‘Port number’ of the 1st swit ch DSP associated with this 
+UCIe. This value is from the Link Capabilities register of that switch DSP.
+15:8 ROPort Number 2  - ‘Port number’ of the 2nd switch DSP associated with this 
+UCIe, if any. If there is no 2nd switch DSP associated with this UCIe Link, this field is treated as reserved and should not be included as part of the “length” 
+field of the ‘Designated Vendor specific Header 1’ register and SW should not 
+consider this as part of the DVSEC capability.
+Note: Only a maximum of two Port number s can be associated with a UCIe 
+Link in the current revision of the specification.
+Table 9-23. UiSRB DVSEC - PCI Express Extended Capability Header
+Field Bit Location Value Comments
+Capability ID 15:0 0023h Value for PCI Express DVSEC capability
+Revision ID 19:16 1h Latest revision of the DVSEC capability
+Next Capability Offset 31:20Design 
+Dependent
+--- Page 26 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 410
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.2.3 UCIe Switch Register Block (UiSRB) Base Address (Offset Ch)
+All bits in this register are RO.Table 9-24. UiSRB DVSEC - Designated  Vendor Specific Header 1, 2
+Register Field Bit Location Value
+Designated Vendor-Specific Header 1 (offset 04h)DVSEC Vendor ID 15:0 D2DEh
+DVSEC Revision 19:16 0hLength 31:20 14h
+Designated Vendor-Specific Header 2 (offset 08h) DVSEC ID 15:0 1h
+Table 9-25. UiSRB DVSEC - UiSRB Base Address
+Bit Attributes Description
+0R ORegister BIR
+Indicates which one of a Switch USP Function’s Base Address 
+Registers, located beginning at 10h in Configuration Space, or entry in 
+the Enhanced Allocation capability with a matching BAR Equivalent 
+Indicator (BEI), is used to locate  the UCIe Switch Register Block. 
+Defined encodings are:
+• 0 Base Address Register 10h• 1 Base Address Register 14h
+• All other Reserved.
+The Registers block must be wholly contained within the specified 
+BAR. For a 64-bit Base Address Register, the Register BIR indicates 
+the lower DWORD.
+11:1 RsvdP Reserved
+63:12 RORegister Block Offset
+A 4-KB-aligned offset from the starting address of the Switch USP BAR 
+indicated by the Register BIR field.
+The BAR value + Offset indicated in this register is where the UCIe 
+Switch Register Block (UiSRB) starts.
+Ex: If this register is 100, UiSRB starts at the <64-bit BAR value + 
+100000h>
+--- Page 27 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 411
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3 D2D/PHY Register Block
+These registers occupy 8 KB of register space. The first 4 KB are for the D2D Adapter, and the next 4 
+KB are for the Physical Layer. In the PHY register bl ock, extended capabilities start at Offset 200h. If 
+an implementation does not support any extended capabilities, it must implement a NULL capability 
+at Offset 200h (which implements 0h for the DWOR D at that offset). The D2D Adapter registers are 
+enumerated below. The location of these registers in the system MMIO region is as described in 
+Section 9.3 .
+9.5.3.1 UCIe Register Block Header
+9.5.3.2 Uncorrectable Error St atus Register (Offset 10h)Table 9-26. D2D/PHY Register Block - UC Ie Register Block Header (Offset 0h)
+Bit Attributes Description
+15:0 ROVendor ID
+Default is set to Vendor ID assigned for UCIe Consortium - D2DEh
+31:16 ROVendor ID Register Block
+Set to 0h to indicate D2D/PHY register block
+35:32 ROVendor Register Block Version
+Set to 0h
+63:36 RsvdP Reserved
+95:64 ROVendor Register Block Length  - The number of bytes in the 
+register block including the UCIe Register block header.
+Default is 2000h.
+127:96 RsvdP Reserved
+Table 9-27. Uncorrectable Error St atus Register (Sheet 1 of 2)
+Bit Attribute Description
+0R W 1 C SAdapter Timeout:  Set to 1b by hardware if greater than 8ms has 
+elapsed for Adapter handshakes with its remote Link partner. The 
+Header Log 2 register captures the reason for a timeout. This error will bring the main Link Down.
+Default Value is 0b.
+1R W 1 C SReceiver Overflow : Set to 1b by hardware if Receiver overflow 
+errors are detected. The Header Log 2 register captures the encoding to indicate the type of Receiver overflow. This error will 
+bring the Link Down.
+Default Value is 0b.
+2R W 1 C SInternal Error : Set to 1b by hardware if an internal Data path 
+error is detected or if LinkError state was detected on the RDI. Examples of such errors include (but not limited to) uncorrectable 
+error correcting code (ECC) error in the Retry buffer, sideband parity 
+errors etc. This error will bring the Link Down. It includes fatal error indicated by the Physical Layer that brought the Link Down.
+Default Value is 0b.
+3RW1CS (RP/DSP/
+Retimer), 
+RsvdZ (Others)Sideband Fatal Error Message received : Set to 1b by hardware 
+if the Adapter received a Fatal {E rrMsg} sideband message. Default 
+Value is 0b.
+--- Page 28 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 412
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.3 Uncorrectable Error Mask Register (Offset 14h)
+The Uncorrectable Error Mask Register controls reportin g of individual errors. When a bit is 1b in this 
+register, the corresponding error status bit in the Un correctable Error Status register is not forwarded 
+to the Protocol Layer for escalation/signaling but it  does not impact error logging in the “First Fatal 
+Error Indicator” field in the Header Log 2 register.4RW1CS(RP/DSP/
+Retimer), 
+RsvdZ(Others)Sideband Non-Fatal Error Message received : Set to 1b by 
+hardware if the Adapter received a Non-Fatal {ErrMsg} sideband 
+message. Default Value is 0b.
+5R W 1 C SInvalid Parameter Exchange : Set to 1b if the Adapter was not 
+able to determine a valid protocol or Flit Format for operation.
+31:6 RsvdZ Reserved
+Table 9-28. Uncorrectable Error Mask Register
+Bit Attribute Description
+0R W SAdapter Timeout Mask
+Default Value is 1b.
+1R W SReceiver Overflow Mask
+Default Value is 1b.
+2R W SInternal Error Mask
+Default Value is 1b.
+3R W SSideband Fatal Error Message received Mask
+Default Value is 1b.
+4R W SSideband Non-Fatal Erro r Message received Mask
+Default Value is 1b.
+5R W SInvalid Parameter Exchange Mask
+Default Value is 1b.
+31:6 RsvdP ReservedTable 9-27. Uncorrectable Error St atus Register (Sheet 2 of 2)
+Bit Attribute Description
+--- Page 29 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 413
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.4 Uncorrectable Error Se verity Register  (Offset 18h)
+The Uncorrectable Error Severity re gister controls whether an individual error is reported as a Non-
+fatal or Fatal error. An error is reported as a fa tal uncorrectable error when the corresponding bit in 
+the severity register is 1b. If the bit is 0b, the corresponding error is reported as a non-fatal 
+uncorrectable error.
+9.5.3.5 Correctable Error St atus Register (Offset 1Ch)Table 9-29. Uncorrectable Error Severity Register
+Bit Attribute Description
+0R W SAdapter Timeout Severity
+Default Value is 1b.
+1R W SReceiver Overflow Severity
+Default Value is 1b.
+2R W SInternal Error Severity
+Default Value is 1b.
+3R W SSideband Fatal Error Message received Severity
+Default Value is 1b.
+4R W SSideband Non-Fatal Error Message received Severity
+Default Value is 0b.
+5R W SInvalid Parameter Exchange Severity
+Default Value is 1b
+31:6 RsvdP Reserved
+Table 9-30. Correctable Error Status Register
+Bit Attribute Description
+0R W 1 C SCRC Error Detected : Set to 1b by hardware if the Adapter 
+detected a CRC Error when Adapter Retry was negotiated with remote Link partner.
+Default Value is 0b.
+1R W 1 C SAdapter LSM transition to Retrain : Set to 1b by hardware if the 
+Adapter LSM transitioned to Retrain state.
+Default Value is 0b.
+2R W 1 C SCorrectable Internal Error : Set to 1b by hardware if an internal 
+correctable Data path error is detected. Examples of such errors 
+include (but are not limited to) co rrectable error correcting code 
+(ECC) error in the Retry buffer, Physical Layer indicated correctable error on RDI, etc.
+Default Value is 0b.
+3RW1CS (RP/DSP/
+Retimer), RsvdZ (Others)Sideband Correctable Error Message received : Set to 1b by 
+hardware if the Adapter received a Correctable {ErrMsg} sideband 
+message with Device origin encoding in the message information.
+Default Value is 0b.
+4R W 1 C S ‘Runtime Link Testing Parity’ Error
+31:5 RsvdZ Reserved
+--- Page 30 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 414
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.6 Correctable Error Ma sk Register (Offset 20h)
+The Correctable Error Mask Register controls the reporting of individual errors. When a bit is 1b in this 
+register, setting of the correspondi ng error status bit is not forwarded to the Protocol Layer for 
+escalation/signaling.
+9.5.3.7 Header Log 1 Register (Offset 24h)
+This register is used to log the header on sideband register accesses that receive UR/CA error status.Table 9-31. Correctable Error Mask Register
+Bit Attribute Description
+0R W SCRC Error Detected Mask
+Default Value is 1b.
+1R W SAdapter LSM transition to Retrain Mask
+Default Value is 1b.
+2R W SCorrectable Internal Error Mask
+Default Value is 1b.
+3R W SDevice Correctable Error Message received Mask
+Default Value is 1b.
+4R W S‘Runtime Link Testing Parity’ Error Mask
+Default Value is 1b.
+31:5 RsvdP Reserved
+Table 9-32. Header Log 1 Register
+Bit Attribute Description
+63:0 ROSHeader Log 1:  This logs the header for the sideband mailbox 
+register access that received a completion with Completer Abort 
+status or received a completion with Unsupported Request status. 
+Note that register accesses that time out are not required to be logged at the requester.
+If the Write/Read Status field in the ‘Sideband Mailbox Status’ 
+register indicates ‘Success’ or the Write/Read trigger bit in the 
+Sideband Mailbox Control register is  set to 1, this field’s value is 
+undefined.
+This register is rearmed for logging new errors every time the 
+Write/Read Trigger bit in the Mailbo x Control register sees a 0-to-1 
+transition.
+Default Value is 0.
+--- Page 31 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 415
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.8 Header Log 2 Register (Offset 2Ch)
+This register is used to log syndrome of various sideband and mainband errors and specific status 
+logging on link training.
+Table 9-33. Header Log 2 Register (Sheet 1 of 2)
+Bit Attribute Description
+3:0 ROSAdapter Timeout encoding : Captures the reason for the first 
+Adapter Timeout that was logged in Uncorrectable Error Status.
+Default Value is 0000b. The encodings are interpreted as follows:0001b: Parameter Exchange flow timed out
+0010b: Adapter LSM request to remote Link partner did not receive 
+a response after 8 ms. Bits [9:7] capture the specific state request 
+that did not receive a response. Bi t 10 of this register captures 
+which Adapter LSM timed out.
+0011b: Adapter LSM transition to Acti ve timeout. This is recorded in 
+case the Adapter never received Ac tive Request from remote Link 
+partner for 8 ms after sending an Active Request on sideband even 
+though it received an Active Response. Bit 10 of this register captures which Adapter LSM timed out.
+0100b: Retry Timeout - no Ack or Nak received after 8 ms, when 
+Retry was enabled. Timeout counter is only incremented while RDI 
+is in Active and Adapter’s Retry buffer is not empty.
+0101b: Local sideband access timeout
+0110b: Retimer credit return timeout - no Retimer credit received 
+for greater than 8 ms if one or more Retimer credits have been 
+consumed by the Adapter. This timer is only counting during Active 
+state. If RDI moves to Retrain, this timer must be Reset since the Retimer credits are also Reset.
+0111b: Remote Register Access timeou t. This is triggered when if 
+the Adapter has observed N timeouts for Register Accesses where N 
+is >= register access timeout threshold.
+other encodings are reserved.If the Adapter Timeout status bit is cleared in th e ‘Uncorrectable 
+Error Status’ register, this field’s value is undefined.
+6:4 ROSReceiver Overflow encoding : Captures the encoding for the first 
+Receiver overflow error that occurred.
+Default value is 000b. The encodings are interpreted as follows:001b: Transmitter Retry Buffer overflow
+010b: Retimer Receiver Buffer overflow
+011b: FDI sideband buffer overflow100b: RDI sideband buffer overflowother encodings are reserved.
+If the Receiver overflow status bit is cleared in the ‘Uncorrectable 
+Error Status’ register, this field’s value is undefined.
+9:7 ROSAdapter LSM response type
+001b: Active
+010b: L1
+011b: L2100b: LinkReset
+101b: Disable
+Other encodings are reservedIf the Adapter Timeout status bit is cleared in th e ‘Uncorrectable 
+Error Status’ register, this field’s value is undefined.
+10 ROSAdapter LSM id
+0b : Adapter LSM 0 timed out1b : Adapter LSM 1 timed out
+12:11 RsvdZ Reserved
+--- Page 32 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 416
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 13 ROParameter Exchange Successful : Hardware updates this bit to 
+1b after successful Parameter exch ange with remote Link partner, 
+on every link training.
+17:14 ROSFlit Format : This field logs the negotiated Flit Format, it is the 
+current snapshot of the format the Adapter is informing to the 
+Protocol Layer. See Chapter 3.0  for the definitions of these formats. 
+The encodings are:
+0001b - Format 1
+0010b - Format 2
+0011b - Format 3
+0100b - Format 4
+0101b - Format 5
+0110b - Format 6
+Other encodings are Reserved
+22:18 ROSFirst Fatal Error Indicator : 5-bit encoding that indicates which bit 
+of Uncorrectable Error Status errors was logged first. The value of this field has no meaning if the corresponding status bit is cleared.
+The encoding of this field is as follows:00h if the error corresponding to Uncorrectable Error Status 
+register[0] is the first fatal error.
+01h if the error corresponding to Uncorrectable Error Status 
+register[1] is the first fatal error.
+…
+Because reserved bits may be repurposed in future versions of the 
+specification, software might observe that this field points to a 
+reserved bit (from its perspective) in the Uncorrectable Error Status register. This can happen when an older version of Software is run 
+on newer hardware. Software must be aware that it still needs to 
+clear the Status register bit if it desires to allow for continued error logging. How SW handles error status bits it does not understand is 
+beyond the scope of the specification.
+Once set, the value of this field does not change until SW clears the 
+corresponding Uncorrectable Error Status register bit. When SW 
+clears the corresponding status bit, HW is rearmed to capture subsequent first fatal errors.
+Note that because of an inherent race condition between HW setting 
+a new status bit and SW clearing an older status bit, SW must be 
+aware that this field might not always indicate the first error 
+amongst all the errors logged in the Uncorrectable Error Status register. For example, if the Uncorrectable Error Status bit 0 was set 
+first by HW and in the time SW reads the status and cleared it, bit 1 
+in the Status register was set. So, after SW clears bit 0 if error 
+corresponding to bit 0 recurs, it will be captured as the next first 
+error even though the error corresponding to bit 1 occurred earlier.
+If multiple errors are encountered simultaneously, which error is 
+logged as the First Fatal Erro r is implementation-dependent.
+31:23 RsvdZ ReservedTable 9-33. Header Log 2 Register (Sheet 2 of 2)
+Bit Attribute Description
+--- Page 33 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 417
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.9 Error and Link Testing Control Register (0ffset 30h)
+Table 9-34. Error and Link Testing Control Register (Sheet 1 of 2)
+Bit Attribute Description
+3:0 RWRemote Register Access Threshold : Indicates the number of 
+consecutive timeouts for remote register accesses that must occur 
+before the Register Access timeout is logged and the error escalated to a Link_Status=Down condition.
+Default Value is 0100b.
+4R WRuntime Link Testing Tx Enable : Software writes to this bit to 
+enable Parity byte injections in the data stream as described in 
+Section 3.9 . Runtime Link Rx Enable must be set to 1b for remote 
+Link Partner for successful enabling of this mode.
+Default Value is 0b.
+5R WRuntime Link Testing Rx Enable : Software writes to this bit to 
+enable Parity byte checking in the data stream as described in 
+Section 3.9 . Runtime Link Tx Enable must be set to 1b for remote 
+Link Partner for successful enabling of this mode.
+Default Value is 0b.
+8:6 RWNumber of 64 Byte Inserts : Software writes to this to indicate 
+the number 64 Byte inserts are done at a time for Runtime Link 
+Testing. The encodings are:
+000b: one 64B insert (for debug purposes only)
+001b: two 64B inserts (for debug purposes only)
+010b: four 64B insertsOther encodings are reserved.
+Default value is 000b.
+See Section 3.9  for guidance on how Software should set this field.
+9R W 1 CParity Feature Nak received : Hardware updates this bit if it 
+receives a Nak from remote Link partner when attempting to enable 
+Runtime Link Testing.
+12:10 RsvdP Reserved
+14:13 RWCRC Injection Enable : Software writes to this bit to trigger CRC 
+error injections, The error is injected  by inverting 1, 2 or 3 bits in 
+the CRC bytes. The specific bits inverted are implementation 
+specific. The CRC injection must not happen for Flits that are 
+already inverting CRC bits for Viral handling. The encodings are interpreted as :
+00b : CRC Injection is Disabled.01b : 1 bit is inverted10b : 2 bits are inverted
+11b : 3 bits are inverted.
+Default Value is 00b.
+--- Page 34 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 418
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.10 Runtime Link Testing Parity Log 0 (Offset 34h)
+9.5.3.11 Runtime Link Testing Parity Log 1 (Offset 3Ch)
+9.5.3.12 Runtime Link Testing Parity Log 2 (Offset 44h)16:15 RWCRC Injection Count  : Software writes to this bit to program the 
+number of CRC injections. It only takes effect if CRC injection Enable is not Disabled.
+00b : Single Flit is corrupted. CRC In jection Busy is reset to 0b after 
+single Flit corruption.
+01b: A CRC error is injected every 8 Flits. Hardware continues to 
+inject a CRC error every 8 Flits until CRC Injection Enable is 00b. 
+CRC Injection Busy is reset to 0b only after CRC Injection Enable is 
+00b.
+10b: A CRC error is injected every 16 Flits. Hardware continues to 
+inject a CRC error every 16 Flits until CRC Injection Enable is 00b. CRC Injection Busy is reset to 0b only after CRC Injection Enable is 
+00b.
+11b: A CRC error is injected every 64 Flits. Hardware continues to 
+inject a CRC error every 64 Flits until CRC Injection Enable is 00b. 
+CRC Injection Busy is reset to 0b only after CRC Injection Enable is 00b.
+17 ROCRC Injection Busy  : Hardware loads a 1b to this bit once it has 
+begun CRC Injection. Software is permitted to poll on this bit. See CRC Injection Count description to see how this bit returns to 0b.
+31:18 RsvdP Reserved
+Table 9-35. Runtime Link Testing Parity Log 0 Register
+Bit Attribute Description
+63:0 RW1CParity Log for Module 0 : Hardware updates the bit corresponding 
+to the parity error byte with e rror over the period when Runtime 
+Link Testing was enabled at Rx.
+Default Value is 0.
+Table 9-36. Runtime Link Testing Parity Log 1 Register
+Bit Attribute Description
+63:0 RW1CParity Log for Module 1 : Hardware updates the bit corresponding 
+to the parity error byte with e rror over the period when Runtime 
+Link Testing was enabled at Rx.
+Default Value is 0.
+This is register is only applicable  if the Adapter is designed for 
+handling two or more Physical Layer modules. It is reserved 
+otherwise.
+Table 9-37. Runtime Link Testing Parity Log 2 Register
+Bit Attribute Description
+63:0 RW1CParity Log for Module 2 : Hardware updates the bit corresponding 
+to the parity error byte with e rror over the period when Runtime 
+Link Testing was enabled at Rx.
+Default Value is 0.
+This is register is only applicable  if the Adapter is designed for 
+handling four Physical Layer modules. It is reserved otherwise.Table 9-34. Error and Link Testing Control Register (Sheet 2 of 2)
+Bit Attribute Description
+--- Page 35 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 419
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.13 Runtime Link Testing Parity Log 3 (Offset 4Ch)
+9.5.3.14 Advertised Adapter Capability Log (Offset 54h)
+9.5.3.15 Finalized Adapter Capability Log (Offset 5Ch)
+9.5.3.16 Advertised CXL Ca pability Log (Offset 64h)
+9.5.3.17 Finalized CXL Ca pability Log (Offset 6Ch)Table 9-38. Runtime Link Testing Parity Log 3 Register
+Bit Attribute Description
+63:0 RW1CParity Log for Module 3 : Hardware updates the bit corresponding 
+to the parity error byte with e rror over the period when Runtime 
+Link Testing was enabled at Rx.
+Default Value is 0.
+This is register is only applicable  if the Adapter is designed for 
+handling four Physical Layer modules. It is reserved otherwise.
+Table 9-39. Advertised Adapte r Capability Log Register
+Bit Attribute Description
+63:0 RW1CAdvertised Adapter Capability : Hardware updates the bits 
+corresponding to the data bits it sent in the {AdvCap.Adapter} sideband message.
+Default Value is 0.
+Table 9-40. Finalized Adapte r Capability Log Register
+Bit Attribute Description
+63:0 RW1CFinalized Adapter Capability : Hardware updates the bits 
+corresponding to the data bits it sent (DP) or received (UP) in the 
+{FinCap.Adapter} sideband message.
+Default Value is 0.
+Table 9-41. Advertised CXL Capability Log Register
+Bit Attribute Description
+63:0 RW1CAdvertised CXL Capability : Hardware updates the bits 
+corresponding to the data bits it sent in the {AdvCap.CXL} sideband 
+message, when it is sent with MsgInfo=0000h.
+Default Value is 0.
+Table 9-42. Finalized CXL Capability Log Register
+Bit Attribute Description
+63:0 RW1CFinalized CXL Capability : Hardware updates the bits 
+corresponding to the data bits it sent (DP) or received (UP) in the 
+{FinCap.CXL} sideband messag e, when it is sent with 
+MsgInfo=0000h.
+Default Value is 0.
+--- Page 36 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 420
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.18 Advertised Multi-Protocol Capability Log Register (Offset 78h)
+This register is reserved for designs that do not implement the Enhanced Multi-protocol capability.
+9.5.3.19 Finalized Multi-Protocol Ca pability Log Register (Offset 80h)
+This register is reserved for designs that do not implement the Enhanced Multi-protocol capability.
+9.5.3.20 Advertised CXL Capability Lo g Register for St ack 1 (Offset 88h)
+This register is reserved for designs that do not implement the Enhanced Multi-protocol capability.
+9.5.3.21 Finalized CXL Capability Log Register for Stack 1 (Offset 90h)
+This register is reserved for designs not implementing the Enhanced multi-protocol capability.Table 9-43. Advertised Multi-Pr otocol Capability Log Register
+Bit Attribute Description
+63:0 RW1CAdvertised Multi-Protocol Capability : Hardware updates the bits 
+corresponding to the data bits it sent in the {MultiProtAdvCap.Adapter} sideband message.
+Default value is 0.
+Table 9-44. Finalized Multi-Protocol Capability Log Register
+Bit Attribute Description
+63:0 RW1CFinalized Multi-Protocol Capability : Hardware updates the bits 
+corresponding to the data bits it sent in the {MultiProtFinCap.Adapter} sideband message.
+Default value is 0.
+Table 9-45. Advertised CXL Capabi lity Log Register for Stack 1
+Bit Attribute Description
+63:0 RW1CAdvertised CXL Capability : Hardware updates the bits 
+corresponding to the data bits it sent in the {AdvCap.CXL} sideband message when it is sent with MsgInfo=0001h.
+Default value is 0.
+Table 9-46. Finalized CXL Capabi lity Log Register for Stack 1
+Bit Attribute Description
+63:0 RW1CFinalized CXL Capability : Hardware updates the bits 
+corresponding to the data bits it sent in the {FinCap.CXL} sideband 
+message when it is sent with MsgInfo=0001h.
+Default value is 0.
+--- Page 37 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 421
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.22 PHY Capab ility (Offset 1000h)
+This register is global, and not per module.
+Table 9-47. Physical Layer Capability Register
+Bit Attribute Description
+2:0 RO Reserved
+3R OTerminated Link : If set to 1, the Receiver supports termination. 
+This bit is always cleared to 0 in an Advanced Package.
+4R OTX Equalization support
+0: TXEQ not supported1: TXEQ supported
+9:5 ROSupported Tx Vswing encodings
+01h: 0.4 V
+02h: 0.45 V
+03h: 0.5 V04h: 0.55 V
+05h: 0.6 V
+06h: 0.65 V07h: 0.7 V
+08h: 0.75 V
+09h: 0.8 V0Ah: 0.85 V
+0Bh: 0.9 V
+0Ch: 0.95 V0Dh: 1.0 V
+0Eh: 1.05
+0Fh: 1.1 V10h: 1.15 V
+All other encodings are reserved.
+This field matches the value advertised by the UCIe Module in the 
+‘Voltage swing’ field during MBINIT.PARAM.
+10 RsvdP Reserved
+12:11 RORx Clock Mode support
+00b: Supports both free running and strobe modes
+10b: Free running mode only
+All other encodings are reserved.This corresponds to the loca l UCIe Module’s capability.
+14:13 RORx Clock phase support
+00b: Differential clock only (all data rates)01b: Quadrature clock (24/32 GT/s); 
+Differential clock (16 GT/s and lower)
+10b: Same as 01b (for backward compatibility)
+This corresponds to the loca l UCIe Module’s capability.
+15 ROPackage type
+0b: Advanced Package
+1b: Standard Package
+16 ROTightly coupled mode (TCM) support
+0b: TCM not Supported1b: TCM supported
+This corresponds to the loca l UCIe Module’s capability.
+31:17 RsvdP Reserved
+--- Page 38 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 422
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.23 PHY Control (Offset 1004h)
+This register is global, and not per module.
+Table 9-48. Physical Layer Control Register
+Bit Attribute Description
+2:0 RW/ROReserved. Implementations are encouraged to implement this as an 
+RO bit with a default value of 000b. However, for backward 
+compatibility, implementations are permitted to implement this as 
+an RW bit with a default value of 000b.
+3R WRx Terminated Control
+0b: Rx Termination disabled
+1b: Rx Termination enabledDefault is same as ‘Terminated Link’ bit in PHY capability register.
+Note that this bit is always cleared to 0 for Advanced Packages. This 
+control is provided for debug purposes only.
+4R WTx Eq Enable
+0b: Eq Disabled
+1b: Eq Enabled
+Default is 0
+5R WRx Clock Mode Select
+0: Strobe Mode1: Free running mode
+Default is 0 if the Rx of the lo cal UCIe Module supports Strobe 
+Mode; otherwise, the bit is set to 1.
+This control is provided for debug pu rposes only. This bit is sent as 
+the ‘Clock Mode’ bit in the {MBINIT.PARAM configuration req} 
+sideband message.
+6R WRx Clock phase support select
+0: Differential clock only (all data rates)1: Quadrature clock (24/32 GT/s); 
+Differential clock (16 GT/s and lower)
+Default is 0.
+This control is provided for debug pu rposes only. This bit is sent as 
+the ‘Clock Phase’ bit in the {MBINIT.PARAM configuration req} 
+sideband message.
+7 RW/RsvdPForce x32 Width Mode in x64 Module
+This bit is used only for test and debug purposes. In normal 
+operation, this bit should be reset to 0.
+When set, this bit will force the x64 module to present “UCIe-A x32 
+bit =1” during the MBINIT.PARAM exchange phase independent of 
+the value of bit 20, APMW, in the UCIe Link Capability register.
+This bit applies to all modules in a multi-module link.
+For x32 Advanced Package modules, this bit is reserved.
+8 RW/RsvdPForce x8 Width Mode in a UCIe-S x16 Module
+This bit is used only for test and debug purposes. In normal 
+operation, this bit should be reset to 0.
+When set, this bit will force the x16 module to present “UCIe-S x8” 
+bit =1 during the MBINIT.PARAM exchange phase independent of 
+the value of bit 22, SPMW, in the UCIe Link Capability register. This feature can be used only when there is no lane reversal on the 
+UCIe-S x16 link.
+This bit applies only to Module 0 in  a multi-module link. When set in 
+a multi-module link, it trains only Module 0.
+For a x8 Standard Package Module, this bit is reserved.
+31:9 RsvdP Reserved
+--- Page 39 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 423
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.24 PHY Status (Offset 1008h)
+This register is global and not per module.
+Table 9-49. Physical Layer Status Register
+Bit Attribute Description
+2:0 RO Reserved
+3R ORx Termination Status
+0: Rx Termination disabled
+1: Rx Termination enabledDefault is same as ‘Terminated Link’ bit in PHY capability register.
+This is the current status of the lo cal UCIe Module. Note that this is 
+always 0 for Advanced Packages. For Standard packages, whether 
+the Rx decides to terminate the Link could depend on several factors (including channel length in the Package, etc.), and that 
+decision is implementation-specific. For Transmitter of a remote Link 
+partner, it needs this information in order to know whether to Hi-Z the Data and Track Lanes during clock gating and when not 
+performing Runtime Recalibration, re spectively. It is expected that 
+this information is known a priori at Package integration time, and the Transmitter is informed of this in an implementation-specific 
+manner.
+4R OTx Eq Status
+0: Eq Disabled
+1: Eq Enabled
+Default is 0
+5R OClock Mode Status
+0: Strobe Mode1: Free running mode
+Default is 0.
+This is remote partner’s advertised value during MBINIT.PARAM.
+6R OClock phase Status
+0: Differential clock only (all data rates)1: Quadrature clock (24/32 GT/s); 
+Differential clock (16 GT/s and lower)
+This is remote partner’s advertised value during MBINIT.PARAM.
+7R OLane Reversal within Module:  Indicates if Lanes within a module 
+are reversed
+0: Lanes within module not reversed1: Lanes within module are reversed
+31:8 RsvdP Reserved
+--- Page 40 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 424
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.25 PHY Initialization and Debug (Offset 100Ch)
+This register is global, and not per module.
+Table 9-50. Phy Init and Debug Register
+Bit Attribute Description
+2:0 RWInitialization control
+000b: Initialize to Active. This is the regular Link bring up.001b: Initialize to MBINIT (Debug mode) (i.e., pause training after 
+completing step-2 of MBINIT.PARAM).
+010b: Initialize to MBTRAIN (Debug/compliance mode) (i.e., pause 
+training after entering MBTRAI N after completing step-1 of 
+MBTRAIN.VALVREF).
+011b = Pause after completing step-1 of MBTRAIN.RXDESKEW; 
+regardless of entering for initial bring up or from Retrain.
+100b = Pause after completing step-1 of 
+MBTRAIN.DATATRAINCENTER2; regardless of entering for initial 
+bring up or from Retrain.
+All other encodings are reserved.
+When training has paused, the corresponding state timeouts must 
+be disabled, and hardware resumes training on any of the following triggers:
+• A 0b-to-1b transition on ‘Resume Training’ bit in this register• Sideband message for the correspo nding state is received from 
+remote link partner (e.g., if paused in MBINIT, receiving {MBINIT.CAL Done req} from remote link partner is also a 
+trigger to move forward)
+A device that does not support the UCIe Test and Compliance 
+register block is permitted to only implement encodings 000b 
+through 010b.
+Default is 000b.
+4:3 RsvdP Reserved
+5R WResume Training
+A 0b-to-1b transition on this bit triggers hardware to resume 
+training from the last link training state, achieved via ‘Initialization 
+Control’ field in this register until ACTIVE.
+A device that does not support the UCIe Test and Compliance 
+register block is permitted to hardwire this bit to 0b.
+Default is 0b.
+31:6 RsvdP Reserved
+--- Page 41 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 425
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.26 Training Setup 1 (Offset 1010h)
+This register is replicated per module. Offsets 101 0h to 101Ch are used in 4B increments for multi-
+module scenarios
+9.5.3.27 Training Setup 2 (Offset 1020h)
+This register is replicated per module. Offsets 1020h  to 102Ch are used in 4B offset increments for 
+multi-module scenarios.Table 9-51. Training Setup 1 Register
+Bit Attribute Description
+2:0 RWData pattern used during training
+000b: Per-Lane LFSR pattern
+001b: Per-Lane ID pattern010b: If @PHY-Compliance {Per-Lane Clock pattern AA pattern} 
+Else Reserved
+011b: If @PHY-Compliance {Per-Lane all 0 pattern} Else Reserved
+100b: If @PHY-Compliance {Per-Lane all 1 pattern} Else Reserved
+101b: If {@PHY-Compliance Per-Lane inverted Clock pattern} Else 
+Reserved
+All other encodings are reservedDefault is 000b.
+5:3 RWValid Pattern used during training
+000b: Functional valid pattern (1111 0000 (lsb first))
+All other encodings are reserved
+Default is 000b.
+9:6 RWClock Phase control
+0h: Clock PI center found by Transmitter1h: Left edge found through Data to clock training
+2h: Right edge found through Data to clock training
+All other encodings are reservedDefault = 0
+10 RWTraining mode
+0b: Continuous mode
+1b: Burst Mode
+Default = 0
+26:11 RWBurst Count : Indicates the duration of selected pattern (UI count)
+Default = 4h
+31:27 RsvdP Reserved
+Table 9-52. Training Setup 2 Register
+Bit Attribute Description
+15:0 RWIdle count : Indicates the duration of low following the burst (UI 
+count)
+Default = 4h
+31:16 RWIterations : Indicates the iteration count of bursts followed by idle 
+(UI count)
+Default = 4h
+--- Page 42 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 426
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.28 Training Setup 3 (Offset 1030h)
+This register is replicated per module. Offsets 1030h to 1048h are used in 8B offset increments for 
+multi-module scenarios.
+9.5.3.29 Training Setup 4 (Offset 1050h)
+This register is replicated per module. Offsets 1050h  to 105Ch are used in 4B offset increments for 
+multi-module scenarios.Table 9-53. Training Setup 3 Register
+Bit Attribute Description
+63:0 RWLane mask : Indicated the Lanes to mask during Rx comparison. 
+Example 1h = Lane 0 is masked during comparison.
+Default = 0 (no mask).
+Table 9-54. Training Setup 4 Register
+Bit Attribute Description
+3:0 RWRepair Lane mask : Indicated the Redundant Lanes to mask during 
+Rx comparison. Example 1h =RD0 is  masked during comparison 2h: 
+RD1 mask.
+Default = 0 (no mask).
+15:4 RWMax error Threshold in per Lane comparison : Indicates 
+threshold for error counting to start.
+For Tx-initiated tests, these values are sent in the corresponding 
+{Start Tx Init D to C point test req} and {Start Tx Init D to C eye 
+sweep req} sideband messages. The remote Link partner must use these values for checking e rrors against the threshold.
+For Rx-initiated tests, these values are sent in the corresponding 
+{Start Rx Init D to C point test re q} and {Start Rx Init D to C eye 
+sweep req} sideband messages as an inform. The receiver uses 
+these values for checking e rrors against the threshold.
+Default = 0 (all errors are counted).
+31:16 RWMax error Threshold in aggregate comparison : Indicates 
+threshold for error counting to start.
+For Tx-initiated tests, these values are sent in the corresponding 
+{Start Tx Init D to C point test req} and {Start Tx Init D to C eye 
+sweep req} sideband messages. The remote Link partner must use 
+these values for checking e rrors against the threshold.
+For Rx-initiated tests, these values are sent in the corresponding 
+{Start Rx Init D to C point test re q} and {Start Rx Init D to C eye 
+sweep req} sideband messages as an inform. The receiver uses 
+these values for checking e rrors against the threshold.
+Default = 0 (all errors are counted).
+--- Page 43 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 427
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.30 Current Lane Map Module 0 (Offset 1060h)
+9.5.3.31 Current Lane Map Module 1 (Offset 1068h)
+9.5.3.32 Current Lane Map Module 2 (Offset 1070h)
+9.5.3.33 Current Lane Map Module 3 (Offset 1078h)Table 9-55. Current Lane Map Module 0 Register
+Bit Attribute Description
+63:0 RWCurrent Rx Lane map (CLM) for Module-0 : If a bit is 1 it 
+indicates the corresponding physical Lane is operational. For 
+Standard package modules, bits 63:16 of this register are not 
+applicable. For UCIe-A x32 implemen tations (i.e., APMW bit in UCIe 
+Link Capability register is set), bits 63:32 of this register are not 
+applicable. Default Value is all 0s.
+Table 9-56. Current Lane Map Module 1 Register
+Bit Attribute Description
+63:0 RWCurrent Rx Lane map (CLM) for Module-1 : If a bit is 1 it 
+indicates the corresponding physical Lane is operational. For 
+Standard package modules, bits 63:16 of this register are not 
+applicable. For UCIe-A x32 implemen tations (i.e., APMW bit in UCIe 
+Link Capability register is set), bits 63:32 of this register are not 
+applicable. Default Value is all 0s.
+This register is reserved if Module 1 is not present
+Table 9-57. Current Lane Map Module 2 Register
+Bit Attribute Description
+63:0 RW/RsvdPCurrent Rx Lane map (CLM) for Module-2 : If a bit is 1 it 
+indicates the corresponding physical Lane is operational. For Standard package modules, bits 63:16 of this register are not 
+applicable. For UCIe-A x32 implemen tations (i.e., APMW bit in UCIe 
+Link Capability register is set), bits 63:32 of this register are not applicable. Default Value is all 0s.
+This register is reserved if Module 2 is not present
+Table 9-58. Current Lane Map Module 3 Register
+Bit Attribute Description
+63:0 RW/RsvdPCurrent Rx Lane map (CLM) for Module-3 : If a bit is 1 it 
+indicates the corresponding physical Lane is operational. For 
+Standard package modules, bits 63:16 of this register are not 
+applicable. For UCIe-A x32 implemen tations (i.e., APMW bit in UCIe 
+Link Capability register is set), bits 63:32 of this register are not 
+applicable. Default Value is all 0s.
+This register is reserved if Module 3 is not present
+--- Page 44 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 428
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.34 Error Log 0 (Offset 1080h)
+This register is replicated per module. Offsets 1080h  to 108Ch are used in 4B offset increments for 
+multi-module scenarios.
+Table 9-59. Error Log 0 Register
+Bit Attribute Description
+7:0 ROSState N : Captures the current Link training state machine status. 
+State Encodings are given by:
+00h RESET
+01h SBINIT
+02h MBINIT.PARAM03h MBINIT.CAL
+04h MBINIT.REPAIRCLK
+05h MBINIT.REPAIRVAL06h MBINIT.REVERSALMB
+07h MBINIT.REPAIRMB
+08h MBTRAIN.VALVREF09h MBTRAIN.DATAVREF
+0Ah MBTRAIN.SPEEDIDLE
+0Bh MBTRAIN.TXSELFCAL0Ch MBTRAIN.RXSELFCAL
+0Dh MBTRAIN.VALTRAINCENTER
+0Eh MBTRAIN.VALTRAINVREF0Fh MBTRAIN.DATATRAINCENTER1
+10h MBTRAIN.DATATRAINVREF
+11h MBTRAIN.RXDESKEW12h MBTRAIN.DATATRAINCENTER2
+13h MBTRAIN.LINKSPEED
+14h MBTRAIN.REPAIR15h PHYRETRAIN
+16h LINKINIT
+17h ACTIVE18h TRAINERROR
+19h L1/L2
+All other encodings are reservedDefault is 0
+8R O SLane Reversal : 1b indicates Lane Reve rsal within the module. 
+Default is 0
+9R O SWidth Degrade : 1b indicates Module width Degrade. Applicable to 
+Standard package only. Default is 0.
+15:10 RsvdZ Reserved
+23:16 ROSState (N-1) : Captures the state before State N was entered for 
+Link training state machine. State encodings are the same as State 
+N field.
+Default is 0
+31:24 ROSState (N-2) : Captures the state before State (N-1) was entered for 
+Link training state machine. State encodings are the same as State N field.
+Default is 0
+--- Page 45 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 429
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.35 Error Log 1 (Offset 1090h)
+This register is replicated per module. Offsets 1090h  to 109Ch are used in 4B offset increments for 
+multi-module scenarios.
+9.5.3.36 Runtime Link Test Control (Offset 1100h)Table 9-60. Error Log 1 Register
+Bit Attribute Description
+7:0 ROSState (N-3) : Captures the state status before State (N-2) was 
+entered. State encodings are the same as State N field.
+Default is 0
+8R W 1 C SState Timeout Occurred : Hardware sets this to 1b if a Link 
+Training State machine state or sub-state timed out and it was 
+escalated as a fatal error.
+Default value is 0b.
+9R W 1 C SSideband Timeout Occurred : Hardware sets this to 1b if a 
+sideband handshake timed out, for example, if a RDI request did not get a response for 8ms. Sideband handshakes related to Link 
+Training messages are not included here.
+Default value is 0b.
+10 RW1CSRemote LinkError received : Hardware sets this to 1b if remote 
+Link partner requested LinkError transition through RDI sideband.
+Default value is 0b.
+11 RW1CSInternal Error : Hardware sets this to 1b if any implementation 
+specific internal error occu rred in the Physical Layer.
+Default value is 0b. 
+31:12 RsvdZ Reserved
+Table 9-61. Runtime Link Test Control (Sheet 1 of 2)
+Bit Attribute Description
+0R W / R OImplementations are encouraged to implement this as an RO bit 
+with a default value of 0. However, for backward compatibility, 
+implementations are permitted to implement this as an RW bit with 
+a default value of 0.
+1R W / R OImplementations are encouraged to implement this as an RO bit 
+with a default value of 0. However, for backward compatibility, implementations are permitted to implement this as an RW bit with 
+a default value of 0.
+2R WApply Module 0 Lane Repair : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane 
+repair for this logical module id at  the next Retrain cycle, if this 
+Module is operational. For Standard Package, this bit will trigger a width degrade for logical Module 0, if possible and relevant.
+Default value is 0.
+3R WApply Module 1 Lane Repair : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane 
+repair for this logical module id at  the next Retrain cycle, if this 
+Module is operational. For Standard Package, this bit will trigger a 
+width degrade for logical Module 1, if possible and relevant.
+Default value is 0.
+These bits are reserved if Module 1 is not present.
+--- Page 46 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 430
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 4R WApply Module 2 Lane Repair : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane repair for this logical module id at  the next Retrain cycle, if this 
+Module is operational. For Standard Package, this bit will trigger a 
+width degrade for logical Module 2, if possible and relevant.
+Default value is 0.
+These bits are reserved if Module 2 is not present.
+5R WApply Module 3 Lane Repair : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane repair for this logical module id at  the next Retrain cycle, if this 
+Module is operational. For Standard Package, this bit will trigger a 
+width degrade for logical Module 3, if possible and relevant.
+Default value is 0.
+These bits are reserved if Module 3 is not present.
+6R WStart : Software writes to this bit before setting Link Retrain bit to 
+inform hardware that the contents of this register are valid. HW clears this bit to 0 after the Busy bit in the Runtime Link Test Status 
+register is set to 1.
+7R WInject Stuck-at fault : Software writes 1b to this bit to indicate 
+hardware must inject a stuck at fault for the Lane id identified in 
+Lane Repair id (the specific Modu le’s lane(s) in which the fault is 
+injected is indicated by the ‘Apply Module x Lane Repair’ bits) for the 
+corresponding field. Injecting the fa ult at Tx or Rx is implementation 
+specific.
+This bit takes effect during the next link retraining (see 
+Section 4.5.3.7  for further details).
+Default value is 0b.
+14:8 RWModule 0 Lane repair id : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane repair for this logical transmit Lane id in logical Module 0 at the next 
+Retrain cycle, if this Module is operational. For Standard Package, 
+this bit will trigger a width degrade for logical Module 0, if possible and relevant.
+Default is 0.These bits are reserved if Module 0 is not present.
+21:15 RWModule 1 Lane repair id : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane 
+repair for this logical transmit Lane id in logical Module 1 at the next 
+Retrain cycle, if this Module is operational. For Standard Package, this bit will trigger a width degrade for logical Module 1, if possible 
+and relevant.
+Default is 0.
+These bits are reserved if Module 1 is not present.
+28:22 RWModule 2 Lane repair id : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane repair for this logical transmit Lane id in logical Module 2 at the next 
+Retrain cycle, if this Module is operational. For Standard Package, 
+this bit will trigger a width degrade for logical Module 2, if possible and relevant.
+Default is 0.These bits are reserved if Module 2 is not present.
+35:29 RWModule 3 Lane repair id : For Advanced Package, software 
+programs this bit to inform Physical Layer hardware to apply Lane 
+repair for this logical transmit Lane id in logical Module 3 at the next 
+Retrain cycle, if this Module is operational. For Standard Package, this bit will trigger a width degrade for logical Module 3, if possible 
+and relevant.
+Default is 0.
+These bits are reserved if Module 3 is not present.
+63:36 RsvdP ReservedTable 9-61. Runtime Link Test Control (Sheet 2 of 2)
+Bit Attribute Description
+--- Page 47 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 431
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.37 Runtime Link Test Status (Offset 1108h)
+9.5.3.38 Mainband Data Repair (Offset 110Ch)
+This register is replicated per advanced module. For Standard package, this re gister is not applicable. 
+Offsets 110Ch to 1124h are used in 8B offset increments for multi-module scenarios.Table 9-62. Runtime Link Test Status Register
+Bit Attribute Description
+0R OBusy : Hardware loads 1b to this bit once Start bit is written by 
+software. Hardware loads 0b to th is bit once it has attempted to 
+complete the actions requested in Runtime Link Test Control 
+register.
+Default is 0
+31:1 RsvdZ Reserved
+Table 9-63. Mainband Data Repair Register (Sheet 1 of 2)
+Bit Attribute Description
+7:0 RORepair Address for TRD_P[0] : Indicates the physical Lane 
+repaired when TRD_P[0] is used in remapping scheme
+00h: TD_P[0] Repaired01h: TD_P[1] Repaired
+02h: TD_P[2] Repaired
+…...1Eh: TD_P[30] Repaired
+1Fh: TD_P[31] Repaired
+F0h: Repair attempt failedFFh: No Repair
+15:8 RORepair Address for TRD_P[1] : Indicates the physical Lane 
+repaired when TRD_P[1] is used in remapping scheme
+00h: Invalid01h: TD_P[1] Repaired
+02h: TD_P[2] Repaired
+…...1Eh: TD_P[30] Repaired
+1Fh: TD_P[31] Repaired
+F0h: Repair attempt failedFFh: No Repair
+23:16 RORepair Address for TRD_P[2] : Indicates the physical Lane 
+repaired when TRD_P[2] is used in remapping scheme
+20h: TD_P[32] Repaired
+21h: TD_P[33] Repaired22h: TD_P[34] Repaired
+…...
+3Eh: TD_P[62] Repaired3Fh: TD_P[63] Repaired
+F0h: Repair attempt failed
+FFh: No RepairThis field is reserved for UCIe-A x32 module implementations.
+--- Page 48 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 432
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 31:24 RORepair Address for TRD_P[3] : Indicates the physical Lane 
+repaired when TRD_P[3] is used in remapping scheme
+20h: Invalid
+21h: TD_P[33] Repaired
+22h: TD_P[34] Repaired…...
+3Eh: TD_P[62] Repaired
+3Fh: TD_P[63] RepairedF0h: Repair attempt failed
+FFh: No Repair
+This field is reserved for UCIe-A x32 module implementations.
+39:32 RORepair Address for RRD_P[0] : Indicates the physical Lane 
+repaired when RRD_P[0] is used in remapping scheme
+00h: RD_P[0] Repaired
+01h: RD_P[1] Repaired02h: RD_P[2] Repaired
+…...
+1Eh: RD_P[30] Repaired1Fh: RD_P[31] Repaired
+F0h: Repair attempt failed
+FFh: No Repair
+47:40 RORepair Address for RRD_P[1] : Indicates the physical Lane 
+repaired when RRD_P[1] is used in remapping scheme
+00h: RD_P[0] Repaired
+01h: RD_P[1] Repaired02h: RD_P[2] Repaired
+…...
+1Eh: RD_P[30] Repaired1Fh: RD_P[31] Repaired
+F0h: Repair attempt failed
+FFh: No Repair
+55:48 RORepair Address for RRD_P[2] : Indicates the physical Lane 
+repaired when RRD_P[2] is used in remapping scheme
+20h: RD_P[32] Repaired
+21h: RD_P[33] Repaired22h: RD_P[34] Repaired…...
+3Eh: RD_P[62] Repaired
+3Fh: RD_P[63] RepairedF0h: Repair attempt failed
+FFh: No Repair
+This field is reserved for UCIe-A x32 implementations.
+63:56 RORepair Address for RRD_P[3] : Indicates the physical Lane 
+repaired when RRD_P[3] is used in remapping scheme
+20h: RD_P[32] Repaired
+21h: RD_P[33] Repaired22h: RD_P[34] Repaired
+…...
+3Eh: RD_P[62] Repaired3Fh: RD_P[63] Repaired
+F0h: Repair attempt failed
+FFh: No RepairThis field is reserved for UCIe-A x32 module implementations.Table 9-63. Mainband Data Repair Register (Sheet 2 of 2)
+Bit Attribute Description
+--- Page 49 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 433
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.39 Clock, Track, Valid and Sideband Repair (Offset 1134h)
+This register is replicated per module. Offsets 1134h to 1140h are used in 4B offset increments for 
+multi-module scenarios.
+Table 9-64. Clock, Track, Valid and Sideband Repair Register
+Bit Attribute Description
+3:0 RORepair Address for TRDCK_P : Indicates the physical Lane 
+repaired when TRDCK_P  is used in remapping scheme
+0h: TCKP_P  Repaired
+1h: TCKN_P  Repaired
+2h: TTRK_P  Repaired
+7h: Repair attempt failed
+Fh: No Repair
+All other encodings are reserved.
+7:4 RORepair Address for RRDCK_P : Indicates the physical Lane 
+repaired when RRDCK_P  is used in remapping scheme
+0h: RCKP_P  Repaired
+1h: RCKN_P  Repaired
+2h: RTRK_P  Repaired
+7h: Repair attempt failed
+Fh: No RepairAll other encodings are reserved.
+9:8 RORepair Address for TRDVLD_P : Indicates the physical Lane 
+repaired when 
+TRDVLD_P  is used in remapping scheme
+00b: TVLD_P  Repaired
+01b: Repair attempt failed
+10b: Reserved
+11b: No Repair
+11:10 RORepair Address for RRDVLD_P : Indicates the physical Lane 
+repaired when RRDVLD_P  is used in remapping scheme
+00b: RVLD_P  Repaired
+01b: Repair attempt failed10b: Reserved
+11b: No Repair
+15:12 RsvdP Reserved
+19:16 RORepair Address for Sideband Transmitter : Indicates sideband 
+repair result for the Transmitter
+Result[3:0]
+23:20 RORepair Address for Sideband Receiver : Indicates sideband 
+repair result for the Transmitter
+Result[3:0]
+31:24 RsvdP Reserved
+--- Page 50 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 434
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.40 UCIe Link Heal th Monitor (UHM) DVSEC
+This DVSEC is an extended Capability. It is requir ed for all devices that support Compliance testing 
+(as indicated by the presence of Compliance/Test Register Locator) and optional otherwise. This 
+DVSEC contains the required registers for SW to re ad eye margin values per lane. SW Flow for Eye 
+Margining is as follows:
+• SW ensures that the Eye Margin Valid (EMV) bit in UHM_STS register is cleared
+• SW triggers a retrain of the link
+— When the retrain completes (as indicated by bit 16 in the UCIe Link Status register) and the 
+EMV bit is set in the UHM_STS register, SW can read the EM*_Ln*_Mod* registers in UHM DVSEC to know the margins. Receive marg ins are logged in the Tx UHM registers.
+Note that HW may also measure Eye Margins during HW-autonomous retraining and/or initial training 
+and if measured, is permitted to report it in the Eye Margin registers whenever the EMV bit is cleared.
+For x32 Advanced Packaging implementations, EML* and EMR* registers for Lanes 63:32 are RsvdP.
+Figure 9-5. UCIe Link Health Monitor (UHM) DVSEC
+PCI Express Extended Capability Header
+Designated Vendor Specific Header 1
+Reserved Designated Vendor Specific Header 2
+UHM_STS Reserved
+Reserved
+Reserved
+EMR_Ln1_Mod0 EML_Ln1_Mod0 EMR_Ln0_Mod0 EML_Ln0_Mod0
+EMR_Ln3_Mod0 EML_Ln3_Mod0 EMR_Ln2_Mod0 EML_Ln2_Mod0
+……
+EMR_Ln1_Mod1 EML_Ln1_Mod1 EMR_Ln0_Mod1 EML_Ln0_Mod1
+EMR_Ln3_Mod1 EML_Ln3_Mod1 EMR_Ln2_Mod1 EML_Ln2_Mod1
+…
+…
+Table 9-65. UHM DVSEC - Design ated Vendor Specific Header  1, 2 (Offsets 04h and 08h)
+Register Field Bit Location Value
+Designated Vendor-Specific Header 1 
+(offset 04h)DVSEC Vendor ID 15:0 D2DEh
+DVSEC Revision 19:16 0h
+Length 31:20 Design dependent
+Designated Vendor-Specific Header 2 
+(offset 08h)DVSEC ID 15:0 1h
+--- Page 51 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 435
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.3.40.1 UHM Status (Offset Eh)
+9.5.3.40.2 Eye Margin (Starting Offset 18h)Table 9-66. UHM Status
+Bit Attribute Description
+7:0 ROStep Count
+Step count used in the reporting of margin information. A value of 0 
+indicates 256. For example, a value of 32 indicates that the UI is equally 
+divided into 32 steps and Eye Margin registers provide the left and right 
+margins in multiples of UI/32.
+8R W 1 CEye Margin Valid (EMV)
+This bit, when set, indicates that ma rgin registers carry valid information 
+from the last retrain. SW must clear th is bit before initiating link retrain, 
+if it intends to measure eye margins during the retrain. On a SW-
+initiated link retrain, if after retrain, this bit is cleared, then SW should infer that there was some error in margin measurement.
+Note that HW logs any new Eye Margin measurements (whether it is 
+measured during SW-initiated retrain, during HW-autonomous 
+retraining, or during initial training) in the Eye Margin registers only 
+when this bit is cleared.
+15:9 RsvdP Reserved
+Table 9-67. EML_Lnx_Mody
+Bit Attribute Description
+7:0 ROEye Margin Left for Lane x and Module y
+Provides the left eye margin relative to the PI center, in units of UI/Step 
+Count.
+Table 9-68. EMR_Lnx_Mody
+Bit Attribute Description
+7:0 ROEye Margin Right for Lane x and Module y
+Provides the right eye margin relative to the PI center, in units of UI/
+Step Count.
+--- Page 52 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 436
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4 Test/Compliance Register Block
+The Test/Compliance register block is 8 KB in size with first 4 KB from base address (as enumerated 
+via register locator with Register Block Identifier of 1h) used for D2D Adapter-related Test/Compliance 
+registers and the second 4 KB used for PHY-related Te st/Compliance registers. For future extensibility, 
+these offsets are enumerable via the associated Register Block Offset registers, as shown in 
+Figure 9-6 .
+Figure 9-6. UCIe Test/Compliance Register Block
+
+--- Page 53 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 437
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.1 UCIe Register Block Header
+9.5.4.2 D2D Adapter Test/Comp liance Register Block Offset
+9.5.4.3 PHY Test/Compliance Register Block OffsetTable 9-69. UCIe Register Block Header (Offset 0h)
+Bit Attributes Description
+15:0 ROVendor ID
+Default is set to Vendor ID assigned for UCIe Consortium - D2DEh.
+31:16 ROVendor ID Register Block
+Set to 1h to indicate Test Compliance register block.
+35:32 ROVendor Register Block Version
+Set to 0h.
+63:36 RsvdP Reserved
+95:64 ROVendor Register Block Length
+The number of bytes in the register block including the UCIe register 
+block header.
+Default is 2000h.
+127:96 RsvdP Reserved
+Table 9-70. D2D Adapter Test/Complianc e Register Block Offset (Offset 10h)
+Bit Attributes Description
+7:0 ROD2D Adapter Test/Compliance Register Block Offset (D2DOFF)
+4-KB granular offset from Test/Compliance Register Block base 
+address for D2D Adapter Test/Compliance registers. This field should 
+be set to 0. However, SW must re ad this field to know the actual 
+offset, for future compatibility reasons.
+15:8 ROD2D Adapter Test/Complianc e Register Block Length
+4-KB granular length of the D2D Adapter Test/Compliance registers. 
+This field should be set to 1 to indicate 4-KB length. However, SW 
+must read this field to know the ac tual length, for future compatibility 
+reasons.
+31:16 RsvdP Reserved
+Table 9-71. PHY Test/Compliance Re gister Block Offset (Offset 14h)
+Bit Attributes Description
+7:0 ROPHY Test/Compliance Register Block Offset (PHYOFF)
+4-KB granular offset from Test/Compliance Register Block base 
+address for PHY Adapter Test/Compliance registers. This field should 
+be set to 1, indicating that the registers start at 4 KB from the base 
+address. However, SW must read this  field to know the actual offset, 
+for future compatibility reasons.
+15:8 ROPHY Test/Compliance Register Block Length
+4-KB granular length of the PHY Test/Compliance registers. This field 
+should be set to 1 to indicate 4- KB length. However, SW must read 
+this field to know the actual leng th, for future compatibility reasons.
+31:16 RsvdP Reserved
+--- Page 54 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 438
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.4 D2D Adapter Test/C ompliance Register Block
+9.5.4.4.1 Adapter Compliance Control
+Table 9-72. Adapter Compliance Control (Offset 20h from D2DOFF)
+Bit Attributes Description
+1:0 RWCompliance Mode
+Any write to this register takes effect after the next entry of RDI state 
+status to Retrain.
+• 00b = Normal mode of operation
+• 01b = PHY only Link Training or Retraining
+— Adapter performs the necessary RDI handshakes to bring 
+RDI to Active but does not perform Parameter exchanges or Adapter vLSM handshakes and keeps FDI in Reset to 
+prevent mainband traffic.
+— Adapter must still trigger RDI to Retrain if software 
+programmed the Retrain bit in Link Control.
+— Sideband Register Access requests and completions are 
+operational in this mode.
+• 10b = Adapter Compliance
+— Adapter performs the necessary RDI handshakes to bring 
+RDI to Active but does not perform Parameter exchanges or Adapter vLSM handshakes (unless triggered by software) 
+and keeps FDI in Reset.
+— Adapter only performs actions based on the triggers and 
+setup according to the registers defined in Section 9.5.4.4.2  
+to Section 9.5.4.4.6 .
+— Adapter must still trigger RDI to Retrain if software 
+programmed the Retrain bit in Link Control.
+— Sideband Register Access requests and completions are 
+operational in this mode.
+• 11b = Reserved
+Any RDI transition to LINKERROR when this field is either 01b or 10b 
+does not reset any registers.
+Default is 00b.
+2R WForce Link Reset
+If set to 1b, Adapter transitions RDI to LinkError state.
+This bit is used by Compliance software to re-initialize the DUT 
+anytime during Compliance testing. If SW expectation is that the DUT 
+reinitializes to normal mode at the end of link reset, the Compliance 
+Mode field in this register must be 00b and the Compliance Enable for 
+PHY bit in the PHY Compliance Control Register must be 0b.
+31:3 RsvdP Reserved
+--- Page 55 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 439
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.4.2 Flit Tx Injection Control
+Table 9-73. Flit Tx Injection Control (Offset 28h from D2DOFF) (Sheet 1 of 2)
+Bit Attributes Description
+0R WFlit Tx Injection Enable
+Setting this bit to 1b starts Flit injection from the Adapter to the PHY 
+at the Transmitter. Clearing this bit to 0b stops Flit injection on the Link.
+Default is 0b.
+3:1 RWFlit Type
+Type of Flit injected.
+• 000b = Adapter NOP Flits. These bypass TX retry buffer.
+• 001b = Test Flits.
+• 010b = Alternate between NOP Flits and Test Flits.• All other encodings are reserved.
+Default is 000b.
+5:4 RWInjection mode
+• 00b = Continuous injection of Flits as specified by Flit Type field.
+• 01b = Inject ‘Flit Inject Number’ of Flits contiguously without any 
+intervening Protocol Flits.
+• 10b = Inject ‘Flit Inject Number’ of Flits while interleaving with 
+Protocol Flits. If Protocol Flit s are available, alternate between 
+Protocol Flits and Injected Flits. If no Protocol Flits are available 
+then, inject consecutively.
+• 11b = Reserved.
+Default is 00b.
+13:6 RWFlit Inject Number
+If the Injection mode is not 00b, this field indicates the number of Flits 
+injected.
+Default is 00h.
+17:14 RWPayload Type
+This field determines the payload type used if Test Flits are injected. 
+Payload includes all bits in the Flit  with the exception of Flit Header, 
+CRC, and Reserved bits.
+• 0h = Fixed 4B pattern picked up from ‘Payload Fixed Pattern’ field 
+of this register, inserted so as to cover all the Payload bytes (with the same pattern replicated in incrementing 4B chunks)
+• 1h = Random 4B pattern picked up from a 32b LFSR (linear 
+feedback shift register used for pseudo random pattern 
+generation), inserted so as to cover all the Payload bytes (with the same pattern replicated in incrementing 4B chunks)
+• 2h = Fixed 4 byte pattern picked up from ‘Payload Fixed Pattern’ 
+field of this register, inserted once at the ‘Flit Byte Offset’ location 
+within the Flit
+• 3h = Random 4B pattern picked up from a 32b LFSR, inserted 
+once at the ‘Flit Byte Offset’ locati on within the Flit and the rest of 
+the payload is assigned 0b
+• 4h = Same as 2h, except the 4B pattern is injected every ‘Pattern 
+Repetition’ bytes starting with ‘Flit Byte Offset’
+• 5h = Same as 3h, except the 4B pattern is injected every ‘Pattern 
+Repetition’ bytes starting with ‘Flit Byte Offset’ and the rest of the payload is assigned 0b
+• All other encodings are reserved
+Default is 0h.
+LFSR seed and primitive polynomial choice is implementation specific.
+Note: While in mission mode, because scrambling is al ways enabled, 
+changing the Payload Type may have no benefit. This may, 
+however, be useful during compliance testing with scrambling 
+disabled.
+--- Page 56 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 440
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.4.3 Adapter Test Status (Offset 30h from D2DOFF)25:18 RW Flit Byte Offset
+See ‘Payload Type’. Default is 00h.
+31:26 RWPattern Repetition
+See ‘Payload Type’. A value of 00h or 01h must be interpreted as a 
+single pattern occurrence.
+Default is 00h.
+63:32 RWPayload Fixed Pattern
+See ‘Payload Type’. Default is 0000 0000h.
+Table 9-74. Adapter Test Status (Sheet 1 of 2)
+Bit Attributes Description
+0R OCompliance Status
+If Adapter is in ‘PHY only Link Training or Retraining’ or ‘Adapter 
+Compliance’ mode, it is set to 1b; otherwise, it is 0b.
+2:1 ROFlit Tx Injection Status
+• 00b = No Flits injected.
+• 01b = At least one Flit was injected, but not completed. For 
+Continuous Injection mode, this will be the status until Flit 
+Injection Enable transitions from 1b to 0b.
+• 10b = Completed Flit Injection, for cases in which a finite number 
+of Flit injections was set up.
+• 11b = Flit Injection Enable transi tioned from 1b to 0b before Flit 
+injections were complete.
+This field is cleared to 00b on a 0b-t o-1b transition of Flit Injection 
+Enable bit. Default is 00b.
+4:3 RW1CFlit Rx Status
+• 00b = No Test Flits received• 01b = Received at least one Test Flit without CRC error
+• All other encodings are reserved
+Default is 00b.
+5R OLink State Request Injection Status for Stack 0
+• 0b = No request injected• 1b = Completed Request Injection
+This bit is cleared to 0b on a 0b-to-1b transition of ‘Link State Request 
+or Response Injection Enable’.
+6R OLink State Response Injection Status for Stack 0
+• 0b = No response injected• 1b = Completed Response Injection
+This bit is cleared to 0b on a 0b-to-1b transition of ‘Link State Request 
+or Response Injection Enable’.
+7R OLink State Request Injection Status for Stack 1
+• 0b = No request injected
+• 1b = Completed Request Injection
+This bit is cleared to 0b on a 0b-to-1b transition of ‘Link State Request 
+or Response Injection Enable’.Table 9-73. Flit Tx Injection Control (Offset 28h from D2DOFF) (Sheet 2 of 2)
+Bit Attributes Description
+--- Page 57 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 441
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.4.4 Link State Injection Control Stack 0 (Offset 34h from D2DOFF)
+As mentioned in Section 11.2 , this register only takes effect  when the Adapter is in Adapter 
+Compliance Mode.8R OLink State Response Injection Status for Stack 1
+• 0b = No response injected
+• 1b = Completed Response Injection
+This bit is cleared to 0b on a 0b-to-1b transition of ‘Link State Request 
+or Response Injection Enable’.
+10:9 RORetry Injection Status
+• 00b = No errors injected on Transmitted Flits• 01b = Injected error on at least one transmitted Flit
+• 10b = Finished error injectio n sequence on transmitted Flits
+• 11b = Reserved
+This field is cleared to 00b on a 0b-to-1b transition of ‘Retry Injection 
+Enable’.
+11 RONumber of Retries Exceeded Threshold
+Set to 1b if the number of inde pendent retry events exceed the 
+threshold defined in ‘Tx Retry Error Threshold’.
+This bit is cleared to 0b on a 0b-to-1b transition of ‘Retry Injection 
+Enable’.
+31:12 RsvdZ Reserved
+Table 9-75. Link State Injection Control Stack 0
+Bit Attributes Description
+0R WLink State Request or Response Injection Enable at Tx
+• 0b = Link State Request or Response Injection not enabled at Tx
+• 1b = Link State Request or Response Injection enabled at Tx
+1R WInjection Type
+• 0b = Inject a request packet with the request matching “Link 
+Request” field
+• 1b = Inject a response packet with the response matching “Link 
+Response” field when a request matching “Link Request” field is 
+received
+5:2 RWLink Request
+The encodings match the State request encodings of FDI.
+9:6 RWLink Response
+The encodings match the State response encodings of FDI.
+31:10 RsvdP ReservedTable 9-74. Adapter Test Status (Sheet 2 of 2)
+Bit Attributes Description
+--- Page 58 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 442
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.4.5 Link State Injection Control Stack 1 (Offset 38h from D2DOFF)
+As mentioned in Section 11.2 , this register only takes effect  when the Adapter is in Adapter 
+Compliance Mode.
+9.5.4.4.6 Retry Injection Control (Offset 40h from D2DOFF)Table 9-76. Link State Injection Control Stack 1
+Bit Attributes Description
+0R WLink State Request or Response Injection Enable at Tx
+• 0b = Link State Request or Response Injection not enabled at Tx
+• 1b = Link State Request or Response Injection enabled at Tx
+1R WInjection Type
+• 0b = Inject a request packet with the request matching “Link 
+Request” field
+• 1b = Inject a response packet with the response matching “Link 
+Response” field when a request matching “Link Request” field is 
+received
+5:2 RWLink Request
+The encodings match the State request encodings of FDI.
+9:6 RWLink Response
+The encodings match the State response encodings of FDI.
+31:10 RsvdP Reserved
+Table 9-77. Retry Injection Control (Sheet 1 of 2)
+Bit Attributes Description
+0R WRetry Injection Enable
+Setting this bit to 1b enables and star ts error injections at Tx to force 
+Retry on the UCIe Link.
+Clearing this bit to 0b stops Flit injection on the Link.
+Default is 0b.
+3:1 RWError Injection Type on Transmitted Flits
+• 000b = No errors injected on Transmitted Flits
+• 001b = 1-bit error injected in ‘Byte Offset’ of the Flit, it is 
+permitted to invert any bit in the corresponding byte position
+• 010b = 2-bit error injected in ‘Byte Offset’ of the Flit, it is 
+permitted to invert any two bi ts in the corresponding byte 
+position
+• 011b = 3-bit error injected in ‘Byte Offset’ of the Flit, it is 
+permitted to invert any three bits in the corresponding byte position
+• All other encodings are reserved
+Default is 000b.
+11:4 RWByte Offset
+See ‘Error Injection Type on Transmitted Flits’.
+00h means error is injected on Byte 0, 01h means error is injected in 
+Byte 1, and so on.
+Default is 00h.
+19:12 RWNumber of Flits between Injected Errors
+A nonzero value indicates the exact number of Flits after which a 
+subsequent error is injected. A valu e of 0 will inject errors after a 
+pseudo-random number of Flits between 1 and 31, chosen from a 32b LFSR output.
+Default is 00h.
+--- Page 59 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 443
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 27:20 RWNumber of Errors Injected
+Represents the number of errors injected on the Transmitted Flits. 
+A value of 0 indicates that the erro r injection continues until the Retry 
+Injection Enable is disabled.
+Default is 00h.
+30:28 RWFlit Type for Error Injection
+• 000b = Inject errors on any Flit type.
+• 001b = Only inject errors on NOP Flits.
+• 010b = Only inject errors on Payload Flits (Protocol Flits or Test 
+Flits).
+• 011b = Only inject errors on Test Flits.• 100b = Only inject errors on Payload Flits. Subsequent errors 
+injected on the same sequence number (‘Number of Flits between Injected Errors’ is ignored for this case).
+Note: The 100b value can be used to test Replay number Rollover 
+rules.
+• All other encodings are reserved
+Default value is 000b.
+31 RsvdP Reserved
+35:32 RWTx Retry Error Threshold
+If the number of independent retry events exceeds this threshold, 
+Adapter must log this in ‘Number of Retries Exceeded Threshold’ and 
+trigger Retrain on RDI. RDI state status going to Retrain also clears 
+the internal count of independent retry events.
+Default value is 0h.
+63:36 RsvdP ReservedTable 9-77. Retry Injection Control (Sheet 2 of 2)
+Bit Attributes Description
+--- Page 60 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 444
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.5 PHY Test/Compliance Register Block
+Certain register bits described in this section take effect only when the PHY enters “PHY Compliance” 
+mode. This mode is entered when bit 0 of ‘Physical Layer Compliance Control 1’ register is written and 
+PHY subsequently enters PHYRETRAIN state. The latter happens when SW retrains the link. These 
+register bits are tagged with @PHY-Compliance for easy readability and intuitive understanding.
+Transition to TRAINERROR @PHY-Compliance does not reset any registers.SW is required to place the Adapter in one of  the Compliance modes (defined in the Adapter 
+Compliance Control register) before enabling @PHY-Compliance.
+All modules of a Link must be in @PHY-Compliance at the same time. The Link behavior is undefined 
+if a subset of modules of a Link are in @PHY-Compliance and others are not. All registers in this 
+section are replicated, one per module, as follows:
+• Module 0 registers start at Offset 000h from PHYOFF
+• Module 1 registers start at Offset 400h from PHYOFF• Module 2 registers start at Offset 800h from PHYOFF
+• Module 3 registers start at Offset C00h from PHYOFF
+If certain modules are not implemented, those regi sters become reserved (as shown with gray boxes 
+in Figure 9-6 ).
+9.5.4.5.1 Physical Layer Compliance Control 1 (Offsets 000h, 400h, 800h, and C00h 
+from PHYOFF)
+Table 9-78. Physical Layer Compliance Control 1 (Sheet 1 of 2)
+Bit Attributes Description
+0R WCompliance Enable for Physical Layer
+Setting this bit to 1b puts the Phys ical Layer in “PHY Compliance” on 
+the next entry into PHYRETRAIN stat e. Even if RDI status moves to 
+Active, it does not assert pl_trdy  to the Adapter in this mode.
+Default is 0b.
+1R WScrambling Disabled
+@PHY-Compliance, when set to 1b, Physical Layer disables 
+scrambling.
+Default is 0b.
+2R WPHY Compliance Operation Trigger
+@PHY-Compliance, transitioning this bit from 0b-to-1b starts one 
+iteration of the Link training basic operations set by ‘PHY Compliance Operation Type’.
+‘PHY Compliance Operation Type’ fi eld identifies which of the Link 
+training basic operations is performed. ‘Training Setup 1’, ‘Training 
+Setup 2’, ‘Training Setup 3’, and ‘Training Setup 4’ registers determine 
+the parameters to be used for this.
+Default is 0b. 
+--- Page 61 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 445
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 5:3 RWPHY Compliance Operation Type
+@PHY-Compliance, where the Link training basic operation (see 
+Section 4.5.1 ) is performed when ‘PHY Compliance Operation Trigger’ 
+transitions from 0b to 1b
+• 000b = No operation
+• 001b = Transmitter initiated Data-to-Clock point test (see 
+Section 4.5.1.1 )
+• 010b = Transmitter initiated Data-to-Clock eye width sweep (see 
+Section 4.5.1.2 )
+• 011b = Receiver initiated Data-to-Clock point training (see 
+Section 4.5.1.3 )
+• 100b = Receiver initiated Data-to-Clock width sweep training (see 
+Section 4.5.1.4 )
+• All other encodings are reserved
+7:6 RsvdP Reserved
+9:8 RWRx Vref Offset Enable
+@PHY-Compliance:
+• 00b = No change to trained Rx Vref value
+• 01b = Add Rx Vref offset to trained Rx Vref value (up to 
+maximum permitted Vref value)
+• 10b = Subtract Rx Vref offset to trained Rx Vref value (down to 
+minimum permitted Rx Vref, any negative value to be terminated 
+at 0)
+• 11b = Reserved
+17:10 RWRx Vref Offset
+@PHY-Compliance, when ‘Rx Vref Offs et Enable’ is set to 01b or 10b, 
+this is the value that needs to be added or subtracted as defined in ‘Rx 
+Vref Offset Enable’.
+The Rx Vref value, after applying the Rx Vref offset, is expected to be 
+monotonically increasing/decreasing with increasing/decreasing values of Rx Vref offset relative to the trained value and must have 
+sufficient range to cover the input eye mask range defined in 
+Chapter 5.0 .
+Rx Vref Offset will be applied during  Tx or Rx Data to Point Training 
+and the Physical Layer must compare the per Lane errors with ‘Max error Threshold in per-Lane compar ison’, and aggregate Lane errors 
+with ‘Max Error Threshold in Aggregate Comparison’ in the ‘Training 
+Setup 4’ register. If the errors  measured are greater than the 
+corresponding threshold, then the de vice must set the Rx Vref offset 
+status register to “failed”.
+Software must increase or decrease the Rx Vref Offset by one from 
+the previous value.
+Default is 00h.
+63:18 RsvdP ReservedTable 9-78. Physical Layer Compliance Control 1 (Sheet 2 of 2)
+Bit Attributes Description
+--- Page 62 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 446
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.5.2 Physical Layer Compliance Control 2 (Offsets 008h, 408h, 808h, and C08h 
+from PHYOFF)
+Table 9-79. Physical Layer Compliance Control 2
+Bit Attributes Description
+0R WEven UI Compare Mask
+@PHY-Compliance, if this bit is set,  any compare results for even UIs are 
+masked (i.e., not counted toward error in per Lane or aggregate comparison (see Section 4.4 )), where Even UI refers as to a Unit Interval data eye, the 
+first data UI and every subsequent alternate UI.
+• 0b = No even UI compare result masking
+• 1b = Even UI compare result masked
+Default is 0b.
+1R WOdd UI Compare Mask
+@PHY-Compliance, if this bit is set,  any compare results for odd UIs are 
+masked (i.e., not counted toward error in per Lane or aggregate comparison (see Section 4.4 )), where Odd UI refers as to a Unit Interval data eye, the 
+second data UI and every subsequent alternate UI).
+• 0b = No odd UI compare result masking
+• 1b = Odd UI compare results masked
+Default is 0b.
+2R WTrack Enable
+If @PHY-Compliance {
+If this bit is set, Track Transmission is enabled during one of the operations 
+set by ‘PHY compliance operation type’. Track transmission complies with 
+descriptions in Section 5.5.1 .
+}
+Else {
+The appropriate sideband handshakes as described in Section 4.6  needs to 
+be followed irrespective of the value of this bit
+}
+3R WCompare Setup
+• 0b = Aggregate comparison•1 b  =  P e r  L a n e  c o m p a r i s o n
+Default is 0b. See Section 4.4  for more details.
+31:4 RsvdP Reserved
+--- Page 63 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 447
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.5.3 Physical Layer Compliance Status 1 (Offsets 010h, 410h, 810h, and C10h from 
+PHYOFF)
+9.5.4.5.4 Physical Layer Compliance Status 2 (Offsets 018h, 418h, 818h, and C18h from 
+PHYOFF)Table 9-80. Physical Layer Compliance Status 1
+Bit Attributes Description
+0R OPHY in Compliance mode
+If (@PHY-Compliance) 1b.
+Else 0b.
+1R OPHY Compliance operation status
+If (@PHY-Compliance) {
+This bit is set to 1b if ‘PHY co mpliance operation type’ in ‘Physical 
+Layer Compliance Control 1’ register is 001b, 010b, 011b, or 100b and 
+hardware has performed the required operation.
+Else the bit is cleared to 0b.
+}
+3:2 RW1CRx Vref Offset Operation Status
+@PHY-Compliance:
+• 00b = Device does not support ap plying any Rx Vref Offset value
+• 01b = ‘Rx Vref Offset’ has not been applied
+• 10b = Rx Vref Offset has been successfully applied• 11b = Did not apply ‘Rx Vref Offset’ as the resulting value 
+exceeds the value supported by hardware
+Default is 00b.
+31:4 RsvdZ Reserved
+Table 9-81. Physical Layer Compliance Status 2
+Bit Attributes Description
+31:0 RW1CAggregate Error Count
+@PHY-Compliance, this is the Error count of aggregate error 
+comparison when ‘PHY Compliance Operation Type’ is 001b or 011b 
+(performing point tests).
+Default is 0000 0000h.
+39:32 ROSupported Rx Vref Range Up
+Max step count supported up from the trained Rx Vref value for Vref 
+margining.
+47:40 ROSupported Rx Vref Range Down
+Max step count supported down from the trained Rx Vref value for 
+Vref margining.
+55:48 ROTrained Value for Rx Vref
+Rx Vref as trained, in resolution counts.
+63:56 ROVref Step Count Resolution
+Increase in Vref value in mV between two consecutive encodings in 
+ascending order.
+--- Page 64 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 448
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.5.4.5.5 Physical Layer Compliance Status 3 (Offsets 020h, 420h, 820h, and C20h from 
+PHYOFF)
+9.5.5 Implementation Specific Register Blocks
+These are left to be vendor defined. There is a separate implementation specific register Block for 
+D2D Adapter and PHY. These register blocks should carry the same header as defined in Table 9-26 , 
+at offset 0h of the register block. And the VendorID  should be set to the specific vendor’s ID and the 
+‘VendorID register block’ field set to 2h or 3h to indicate that it is a vendor specific register block. The 
+other fields in that header are set by the vendor to track their revision number and the block length. 
+Max length cannot exceed 1MB in size and length is  always in multiples of 4KB. Implementations are 
+highly encouraged to pack registers and reduce  length of the region as much as possible.Table 9-82. Physical Layer Compliance Status 3
+Bit Attributes Description
+63:0 ROPer Lane Comparison Result
+Per Lane comparison result in PHY Compliance when ‘PHY Compliance 
+Operation Type’ is 001b or 011b (performing point tests) and 
+‘Comparison Setup’ is 1b (Per Lane comparison)
+[63:0]: Compare Results of all Logical Data Lanes (0hFail (Errors > Max Error Threshold), 1h
+Pass (Errors <= Max Error Threshold))
+UCIe-A {
+RD_L[63] , RD_L[62] , …, RD_L[1] , RD_L[0] }
+UCIe-A x32 {32'h0, RD_L[31 ], RD_L[30] , …, RD_L[1] , RD_L[0] }
+UCIe-S {48'h0, RD_L[15] , RD_L[14] , …, RD_L[1] , RD_L[0] }
+Default is all 0s.
+--- Page 65 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 449
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.6 UCIe Link Registers in St reaming Mode and System SW/
+FW Implications
+IMPLEMENTATION NOTE
+While the SW view of Protocol Layer fo r streaming protocols is implementation-
+specific, it is strongly recommended that UCIe link-related registers defined in this 
+chapter be implemented as-is for streaming mode solutions as well. If a streaming 
+mode solution chooses to support the industry-standard PCIe hierarchical tree model 
+for enumeration/control, it must be compliant with the enumeration model and 
+registers defined in this chapter. A UCIe po rt in such an implementation would expose 
+UCIe link registers consistent with the RP/D SP or EP/USP functionality it represents.
+In some streaming mode solutions, it migh t be desirable to implement UCIe link as a 
+fully symmetric link, such as in a Symmetric Multi-Processing system that uses UCIe as a D2D interconnect. In such solutions, there is no notion of Upstream Port or 
+Downstream Port on a UCIe link and also  typically system firmware knows the D2D 
+link connections a priori and it is able to  configure them without requiring any “link 
+discovery” mechanisms. It is recommended that both ends of the link implement 
+UCIe registers defined for a Root Port, in such streaming mode solutions. Note that in 
+this model, several link-related featur es become fully symmetric as well. For 
+example, link training, mailbox trigger, and direct link-event/error reporting to 
+Software are now possible from either end of the link. Whether such symmetric UCIe 
+links are exposed to OS for native management, or system FW fully manages these links, is a system-architecture choice. Exposing such links natively to the OS could be 
+in the form of exposing each side as an ACPI device or in the form of an FW 
+intermediary that emulates a traditional PCIe hierarchical tree model for the symmetric link. Such choices are implemen tation-specific and could depend on the 
+extent of OS support for symmetric topology.
+--- Page 66 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 450
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 9.7 MSI and MSI-X Capability in Hosts/Switches for UCIe 
+Interrupt
+Follow the base spec for details, but MSI/MSI-X capability implemented in host and switch must 
+request 2 vectors for UCIe usage - 1 for Link status events and 1 for Link error events. Note that in 
+MSI scenario, OS might not always allot both the requested vectors and in that case both the Link 
+Status and Link error events use the same MSI vector number. The MSI designs must also support the 
+Pending and Mask bits. MSI capability in UiRB must al ways set the ‘Next Capability Pointer’ field to 0h. 
+SW must check for a value of 0005h in Bytes 0 an d 1 of a capability to infer that it is an MSI 
+capability. SW must terminate the capability linked list in UiRB when it sees the MSI Capability.
+9.8 UCIe Early Discovery Table (UEDT)
+Table 9-83. UEDT Header
+Field Byte OffsetLength
+in BytesDescription
+Signature 00h 4Signature for the UCIe Early Discovery Table 
+(UEDT).
+Length 04h 4 Length, in bytes, of the entire UEDT.Revision 08h 1 Value is 1h for the first UCIe instance.
+Checksum 09h 1 Entire table must sum to 0.
+OEM ID 0Ah 6 OEM IDOEM Table ID 10h 8 Manufacturer Model ID
+OEM Revision 18h 4 OEM Revision
+Creator ID 1Ch 4 Vendor ID of the utility that created this table.Creator Revision 20h 4 Revision of the utility that created this table.
+UEDT Structure[n] 24h VariesA list of UEDT structures for this 
+implementation.
+• 0h = UCIe Link structure (UCLS)
+• All other encodings are reserved
+Table 9-84. UCIe Link Structure (UCLS) (Sheet 1 of 2)
+Field Byte OffsetLength
+in BytesDescription
+Type 00h 1 Signature for the UCIe Early Discovery Table (UEDT).
+Revision 01h 1 Value is 1h for the first UCLS definition.Record Length 02h 2 Length of this record, in bytes.
+UID 04h 4Host Bridge Unique ID. Us ed to associate a UCLS 
+instance with a Host Bridge instance. The value of this field shall match the output of UID under the associated 
+Host Bridge in ACPI namespace.
+UCIe Stack Size 08h 4•1 h  =  O n e  R P
+•2 h  =  T w o  R P s
+Reserved 0Ch 4 ReservedBase 10h 8 Base address of UiRB, aligned to a 4-KB boundary.
+--- Page 67 ---
+Configuration and Parameters
+UCIe Specification Revision 2.0, Version 1.0 451
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 § §Length 18h 8Can range anywhere from 12 KB to 2 MB, in multiples 
+of 4 KB.
+DF1 20h 1Device Function of the PCIe/CXL RP 1 associated with 
+the UCLS.
+DF2 21h 1Device Function of the PCIe/CXL RP 2 (if multi-stack 
+implementation) associated with the UCLS.Table 9-84. UCIe Link Structure (UCLS) (Sheet 2 of 2)
+Field Byte OffsetLength
+in BytesDescription

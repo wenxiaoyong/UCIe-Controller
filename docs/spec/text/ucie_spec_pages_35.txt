@@ -1,0 +1,457 @@
+
+--- Page 1 ---
+UCIe Specification Revision 2.0, Version 1.0 35
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.0 Introduction
+This chapter provides an overview of the Universa l Chiplet Interconnect express (UCIe) architecture. 
+UCIe is an open, multi-protocol capable, on-packa ge interconnect standard for connecting multiple 
+dies on the same package. The primary motivation is to enable a vibrant ecosystem supporting 
+disaggregated die architectures which can be inte rconnected using UCIe. UCIe supports multiple 
+protocols (PCIe, CXL, Streaming, and a raw format th at can be used to map any protocol of choice as 
+long as both ends support it) on top of a common physical and Link layer. It encompasses the 
+elements needed for SoC construction such as the application layer, as well as the form-factors 
+relevant to the package (e.g., bump locati on, power delivery, thermal solution, etc.). 
+UCIe Manageability Architecture is an optional  mechanism to manage a UCIe-based System-in-
+Package (SiP) by provisioning for a common ma nageability architecture and hardware/software 
+infrastructure to be leveraged across implementati ons. UCIe DFx Architecture (UDA) leverages the 
+UCIe Manageability Architecture to provide a standa rdized test and debug in frastructure for a UCIe-
+based SiP.
+The specification is defined to ensure interoperabili ty across a wide range of devices having different 
+performance characteristics. A well-defined debug and compliance mechanism is provided to ensure 
+interoperability. It is expected that the specificat ion will evolve in a backward compatible manner.
+While UCIe supports a wide range of usage models, so me are provided here as an illustration of the 
+type of capability and innovation it can unleash in the compute industry. The initial protocols being 
+mapped to UCIe are PCIe, CXL, and Streaming. Th e mappings for all protocols are done using a Flit 
+Format, including the Raw Format. Both PCIe and CXL are widely used and these protocol mappings will enable more on-package integration by replac ing the PCIe SERDES PHY and the PCIe/CXL LogPHY 
+along with the Link level Retry with a UCIe Adap ter and PHY to improve the power and performance 
+characteristics. UCIe provisions for Streaming protocols to also leverage the Link Level Retry of the UCIe Adapter, and this can be used to provide reliab le transport for protocols other than PCIe or CXL. 
+UCIe also supports a Raw Format that is protocol-agnostic to enable other protocols to be mapped; 
+while allowing usages such as integrating a standa lone SERDES/transceiver tile (e.g., ethernet) on-
+package. When using Raw Format, the Protocol Layer is responsible for reliable transport across the 
+UCIe Link.
+Figure 1-1  demonstrates an SoC package composed of CPU Dies, accelerator Die(s) and I/O Tile 
+Die(s) connected through UCIe. The accelerator or I/O Tile can use CXL transactions over UCIe when 
+connected to a CPU — leveraging the I/O, coherency, and memory protocols of CXL. The I/O tile can 
+provide the external CXL, PCIe, and DDR pins of the package. The accelerator can also use PCIe 
+transactions over UCIe when connected to a CPU. The CPU to CPU connectivity on-package can also 
+use the UCIe interconnect, running coherency protocols.
+--- Page 2 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 36
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 A UCIe Retimer may be used to extend the UCIe  connectivity beyond the package using an Off-
+Package Interconnect. Examples of Off-Package Interc onnect include electrical cable or optical cable 
+or any other technology to connect packages at a Rack/Pod level as shown in Figure 1-2 . The UCIe 
+specification requires the UCIe Retimer to implement the UCIe interface to the Die that it connects on 
+its local package and ensure that the Flits are de livered to the remote UCIe Die interface in the 
+separate package following UCIe protocol using the channel extension technology of its choice.
+Figure 1-2  demonstrates a rack/pod-level disaggregation using CXL protocol. Figure 1-2a  shows the 
+rack level view where multiple compute nodes (vir tual hierarchy) from different compute chassis 
+connect to a CXL switch which connects to multiple CXL accelerators/Type-3 memory devices which 
+can be placed in one or more separate drawer. Th e logical view of this connectivity is shown in 
+Figure 1-2b , where each “host” (H1, H2,…) is a comput e drawer. Each compute drawer connects to 
+the switch using an Off-Package Interconnect runnin g CXL protocol through a UCIe Retimer, as shown 
+in Figure 1-2c . The switch also has co-package Retimers where the Retimer tiles connect to the main 
+switch die using UCIe and on the other side are the PCIe/CXL physical interconnects to connect to the 
+accelerators/memory devices, as shown in Figure 1-2c .Figure 1-1. A Package Composed of CPU Dies, Accelerator Die(s), 
+and I/O Tile Die Connected through UCIe
+
+--- Page 3 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 37
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 UCIe permits three different pa ckaging options: Standard Pack age (2D), and Advanced Package 
+(2.5D), and UCIe-3D. This covers the spectrum from  lowest cost to best performance interconnects.
+1.Standard Package  — This packaging technology is used for low cost and long reach (10 mm to 
+25 mm, when measured from a bump on one Di e to the connecting bump of the remote Die) 
+interconnects using traces on organic package/substrate, while still providing significantly better 
+BER characteristics compared to off-package SERDES. Figure 1-3  shows an example application 
+using the Standard Package option. Table 1-1  shows a summary of the characteristics of the 
+Standard Package option with UCIe.Figure 1-2. UCIe enabling long-rea ch connectivity at Rack/Pod Level
+Figure 1-3. Standard Package interface
+Table 1-1. Characteristics of UCIe on Standard Package
+Index Value
+Supported speeds (per Lane) 4 GT/s, 8 GT/s, 12 GT/s, 16 GT/s, 24GT/s, 32 GT/s
+Bump Pitch 100 um to 130 umChannel reach (short reach) 10 mm
+Channel reach (long reach) 25 mm
+Raw Bit Error Rate (BER)
+a
+a. See Chapter 5.0  for details about BER characteristics.1e-27 (<= 8 GT/s)
+1e-15 (>= 12 GT/s)
+Die-2
+Package SubstrateDie-0 Die-1
+--- Page 4 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 38
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 2.Advanced Package  — This packaging technology is used for performance optimized 
+applications. Consequently, the channel reach is short (less than 2 mm, when measured from a 
+bump on one Die to the connecting bump of the re mote Die) and the interconnect is expected to 
+be optimized for high bandwidth and low latenc y with best performance and power efficiency 
+characteristics. Figure 1-4 , Figure 1-5 , and Figure 1-6  show example applications using the 
+Advanced Package option.
+Table 1-2  shows a summary of the main characteristics of the Advanced Package option.
+Table 1-2. Characteristics of UCIe on Advanced Package
+Index Value
+Supported speeds (per Lane) 4 GT/s, 8 GT/s, 12 GT/s, 16 GT/s, 24 GT/s, 32 GT/s
+Bump pitch 25 um to 55 um
+Channel reach 2 mm
+Raw Bit Error Rate (BER)a
+a. See Chapter 5.0  for details about BER characteristics.1e-27 (<=12GT/s)
+1e-15 (>=16GT/s)
+Figure 1-4. Advanced Package interface: Example 1
+Figure 1-5. Advanced Package interface: Example 2
+Figure 1-6. Advanced Package interface: Example 3Die-2
+Package SubstrateDie-0 Die-1
+Silicon Bridge 
+(e.g. EMIB)Silicon Bridge 
+(e.g. EMIB)
+Die-2 Die-0
+Package SubstrateInterposer (e.g. CoWoS)Die-1
+Die-2 Die-0
+Package SubstrateFa nout Orga nic Interposer (e.g., FO CoS-B)Die-1
+Silicon Bridge Silicon Bridge
+--- Page 5 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 39
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 3.UCIe-3D : This packaging technology uses a two-dimensional array of interconnect bumps for 
+data transmission between dies where one die is stacked on top of another. A menu of design 
+options are provided for vendors to develop standard building blocks.
+Table 1-3  shows a summary of the main characteristics of UCIe-3D. Figure 1-7  shows an example 
+of UCIe-3D. See Chapter 6.0  for a detailed description of UCIe-3D.
+Table 1-3. Characteristics of UCIe-3D
+Index Value
+Supported speed (per Lane) up to 4 GT/s
+Bump pitch<10 um (optimizeda)
+10 to 25 um (functionala)
+a. Circuit Architecture is optimized for < 10 um bump  pitches. 10 to 25 um are supported functionally.Channel 3D vertical
+Raw Bit Error Rate (BER)b
+b. See Chapter 6.0  for details about BER characteristics.1e-27 
+Figure 1-7. Example of UCIe-3D
+
+--- Page 6 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 40
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.1 UCIe Components
+UCIe is a layered protocol, with each laye r performing a distinct set of functions. Figure 1-8  shows the 
+three main components of the UCIe stack and the fu nctionality partitioning between the layers. It is 
+required for every component in the UCIe stack to be capable of supporting the advertised 
+functionality and bandwidth. Several timeouts and re lated errors are defined for different handshakes 
+and state transitions. All timeout values specified are minus 0% and plus 50% unless explicitly stated 
+otherwise. All timeout values must be set to the specified values after Domain Reset. All counter 
+values must be set to the specified values after Domain Reset.
+1.1.1 Protocol Layer
+While the Protocol Layer may be application spec ific, UCIe Specification provides examples of 
+transferring CXL or PCIe protocols over UCIe Links.  The following protocols are supported in UCIe for 
+enabling different applications:
+• PCIe from PCIe Base Specification .
+•C X L  f r o m  CXL Specification . Note that RCD/RCH/eRCD/eRCH are not supported.
+• Streaming protocol: This offers generic modes for a user defined protocol to be transmitted using 
+UCIe.
+• UCIe Management Transport protocola: This is an end-to-end media independent protocol(s) for 
+management communication on the UCIe Manage ment Network within the UCIe Manageability 
+Architecture.
+For each protocol, different optimizations and associated Flit transfers are available for transfer over 
+UCIe. Chapter 2.0  and Chapter 3.0  cover the relevant details of different modes and Flit Formats.Figure 1-8. UCIe Layers  and functionalities
+a. UCIe Management Transport protocol can be enca psulated for transport over the UCIe sideband 
+or the UCIe mainband. Section 8.1  covers the details of this protocol. Section 8.2  covers the 
+details around encapsulation of this protocol over the UCIe sideband and the UCIe mainband.PHY LogicARB/MUX (when applicable)
+CRC/Retry (when applicable)Link State  Manageme nt
+Parameter NegotiationDie-to-Die Adapter
+Link TrainingLane Repair (when applicable)
+Lane Reversal (when applicable)
+Scrambling/De-scrambling 
+Sideband Initialization and TransfersAnalog Front End 
+Clock Forwarding
+Electrical/AFE [k slices]Sideband/
+GlobalProtocol Layer
+Physical LayerRaw D2D Interface (RDI)Flit-aware  D2D Interface (FDI)
+--- Page 7 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 41
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.1.2 Die-to-Die (D2D) Adapter
+The D2D Adapter coordinates with the Protocol Layer and the Physical Layer to ensure successful data 
+transfer across the UCIe Link. It minimizes logic on  the main data path as much as possible, thus 
+providing a low-latency, optimized data path for pr otocol Flits. When transporting CXL protocol, the 
+ARB/MUX functionality required for multiple simultan eous protocols is performed by the D2D Adapter. 
+For options where the Raw BER is more than 1e-27,  a CRC and Retry scheme is provided in the UCIe 
+Specification for PCIe, CXL, or Streaming protocol, which is implemented in the D2D Adapter. See Section 3.8  for Retry rules.
+D2D Adapter is responsible for coor dinating higher level Link state machine and bring up, protocol 
+options related parameter exchanges with remote Link partner, and when supported, power management coordination with remote Link partner. Chapter 3.0  covers the relevant details for the 
+D2D Adapter.
+1.1.3 Physical Layer
+The Physical Layer has three sub-components as shown in Figure 1-9 .
+The UCIe main data path on the physical bumps is  organized as a group of Lanes called a Module. A 
+Module forms the atomic granularity for the structur al design implementation of the UCIe AFE. The 
+number of Lanes per Module for Standard and Advanced Packages is specified in Chapter 4.0 . A given 
+instance of Protocol Layer or D2D adapter can se nd data over multiple modules where bandwidth 
+scaling is required.
+The physical Link of UCIe is comp osed of two types of connections:
+1.Sideband :
+This connection is used for parameter exchanges, register accesses for debug/compliance and 
+coordination with remote partner for Link traini ng and management. It consists of a forwarded 
+clock pin and a data pin in each direction. The clock is fixed at 800 MHz regardless of the 
+mainband data rate. The sideband logic for the UC Ie Physical Layer must be on auxiliary power 
+and an “always on” domain. Each module has its own set of sideband pins.
+For the Advanced Package option, a redundant pair of clock and data pins in each direction is 
+provided for repair.
+2.Mainband :
+This connection constitutes the main data path of  UCIe. It consists of a forwarded clock, a data 
+valid pin, a track pin, and N Lanes of data per module.
+For the Advanced Package option, N=64 (also refe rred to as x64) or N=32 (also referred to as 
+x32) and overall four extra pins for Lane repair are provided in the bump map.Figure 1-9. Physical Layer components
+PHY LogicLink Training
+Lane Repair (when applicable)Lane Reversal (when applicable)Scrambling/De-scrambling Sideband Initialization and TransfersAnalog Front End Clock Forwarding
+Electrical/AFE [k slices]Sideband/
+GlobalPhysical LayerRaw D2D Interface (RDI)
+--- Page 8 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 42
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 For the Standard Package option, N=16 (also referred to as x16) or N=8 (also referred to as x8) 
+and no extra pins for repair are provided.
+The Logical Physical Layer coordinates the different functions and their relative sequencing for proper 
+Link bring up and management (e.g., sideband tr ansfers, mainband training and repair, etc.). 
+Chapter 4.0  and Chapter 5.0  cover the details on Physical Layer operation.
+1.1.4 Interfaces
+UCIe defines the interfaces between the Physical  Layer and the D2D Adapter (Raw D2D Interface), 
+and the D2D Adapter and the Protocol Layer (Flit-aware D2D Interface) in Chapter 10.0 . A reference 
+list of signals is also provided to cover the interactions and rules of the Management Transport 
+protocol between the SoC and the UCIe Stack.
+The motivation for this is two-fold:
+• Allow vendors and SoC builders to easily mix and match different layers from different IP 
+providers at low integration cost and faster time to market. (For example, getting a Protocol Layer 
+to work with the D2D Adapter and Physical Layer from any different vendor that conforms to the 
+interface handshakes provided in the UCIe Specification.)
+• Given that inter-op testing during post-silicon has greater overhead and cost associated with it, a 
+consistent understanding and development of Bus Functional Models (BFMs) can allow easier IP 
+development for this stack.
+1.2 UCIe Configurations
+This section describes the different configurations  and permutations permitted for UCIe operation.
+1.2.1 Single Module Configuration
+A single Module configuration is a x64 or x32 data  interface in an Advanced Package, as shown in 
+Figure 1-10 . A single module configuration is a x16 or a x8 data interface in a Standard Package, as 
+shown in Figure 1-11 . A x8 Standard Package module is only permitted for a single module 
+configuration and is primarily provided for pre-bond  test purposes. In multiple instantiations of a 
+single module configuration where each module has its own dedicated Adapter, they operate 
+independently (e.g., they could be transferri ng data at different data rates and widths).
+Figure 1-10. Single module conf iguration: Advanced Package
+El ect r ical/ AFE
+Sidebandx64
+or
+x32Sideband
+Valid
+TrackFW-CLKDie-to-Die Adapter 
+PHY Logic
+--- Page 9 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 43
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.2.2 Multi-module Configurations
+This specification allows for two and four module configurations. When operating with a common 
+Adapter, the modules in two-module and four-modul e configurations must operate at the same data 
+rate and width. Examples of two-module an d four-module configurations are shown in Figure 1-12  
+through Figure 1-14 .Figure 1-11. Single module configuration: Standard Package
+Figure 1-12. Two-module configuration for Standard Package
+Figure 1-13. Four-module config uration for Standard PackageE le ctrical/AF E
+Sidebandx16
+or
+x8Sideband
+Valid
+TrackFW-CLKDie-to-Die Adapter 
+PHY Logic
+El ect r ical/ AFE
+Sideband x16Sideband
+Valid
+TrackFW-CLKDie-to-Die Adapter 
+PHY Logic
+E le ctrical/AF E
+Sideband x16Sideband
+Valid
+TrackFW-CLKPHY LogicMulti-Module PHY Logic
+E le ctrical/AF E
+Sideband x16Sideband
+Valid
+TrackFW-CLKDie-to-Die Adapter 
+PHY Logic
+E le ctrical/AF E
+Sideband x16Sideband
+Valid
+TrackFW-CLKPHY Logic
+E le ctrical/AF E
+Sideband x16Sideband
+Valid
+TrackFW-CLKPHY Logic
+E le ctri cal/AF E
+Sideband x16Sideband
+Valid
+TrackFW-CLKPHY LogicMulti-Module PHY Logic
+--- Page 10 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 44
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.2.3 Sideband-only Configurations
+A Standard Package UCIe sideband-only configur ation is permitted for test or manageability 
+purposes. This can be a one, two, or four sideband-only ports as part of the same UCIe sideband-only Link. Figure 1-15 , Figure 1-16 , and Figure 1-17  show examples of these configurations. See 
+Section 5.7.4  for more details.Figure 1-14. Example of a Two-module Configuration for Advanced Package
+Figure 1-15. One-port Sideband-only Link
+Figure 1-16. Two-port Sideband-only LinkE le ctrical/AF E
+Sidebandx64
+Or
+x32Sideband
+Valid
+TrackFW-CLKDie-to-Die Adapter 
+PHY Logic
+El ect r ical/ AFE
+Sideband Sideband
+Valid
+TrackFW-CLKPHY LogicMulti-Module PHY Logic
+x64
+Or
+x32
+SidebandSidebandPHY Logic
+SidebandSidebandPHY Logic
+Sideband
+--- Page 11 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 45
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.3 UCIe Retimers
+As described previously, UCIe Retimers are us ed to enable different types of Off Package 
+Interconnects to extend the channel reach between two UCIe Dies on differe nt packages. Each UCIe 
+Retimer has a local UCIe Link connection to a UCIe die on-package as well as an external connection 
+for longer reach. Figure 1-18  shows a high level block diagram demonstrating a system utilizing UCIe 
+Retimers to enable an Off Package Interconnect be tween UCIe Die 0 and UCIe Die 1. UCIe Retimer 0 
+and UCIe Die 0 are connected through UCIe Link 0 within Package 0. UCIe Retimer 1 and UCIe Die 1 
+are connected through UCIe Link 1 within Package 1.  The terminology of “remote Retimer partner” is 
+used to reference the UCIe Retimer die connected to the far side of the Off Package Interconnect.
+The responsibility of a UCIe Retimer include:
+• Reliable Flit transfer across the Off Package Interconnect. Three options are available for 
+achieving this as described below:
+— The Retimer is permitted to use the FEC and CRC natively defined by the underlying 
+specification of the protocol it carries (e.g., PCIe  or CXL) as long as the external interconnect 
+conforms to the underlying error model (e.g., BER and error correlation) of the specification 
+corresponding to the protocol it transports. Th e UCIe Links would be setup to utilize the Raw 
+Format to tunnel native bits of the protocol it transports (e.g., PCIe or CXL Flits). In this 
+scenario, the queue sizes (Protocol Layer buffers) must be adjusted on the UCIe Dies to meet 
+the underlying round trip latency.
+— The Retimer is permitted to provide the necessa ry FEC, CRC and Retry capabilities to handle 
+the BER of the Off Package Interconnect. In th is case, the Flits undergo three independent 
+Links; each UCIe Retimer performs an inde pendent ACK/NAK for Retry with the UCIe die 
+within its package and a separate independent ACK/NAK for Retry with the remote Retimer Figure 1-17. Four-port Sideband-only Link
+Figure 1-18. Block Diagram for UCIe Retimer ConnectionSidebandSidebandPHY Logic
+Sideband Sideband Sideband
+UCIe Retimer 0 UCIe Die 0SB Retimer 
+Receiver Buffer
+UCIe Link 0
+Re timer 
+Receiver Buffer
+UCIe Die 1 UCIe Retimer 1SB
+UCIe Link 1Package 0 Package 1
+--- Page 12 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 46
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 partner. For this scenario, protocols are permitte d to use any of the applicable Flit Formats for 
+transport over the UCIe Link.
+— The Retimer provides its own FEC by replacing the native PCIe or CXL defined FEC with its 
+own, or adding its FEC in addition to the nati ve PCIe or CXL defined FEC, but takes advantage 
+of the built in CRC and Replay mechanisms of the underlying protocol. In this scenario, the 
+queue sizes (Protocol Layer buffers, Retry buffers) must be adjusted on the UCIe Dies to meet 
+the underlying round trip latency.
+• Resolution of Link and Protocol Parameters with remote Retimer partner to ensure interoperability 
+between UCIe Dies end-to-end (E2E). For example,  Retimers are permitted to force the same Link 
+width, speed, protocol (including  any relevant protocol specific parameters) and Flit Formats on 
+both Package 0 and Package 1 in Figure 1-18 . The specific mechanism of resolution including 
+message transfer for parameter exchanges across the Off Package Interconnect is 
+implementation specific for the Retimers and th ey must ensure a consistent operational mode 
+taking into account their own capabilities along with the UCIe Die capabilities on both Package 0 
+and Package 1. However, for robustness of the UCIe Links to avoid unnecessary timeouts in case 
+the external interconnect requires a longer time to Link up or resolution of parameters with remote Retimer partner, UCIe Specification define s a “Stall” response to the relevant sideband 
+messages that can potentially get delayed. The Re timers must respond with the “Stall” response 
+within the rules of UCIe Specification to avoid such unnecessary timeouts while waiting for, or negotiating with remote Retimer partner. It is th e responsibility of the Retimer to ensure the UCIe 
+Link is not stalled indefinitely.
+• Resolution of Link States for Adapter Link State Machine (LSM) or the RDI states with remote 
+Retimer partner to ensure correct E2E operation. See Chapter 3.0  for more details.
+• Flow control and back-pressure:
+— Data transmitted from a UCIe Die to a UCIe Retimer is flow-controlled using credits. These 
+credits are on top of any underlying protocol credit mechanism (such as PH, PD credits in 
+PCIe). These UCIe D2D credits must be for flow control across the two UCIe Retimers and any 
+data transmitted to the UCIe Retimer must eventually be consumed by the remote UCIe die without any other dependency. Every UCIe Retime r must implement a Receiver Buffer for Flits 
+that it receives from the UCIe die within its package. The Receiver buffer credits are 
+advertised to the UCIe die during initial pa rameter exchanges for the D2D Adapter, and the 
+UCIe die must not send any data to the UCIe Re timer if it does not have a credit for it. One 
+credit corresponds to 256B of data (includi ng any FEC, CRC, etc.). Credit returns are 
+overloaded on the Valid framing (see Section 4.1.2 ). Credit counters at the UCIe Die are re-
+assigned to their initial advert ised value whenever RDI states transition away from Active. 
+UCIe Retimer must drain or dump (as applicable ) the data in its receiver buffer before re-
+entering Active state.
+— Data transmitted from a UCIe Retimer to a UCIe die is not flow-controlled at the D2D adapter 
+level. The UCIe Retimer may have its independen t flow-control with the other UCIe Retimer if 
+needed, which is beyond the scope of this specification.
+--- Page 13 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 47
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.4 UCIe Key Performance Targets
+Table 1-4  gives a summary of the performance target s for UCIe Advanced and Standard Package 
+configurations. Table 1-5  gives a summary of the performance targets for UCIe-3D.
+Table 1-4. UCIe 2D and 2.5D Key Performance Targets
+MetricLink Speed/
+VoltageAdvanced Package
+(x64)Standard Package
+Die Edge Bandwidth 
+Densitya
+(GB/s per mm)
+a. Die edge bandwidth density is defined as total I/O bandwidth in GB per sec per mm silicon die edge, with 45-
+um (Advanced Package) and 110-um (S tandard Package) bump pitch. Fo r a x32 Advanced Package module,
+the Die Edge Bandwidth Density is 50% of the corresponding value for x64.4 GT/s 165 28
+8 GT/s 329 56
+12 GT/s 494 8416 GT/s 658 112
+24 GT/s 988 168
+32 GT/s 1317 224
+Energy Efficiency
+b
+(pJ/bit)
+b. Energy Efficiency (energy consumed per bit to traverse  from FDI to bump and back to FDI) includes all the
+Adapter and Physical Layer-related circuitry including, but not limited to, Tx, Rx, PLL, Clock Distribution, etc.
+Channel reach and termination are discussed in Chapter 5.0 .0.7 V
+(Supply Voltage)0.5 (<=12 GT/s) 0.5 (4 GT/s)
+0.6 (>=16 GT/s) 1.0 (<=16 GT/s)
+- 1.25 (32 GT/s)
+0.5 V
+(Supply Voltage)0.25 (<=12 GT/s) 0.5 (<=16 GT/s)
+0.3 (>=16 GT/s) 0.75 (32 GT/s)
+Latency Targetc
+c. Latency includes the latency of the Adapter and the Ph ysical Layer (FDI to bump delay) on Tx and Rx. See
+Chapter 5.0  for details of Physical Layer latency. Latency ta rget is based on 16 GT/s. Latency at other data
+rates may differ due to data rate-dependent aspects such  as data accumulation and transfer time. Note that
+the latency target does not include the accumulation of bits required for processing; either within or across
+Flits.<=2ns
+Table 1-5. UCIe-3D Key Performance Targets
+Metric Link Speed/Voltage UCIe-3D
+Bandwidth Densitya
+(GB/s/mm2)
+a. Bandwidth Density is provided for a 9-um bump pitch.4 GT/s 4000
+Energy Efficiencyb
+(pJ/bit)
+b. Energy Efficiency (energy consumed per bit) incl udes all the Tx, Rx, PLL, Clock Distribution, etc.0.65 V
+(Supply Voltage)0.05
+Latency Targetc
+c. Latency includes the latency on Tx and Rx.<= 125 ps
+--- Page 14 ---
+Introduction
+UCIe Specification Revision 2.0, Version 1.0 48
+August 6, 2024 Property of Universal Chiplet In terconnect Express (UCIe) © 2022–2024 1.5 Interoperability
+Package designers need to ensure that Dies that are connected on a package can inter-operate. This 
+includes compatible package interc onnect (e.g., Advanced vs. Standard), protocols, voltage levels, 
+etc. It is strongly recommended that a Die adopts Transmitter voltage of less than 0.85 V so that the 
+Die can inter-operate with a wide range of process nodes in the foreseeable future.
+This specification comprehends interoperability across a wide range of bump pitch for Advanced 
+Packaging options. It is expected that over ti me, the smaller bump pitc hes will be predominantly 
+used. With smaller bump pitch, we expect desi gns will reduce the maximum advertised frequency 
+(even though they can go to 32G) to optimize for area and to address the power delivery and thermal 
+constraints of high bandwidth with reduced area. Table 1-6  summarizes these bump pitches across 
+four groups. Interoperability is guaranteed within  each group as well as across groups, based on 
+the PHY dimension specified in Chapter 5.0 . The performance targets provided in Table 1-4  are 
+with the 45 um bump pitch, based on the technology widely deployed at the time of publication of 
+UCIe 1.0 and UCIe 1.1 Specifications (2022 – 2023).
+§ §Table 1-6. Groups for different bump pitches
+Bump Pitch
+(um)Minimum Frequency
+(GT/s)Expected Maximum Frequency
+(GT/s)
+Group 1: 25 - 30 4 12
+Group 2: 31 - 37 4 16
+Group 3: 38 - 44 4 24
+Group 4: 45 - 55 4 32
