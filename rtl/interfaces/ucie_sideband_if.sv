@@ -49,4 +49,12 @@ interface ucie_sideband_if (
                tx_packet_type, rx_packet_ready, tx_packet_ready,
                sideband_active, sideband_error, sideband_status
     );
+    
+    modport thermal_mgmt (
+        input  aux_clk, aux_resetn,
+        output tx_packet_valid, tx_packet_data, tx_packet_length, tx_packet_type,
+        input  tx_packet_ready, rx_packet_valid, rx_packet_data,
+               rx_packet_length, rx_packet_type,
+        output rx_packet_ready
+    );
 endinterface

@@ -10,17 +10,50 @@ package ucie_pkg;
     parameter int MAX_MODULES = 4;
     parameter int SIDEBAND_FREQ_MHZ = 800;
     
-    // Data Rate Parameters (GT/s)
+    // Data Rate Parameters (GT/s) - Enhanced for 128 Gbps
     parameter int MIN_DATA_RATE = 4;
-    parameter int MAX_DATA_RATE = 32;
+    parameter int MAX_DATA_RATE = 128;
     typedef enum logic [3:0] {
         DR_4GT   = 4'h0,  // 4 GT/s
         DR_8GT   = 4'h1,  // 8 GT/s
         DR_12GT  = 4'h2,  // 12 GT/s
         DR_16GT  = 4'h3,  // 16 GT/s
         DR_24GT  = 4'h4,  // 24 GT/s
-        DR_32GT  = 4'h5   // 32 GT/s
+        DR_32GT  = 4'h5,  // 32 GT/s
+        DR_64GT  = 4'h6,  // 64 GT/s (NRZ limit)
+        DR_128GT = 4'h7   // 128 GT/s (PAM4 required)
     } data_rate_t;
+    
+    // Signaling Mode Parameters
+    typedef enum logic [1:0] {
+        SIG_NRZ  = 2'b00,  // Non-Return-to-Zero (up to 64 GT/s)
+        SIG_PAM4 = 2'b01,  // 4-level Pulse Amplitude Modulation (64+ GT/s)
+        SIG_PAM8 = 2'b10   // 8-level PAM (future)
+    } signaling_mode_t;
+    
+    // Signaling Mode Constants (for backward compatibility)
+    parameter signaling_mode_t SIGNALING_NRZ  = SIG_NRZ;
+    parameter signaling_mode_t SIGNALING_PAM4 = SIG_PAM4;
+    parameter signaling_mode_t SIGNALING_PAM8 = SIG_PAM8;
+    
+    // Data Rate Constants (for backward compatibility)
+    parameter data_rate_t DATA_RATE_4G   = DR_4GT;
+    parameter data_rate_t DATA_RATE_8G   = DR_8GT;
+    parameter data_rate_t DATA_RATE_16G  = DR_16GT;
+    parameter data_rate_t DATA_RATE_32G  = DR_32GT;
+    parameter data_rate_t DATA_RATE_64G  = DR_64GT;
+    parameter data_rate_t DATA_RATE_128G = DR_128GT;
+    
+    // PAM4 Specific Parameters
+    parameter int PAM4_SYMBOL_RATE_GSPS = 64;  // 64 Gsym/s for 128 Gbps
+    parameter int PAM4_BITS_PER_SYMBOL = 2;    // 2 bits per PAM4 symbol
+    parameter int PAM4_LANES_MAX = 64;
+    parameter int PAM4_POWER_MW_PER_LANE = 53; // 72% power reduction target
+    
+    // Quarter-Rate Processing Parameters
+    parameter int QUARTER_RATE_DIV = 4;
+    parameter int QUARTER_RATE_PARALLEL_ENGINES = 4;
+    parameter int QUARTER_RATE_BUFFER_MULT = 4;
     
     // Flit Formats
     parameter int FLIT_WIDTH = 256;
@@ -46,23 +79,70 @@ package ucie_pkg;
     } package_type_t;
     
     // Link States
-    typedef enum logic [2:0] {
-        LINK_RESET      = 3'b000,
-        LINK_INIT       = 3'b001,
-        LINK_TRAINING   = 3'b010,
-        LINK_ACTIVE     = 3'b011,
-        LINK_L1         = 3'b100,
-        LINK_L2         = 3'b101,
-        LINK_ERROR      = 3'b111
+    typedef enum logic [3:0] {
+        LINK_RESET      = 4'h0,
+        LINK_SBINIT     = 4'h1,
+        LINK_PARAM      = 4'h2,
+        LINK_MBINIT     = 4'h3,
+        LINK_CAL        = 4'h4,
+        LINK_MBTRAIN    = 4'h5,
+        LINK_LINKINIT   = 4'h6,
+        LINK_ACTIVE     = 4'h7,
+        LINK_L1         = 4'h8,
+        LINK_L2         = 4'h9,
+        LINK_RETRAIN    = 4'hA,
+        LINK_REPAIR     = 4'hB,
+        LINK_ERROR      = 4'hF
     } link_state_t;
     
-    // Power States
+    // Training States
+    typedef enum logic [4:0] {
+        TRAIN_RESET         = 5'h00,
+        TRAIN_SBINIT        = 5'h01,
+        TRAIN_PARAM         = 5'h02,
+        TRAIN_MBINIT        = 5'h03,
+        TRAIN_CAL           = 5'h04,
+        TRAIN_MBTRAIN       = 5'h05,
+        TRAIN_LINKINIT      = 5'h06,
+        TRAIN_ACTIVE        = 5'h07,
+        TRAIN_L1            = 5'h08,
+        TRAIN_L2            = 5'h09,
+        TRAIN_RETRAIN       = 5'h0A,
+        TRAIN_REPAIR        = 5'h0B,
+        TRAIN_WIDTH_CHANGE  = 5'h0C,
+        TRAIN_SPEED_CHANGE  = 5'h0D,
+        TRAIN_ERROR         = 5'h0E,
+        TRAIN_RETIMER       = 5'h0F,
+        TRAIN_TEST          = 5'h10,
+        TRAIN_COMPLIANCE    = 5'h11,
+        TRAIN_LOOPBACK      = 5'h12,
+        TRAIN_PATGEN        = 5'h13,
+        TRAIN_MULTIMOD      = 5'h14
+    } training_state_t;
+    
+    // Power States - Enhanced with Micro-States
     typedef enum logic [1:0] {
         PWR_L0  = 2'b00,  // Active
         PWR_L1  = 2'b01,  // Standby
         PWR_L2  = 2'b10,  // Sleep
         PWR_L3  = 2'b11   // Off
     } power_state_t;
+    
+    // Micro-Power States for L0 (Advanced Power Management)
+    typedef enum logic [2:0] {
+        L0_ACTIVE      = 3'b000,  // Full active
+        L0_STANDBY     = 3'b001,  // Partial standby
+        L0_LOW_POWER   = 3'b010,  // Low power active
+        L0_THROTTLED   = 3'b011,  // Thermal throttling
+        L0_ADAPTIVE    = 3'b100,  // Adaptive power
+        L0_ML_OPTIMIZED = 3'b101  // ML-enhanced optimization
+    } micro_power_state_t;
+    
+    // Advanced Power Management Parameters
+    parameter int POWER_TRANSITION_TIME_NS = 100;  // 100ns transition time
+    parameter int THERMAL_THRESHOLD_C = 85;        // 85°C thermal threshold
+    parameter int POWER_BUDGET_MW_TOTAL = 5400;    // 5.4W total budget for 64 lanes
+    parameter int POWER_BUDGET_MW_PER_LANE = 84;   // Average 84mW per lane (5400/64)
     
     // Virtual Channel Parameters
     parameter int MAX_VCS = 8;
@@ -237,14 +317,47 @@ package ucie_pkg;
     // Convert data rate enum to actual rate
     function automatic int get_data_rate_value(data_rate_t dr);
         case (dr)
-            DR_4GT:  return 4;
-            DR_8GT:  return 8;
-            DR_12GT: return 12;
-            DR_16GT: return 16;
-            DR_24GT: return 24;
-            DR_32GT: return 32;
-            default: return 4;
+            DR_4GT:   return 4;
+            DR_8GT:   return 8;
+            DR_12GT:  return 12;
+            DR_16GT:  return 16;
+            DR_24GT:  return 24;
+            DR_32GT:  return 32;
+            DR_64GT:  return 64;
+            DR_128GT: return 128;
+            default:  return 4;
         endcase
+    endfunction
+    
+    // Check if data rate requires PAM4 signaling
+    function automatic logic requires_pam4(data_rate_t dr);
+        return (dr == DR_128GT);
+    endfunction
+    
+    // Calculate symbol rate for given data rate and signaling mode
+    function automatic int get_symbol_rate_gsps(data_rate_t dr, signaling_mode_t sig);
+        int data_rate = get_data_rate_value(dr);
+        case (sig)
+            SIG_NRZ:  return data_rate;  // 1 bit per symbol
+            SIG_PAM4: return data_rate / 2;  // 2 bits per symbol
+            SIG_PAM8: return data_rate / 3;  // 3 bits per symbol
+            default:  return data_rate;
+        endcase
+    endfunction
+    
+    // Calculate power consumption per lane
+    function automatic int get_power_per_lane_mw(data_rate_t dr, signaling_mode_t sig);
+        int base_power;
+        case (dr)
+            DR_4GT:   base_power = 15;
+            DR_8GT:   base_power = 25;
+            DR_16GT:  base_power = 45;
+            DR_32GT:  base_power = 85;
+            DR_64GT:  base_power = (sig == SIG_NRZ) ? 160 : 95;
+            DR_128GT: base_power = (sig == SIG_PAM4) ? 53 : 190;  // 72% reduction with PAM4
+            default:  base_power = 15;
+        endcase
+        return base_power;
     endfunction
     
     // Convert power state to string for debug
@@ -262,11 +375,17 @@ package ucie_pkg;
     function automatic string link_state_to_string(link_state_t state);
         case (state)
             LINK_RESET:    return "RESET";
-            LINK_INIT:     return "INIT";
-            LINK_TRAINING: return "TRAINING";
+            LINK_SBINIT:   return "SBINIT";
+            LINK_PARAM:    return "PARAM";
+            LINK_MBINIT:   return "MBINIT";
+            LINK_CAL:      return "CAL";
+            LINK_MBTRAIN:  return "MBTRAIN";
+            LINK_LINKINIT: return "LINKINIT";
             LINK_ACTIVE:   return "ACTIVE";
             LINK_L1:       return "L1";
             LINK_L2:       return "L2";
+            LINK_RETRAIN:  return "RETRAIN";
+            LINK_REPAIR:   return "REPAIR";
             LINK_ERROR:    return "ERROR";
             default:       return "UNKNOWN";
         endcase

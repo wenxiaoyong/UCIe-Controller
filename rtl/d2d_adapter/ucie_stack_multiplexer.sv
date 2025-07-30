@@ -85,6 +85,11 @@ module ucie_stack_multiplexer
         selected_stack = '0;
         stack_tx_pending = proto_tx_valid & stack_enable;
         
+        // Initialize local variables
+        rr_start = '0;
+        rr_found = 1'b0;
+        idx = '0;
+        
         // Check which stacks have credits
         for (int i = 0; i < NUM_STACKS; i++) begin
             stack_has_credit[i] = (credit_counters[i] > 0) && stack_enable[i];

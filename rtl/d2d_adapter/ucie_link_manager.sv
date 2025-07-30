@@ -1,6 +1,6 @@
-import ucie_pkg::*;
-
-module ucie_link_manager #(
+module ucie_link_manager
+    import ucie_pkg::*;  // Import inside module to avoid global namespace pollution
+#(
     parameter int NUM_MODULES = 1,
     parameter int MODULE_WIDTH = 64
 ) (

@@ -18,11 +18,16 @@ VERILATOR_FLAGS += --Mdir $(BUILD_DIR)/obj_dir
 # RTL source files (for synthesis/lint)
 RTL_SOURCES_SYNTH := \
 	$(RTL_DIR)/ucie_pkg.sv \
+	$(RTL_DIR)/interfaces/ucie_fdi_if.sv \
+	$(RTL_DIR)/interfaces/ucie_rdi_if.sv \
+	$(RTL_DIR)/interfaces/ucie_sideband_if.sv \
 	$(RTL_DIR)/d2d_adapter/ucie_crc_retry_engine.sv \
 	$(RTL_DIR)/d2d_adapter/ucie_stack_multiplexer.sv \
 	$(RTL_DIR)/d2d_adapter/ucie_param_exchange.sv \
+	$(RTL_DIR)/d2d_adapter/ucie_link_manager.sv \
 	$(RTL_DIR)/physical/ucie_lane_manager.sv \
 	$(RTL_DIR)/physical/ucie_sideband_engine.sv \
+	$(RTL_DIR)/physical/ucie_link_training_fsm.sv \
 	$(RTL_DIR)/protocol/ucie_protocol_layer.sv \
 	$(RTL_DIR)/ucie_controller_top.sv
 
@@ -119,13 +124,26 @@ sim-time: compile
 	@echo "===== Running UCIe Controller Simulation (Custom Time) ====="
 	@cd $(BUILD_DIR) && timeout 10s ./obj_dir/Vucie_controller_tb || echo "Simulation completed or timed out"
 
-# Lint RTL code only
+# Lint RTL code only (synthesis)
 .PHONY: lint
 lint: check-verilator $(BUILD_DIR)
-	@echo "===== Linting RTL Code ====="
+	@echo "===== Linting RTL Code (Synthesis) ====="
 	@cd $(BUILD_DIR) && \
 	$(VERILATOR) --lint-only --no-timing -Wall $(RTL_SOURCES_SYNTH) 2>&1 | tee logs/verilator_lint.log
 	@echo "Lint results saved to: $(BUILD_DIR)/logs/verilator_lint.log"
+
+# Lint testbench and all RTL code
+.PHONY: lint-tb
+lint-tb: check-verilator $(BUILD_DIR)
+	@echo "===== Linting Testbench and RTL Code ====="
+	@cd $(BUILD_DIR) && \
+	$(VERILATOR) --lint-only --timing -Wall --top ucie_controller_tb $(RTL_SOURCES) 2>&1 | tee logs/verilator_lint_tb.log
+	@echo "Testbench lint results saved to: $(BUILD_DIR)/logs/verilator_lint_tb.log"
+
+# Lint all code (synthesis + testbench)
+.PHONY: lint-all
+lint-all: lint lint-tb
+	@echo "===== All Lint Checks Complete ====="
 
 # Clean build artifacts
 .PHONY: clean
@@ -152,9 +170,13 @@ help:
 	@echo "  compile      - Compile RTL with Verilator"
 	@echo "  sim          - Compile and run simulation"
 	@echo "  sim-time     - Run simulation with 10s timeout"
-	@echo "  lint         - Lint RTL code only"
+	@echo "  lint         - Lint RTL code only (synthesis)"
+	@echo "  lint-tb      - Lint testbench and all RTL code"
+	@echo "  lint-all     - Run all lint checks"
 	@echo "  clean        - Clean build artifacts"
 	@echo "  distclean    - Remove entire build directory"
+	@echo "  status       - Show project status"
+	@echo "  list-sources - List all RTL source files"
 	@echo "  help         - Show this help"
 	@echo ""
 	@echo "Requirements:"

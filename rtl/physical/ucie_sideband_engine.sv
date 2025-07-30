@@ -85,6 +85,15 @@ module ucie_sideband_engine
     logic [3:0] tx_byte_idx, rx_byte_idx;
     logic msg_tx_busy, msg_rx_busy;
     
+    // Initialize message buffer and control signals
+    always_comb begin
+        tx_msg_len = 4'h8;      // Default 8-byte message length
+        msg_rx_busy = 1'b0;     // Not busy by default
+        for (int i = 0; i < 16; i++) begin
+            tx_msg_buffer[i] = 8'h00; // Initialize buffer
+        end
+    end
+    
     // Protocol Timing
     logic [31:0] state_timer;
     logic [31:0] heartbeat_timer;
@@ -166,6 +175,11 @@ module ucie_sideband_engine
     tx_state_t tx_state, tx_next_state;
     logic [7:0] tx_crc;
     logic tx_complete;
+    
+    // Initialize TX control signals
+    always_comb begin
+        tx_complete = (tx_state == TX_IDLE); // Complete when idle
+    end
     
     always_ff @(posedge clk_sb or negedge rst_n) begin
         if (!rst_n) begin
@@ -268,6 +282,15 @@ module ucie_sideband_engine
     rx_state_t rx_state, rx_next_state;
     logic [7:0] rx_crc_calc, rx_crc_recv;
     logic rx_crc_valid;
+    
+    // Initialize RX next state logic
+    always_comb begin
+        rx_next_state = rx_state; // Default to current state
+        case (rx_state)
+            RX_IDLE: rx_next_state = RX_HEADER;
+            default: rx_next_state = RX_IDLE;
+        endcase
+    end
     
     always_ff @(posedge clk_sb or negedge rst_n) begin
         if (!rst_n) begin
