@@ -80,28 +80,30 @@ module ucie_link_training_phases
     output logic [15:0]         debug_training_metrics [8]
 );
 
-    // Link Training State Machine
+    // Use training_state_t from ucie_pkg
+    // Local phase-specific state machine
     typedef enum logic [4:0] {
-        LT_RESET,
-        LT_INIT,
-        LT_PHASE_A_START,
-        LT_PHASE_A_PATTERN,
-        LT_PHASE_A_LOCK,
-        LT_PHASE_A_EQ,
-        LT_PHASE_A_VERIFY,
-        LT_PHASE_B_START,
-        LT_PHASE_B_PATTERN,
-        LT_PHASE_B_LOCK,
-        LT_PHASE_B_EQ,
-        LT_PHASE_B_VERIFY,
-        LT_PARAMETER_EXCHANGE,
-        LT_FINAL_VERIFICATION,
-        LT_TRAINING_COMPLETE,
-        LT_TRAINING_FAILED,
-        LT_ERROR_RECOVERY
-    } training_state_t;
+        PHASE_RESET,
+        PHASE_INIT,
+        PHASE_A_START,
+        PHASE_A_PATTERN,
+        PHASE_A_LOCK,
+        PHASE_A_EQ,
+        PHASE_A_VERIFY,
+        PHASE_B_START,
+        PHASE_B_PATTERN,
+        PHASE_B_LOCK,
+        PHASE_B_EQ,
+        PHASE_B_VERIFY,
+        PHASE_PARAM_EXCHANGE,
+        PHASE_FINAL_VERIFY,
+        PHASE_COMPLETE,
+        PHASE_FAILED,
+        PHASE_ERROR_RECOVERY
+    } phase_state_t;
     
-    training_state_t current_state, next_state;
+    phase_state_t current_phase, next_phase;
+    training_state_t current_training_state, next_training_state;
     
     // Phase A/B Training Patterns
     typedef enum logic [3:0] {

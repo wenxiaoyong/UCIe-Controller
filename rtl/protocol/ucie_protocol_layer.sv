@@ -107,6 +107,10 @@ module ucie_protocol_layer
     
     // Virtual Channel Management with Credit Enforcement
     logic [7:0] vc_credit_counters [NUM_PROTOCOLS-1:0][NUM_VCS-1:0];
+    
+    // Temporary variables for procedural blocks
+    logic higher_priority_waiting;
+    logic [7:0] extracted_vc;
     logic [7:0] vc_consumed_counters [NUM_PROTOCOLS-1:0][NUM_VCS-1:0];
     logic [NUM_VCS-1:0] vc_available [NUM_PROTOCOLS-1:0];
     logic [NUM_PROTOCOLS-1:0] any_vc_available;
@@ -701,8 +705,8 @@ module ucie_protocol_layer
                     end
                 end
                 
-                // Priority inversion tracking
-                logic higher_priority_waiting = 1'b0;
+                // Priority inversion tracking  
+                higher_priority_waiting = 1'b0;
                 for (int j = 0; j < NUM_PROTOCOLS; j++) begin
                     if (j != i && protocol_priority[j] > protocol_priority[i] && 
                         tx_request[j] && !tx_ready_qualified[j]) begin
@@ -795,7 +799,7 @@ module ucie_protocol_layer
                     ul_rx_valid[i] = 1'b1;
                     
                     // Enhanced VC assignment - extract from flit header if available
-                    logic [7:0] extracted_vc = rx_buffers[i][rx_rd_ptr[i]][15:8];  // Assume VC in bits [15:8]
+                    extracted_vc = rx_buffers[i][rx_rd_ptr[i]][15:8];  // Assume VC in bits [15:8]
                     ul_rx_vc[i] = (extracted_vc < 8'(NUM_VCS)) ? extracted_vc : d2d_rx_vc;
                 end
             end

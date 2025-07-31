@@ -1,131 +1,183 @@
 interface ucie_debug_if #(
     parameter NUM_LANES = 64,
-    parameter NUM_PROTOCOLS = 4
+    parameter NUM_PROTOCOLS = 4,
+    parameter DEBUG_BUS_WIDTH = 32
 ) (
     input logic clk,
-    input logic resetn
+    input logic rst_n
 );
 
     import ucie_pkg::*;
     
+    // ========================================================================
     // Link State Debug
-    link_state_t               link_state;
-    training_state_t           training_state;
-    power_state_t              power_state;
-    micro_power_state_t        micro_power_state;
+    // ========================================================================
     
-    // Lane Debug Information
-    logic [NUM_LANES-1:0]      lane_status;
-    logic [NUM_LANES-1:0]      lane_errors;
-    logic [7:0]                lane_ber_count [NUM_LANES-1:0];
-    logic [NUM_LANES-1:0]      lane_repair_active;
+    // Link Training State
+    logic [3:0]                    link_state;           // Current link training state
+    logic [3:0]                    power_state;          // Current power state
+    logic [7:0]                    thermal_status;       // Thermal management status
+    logic [15:0]                   performance_counters; // Real-time performance metrics
+    logic                          ml_active;            // ML optimization status
+    logic                          multi_module_active;  // Multi-module coordination status
     
-    // Protocol Debug
-    logic [NUM_PROTOCOLS-1:0]  protocol_active;
-    logic [15:0]              protocol_tx_count [NUM_PROTOCOLS-1:0];
-    logic [15:0]              protocol_rx_count [NUM_PROTOCOLS-1:0];
-    logic [7:0]               protocol_errors [NUM_PROTOCOLS-1:0];
+    // Protocol Layer Debug
+    logic [NUM_PROTOCOLS-1:0]      protocol_active;      // Active protocols
+    logic [NUM_PROTOCOLS-1:0][7:0] protocol_utilization; // Protocol bandwidth utilization
+    logic [NUM_PROTOCOLS-1:0][15:0] protocol_errors;     // Protocol-specific error counts
     
-    // Performance Counters
-    logic [31:0]              performance_counters [15:0];
-    logic [15:0]              bandwidth_utilization;
-    logic [15:0]              latency_measurements [7:0];
+    // ========================================================================
+    // Physical Layer Debug (128 Gbps Enhanced)
+    // ========================================================================
     
-    // Thermal Debug
-    logic [7:0]               thermal_status;
-    logic [7:0]               die_temperature;
-    logic                     thermal_throttle_active;
-    logic [NUM_LANES-1:0]     lane_thermal_status;
+    // Lane Status Debug
+    logic [NUM_LANES-1:0]          lane_active;          // Per-lane active status
+    logic [NUM_LANES-1:0]          lane_trained;         // Per-lane training status
+    logic [NUM_LANES-1:0]          lane_error;           // Per-lane error status
+    logic [NUM_LANES-1:0][7:0]     lane_ber_status;      // Per-lane BER status
     
-    // Power Debug
-    logic [15:0]              power_consumption_mw;
-    logic [7:0]               power_domain_status;
-    logic                     power_budget_alarm;
-    logic [7:0]               voltage_levels [2:0];
-    logic [7:0]               frequency_levels [2:0];
+    // PAM4 and Equalization Debug
+    logic [NUM_LANES-1:0]          pam4_active;          // PAM4 mode per lane
+    logic [NUM_LANES-1:0][7:0]     dfe_status;           // DFE status per lane
+    logic [NUM_LANES-1:0][7:0]     ffe_status;           // FFE status per lane
+    logic [NUM_LANES-1:0][7:0]     eye_height;           // Eye height per lane
+    logic [NUM_LANES-1:0][7:0]     eye_width;            // Eye width per lane
+    
+    // Signal Integrity Debug
+    logic [NUM_LANES-1:0][15:0]    signal_quality;       // Per-lane signal quality
+    logic [NUM_LANES-1:0]          signal_alarm;         // Per-lane signal quality alarm
+    logic [NUM_LANES-1:0][7:0]     crosstalk_level;      // Crosstalk level per lane
+    
+    // ========================================================================
+    // Advanced Debug Features (128 Gbps)
+    // ========================================================================
+    
+    // Thermal Debug (64 Sensors)
+    logic [63:0][7:0]             thermal_sensor_data;   // Individual sensor readings
+    logic [7:0]                   thermal_zone_status;   // 8-zone thermal status
+    logic [1:0]                   thermal_throttle_level; // Current throttle level
+    
+    // Power Domain Debug
+    logic [2:0]                   power_domain_status;   // 0.6V/0.8V/1.0V domain status
+    logic [7:0]                   power_consumption;     // Current power consumption
+    logic [7:0]                   power_efficiency;      // Power efficiency metric
     
     // ML Optimization Debug
-    logic                     ml_active;
-    logic [7:0]               ml_prediction_accuracy;
-    logic [7:0]               ml_bandwidth_prediction;
-    logic [3:0]               ml_optimization_level;
+    logic [7:0]                   ml_prediction_accuracy; // ML prediction accuracy
+    logic [7:0]                   ml_bandwidth_prediction; // Bandwidth prediction
+    logic [7:0]                   ml_adaptation_rate;     // Adaptation rate
+    logic                         ml_learning_active;     // Learning process active
     
-    // Multi-Module Debug
-    logic                     multi_module_active;
-    logic [3:0]               module_coordination_state;
-    logic [7:0]               module_status_vector;
-    logic [7:0]               bandwidth_sharing [3:0];
+    // ========================================================================
+    // Debug Control and Configuration
+    // ========================================================================
     
-    // Error Debug
-    logic [15:0]              total_error_count;
-    logic [7:0]               crc_error_count;
-    logic [7:0]               sequence_error_count;
-    logic [7:0]               timeout_error_count;
-    logic                     error_recovery_active;
+    // Debug Mode Control
+    logic                         debug_enable;          // Master debug enable
+    logic [3:0]                   debug_mode;            // Debug mode selection
+    logic [7:0]                   debug_target_select;   // Target selection for debug
+    logic                         compliance_mode;       // Compliance test mode
     
-    // Training Debug
-    logic [31:0]              training_statistics;
-    logic [15:0]              successful_trainings;
-    logic [15:0]              failed_trainings;
-    logic [15:0]              training_time_cycles;
+    // ========================================================================
+    // Observability and Monitoring
+    // ========================================================================
     
-    // Sideband Debug
-    logic [15:0]              sideband_tx_count;
-    logic [15:0]              sideband_rx_count;
-    logic [7:0]               sideband_error_count;
-    logic                     sideband_link_active;
+    // Debug Bus and Multiplexing
+    logic [DEBUG_BUS_WIDTH-1:0]   debug_bus;             // Main debug output bus
+    logic [7:0]                   debug_bus_select;      // Debug bus multiplexer select
+    logic                         debug_bus_valid;       // Debug bus data valid
     
-    // Advanced Debug Features
-    logic [31:0]              debug_trigger_mask;
-    logic                     debug_capture_enable;
-    logic [31:0]              debug_timestamp;
-    logic [63:0]              debug_trace_buffer [255:0];
-    logic [7:0]               debug_trace_ptr;
+    // Performance Monitoring
+    logic [31:0]                  bandwidth_utilization; // Total bandwidth utilization
+    logic [31:0]                  packet_count_tx;       // TX packet counter
+    logic [31:0]                  packet_count_rx;       // RX packet counter
+    logic [31:0]                  cycle_count;           // Cycle counter
+    logic [31:0]                  idle_count;            // Idle cycle counter
     
-    // Real-time Monitoring
-    logic [15:0]              realtime_bandwidth_mbps;
-    logic [15:0]              realtime_latency_ns;
-    logic [7:0]               realtime_error_rate;
-    logic [7:0]               realtime_temperature_c;
+    // Error and Event Counters
+    logic [31:0]                  total_error_count;     // Total error counter
+    logic [31:0]                  correctable_error_count; // Correctable error counter
+    logic [31:0]                  uncorrectable_error_count; // Uncorrectable error counter
+    logic [31:0]                  training_event_count;  // Training event counter
+    logic [31:0]                  power_event_count;     // Power state change counter
+    
+    // ========================================================================
+    // Real-Time Debug Data Streaming
+    // ========================================================================
+    
+    // Debug Data Streaming Interface
+    logic                         stream_enable;         // Enable debug streaming
+    logic [31:0]                  stream_data;           // Streaming debug data
+    logic                         stream_valid;          // Stream data valid
+    logic                         stream_ready;          // Stream ready (backpressure)
+    logic [3:0]                   stream_type;           // Stream data type identifier
+    
+    // Time Stamping
+    logic [63:0]                  timestamp;             // High-resolution timestamp
+    logic                         timestamp_valid;       // Timestamp valid
 
+    // ========================================================================
+    // Modport Definitions
+    // ========================================================================
+    
     modport device (
-        input  clk, resetn, debug_trigger_mask, debug_capture_enable,
-        output link_state, training_state, power_state, micro_power_state,
-               lane_status, lane_errors, lane_ber_count, lane_repair_active,
-               protocol_active, protocol_tx_count, protocol_rx_count, protocol_errors,
-               performance_counters, bandwidth_utilization, latency_measurements,
-               thermal_status, die_temperature, thermal_throttle_active, lane_thermal_status,
-               power_consumption_mw, power_domain_status, power_budget_alarm,
-               voltage_levels, frequency_levels, ml_active, ml_prediction_accuracy,
-               ml_bandwidth_prediction, ml_optimization_level, multi_module_active,
-               module_coordination_state, module_status_vector, bandwidth_sharing,
-               total_error_count, crc_error_count, sequence_error_count,
-               timeout_error_count, error_recovery_active, training_statistics,
-               successful_trainings, failed_trainings, training_time_cycles,
-               sideband_tx_count, sideband_rx_count, sideband_error_count,
-               sideband_link_active, debug_timestamp, debug_trace_buffer,
-               debug_trace_ptr, realtime_bandwidth_mbps, realtime_latency_ns,
-               realtime_error_rate, realtime_temperature_c
+        input  clk, rst_n,
+               debug_enable, debug_mode, debug_target_select, compliance_mode,
+               debug_bus_select, stream_ready,
+               
+        output link_state, power_state, thermal_status, performance_counters,
+               ml_active, multi_module_active, protocol_active,
+               protocol_utilization, protocol_errors, lane_active, lane_trained,
+               lane_error, lane_ber_status, pam4_active, dfe_status, ffe_status,
+               eye_height, eye_width, signal_quality, signal_alarm,
+               crosstalk_level, thermal_sensor_data, thermal_zone_status,
+               thermal_throttle_level, power_domain_status, power_consumption,
+               power_efficiency, ml_prediction_accuracy, ml_bandwidth_prediction,
+               ml_adaptation_rate, ml_learning_active, debug_bus, debug_bus_valid,
+               bandwidth_utilization, packet_count_tx, packet_count_rx,
+               cycle_count, idle_count, total_error_count,
+               correctable_error_count, uncorrectable_error_count,
+               training_event_count, power_event_count,
+               stream_data, stream_valid, stream_type, timestamp, timestamp_valid
     );
     
     modport controller (
-        input  clk, resetn, link_state, training_state, power_state, micro_power_state,
-               lane_status, lane_errors, lane_ber_count, lane_repair_active,
-               protocol_active, protocol_tx_count, protocol_rx_count, protocol_errors,
-               performance_counters, bandwidth_utilization, latency_measurements,
-               thermal_status, die_temperature, thermal_throttle_active, lane_thermal_status,
-               power_consumption_mw, power_domain_status, power_budget_alarm,
-               voltage_levels, frequency_levels, ml_active, ml_prediction_accuracy,
-               ml_bandwidth_prediction, ml_optimization_level, multi_module_active,
-               module_coordination_state, module_status_vector, bandwidth_sharing,
-               total_error_count, crc_error_count, sequence_error_count,
-               timeout_error_count, error_recovery_active, training_statistics,
-               successful_trainings, failed_trainings, training_time_cycles,
-               sideband_tx_count, sideband_rx_count, sideband_error_count,
-               sideband_link_active, debug_timestamp, debug_trace_buffer,
-               debug_trace_ptr, realtime_bandwidth_mbps, realtime_latency_ns,
-               realtime_error_rate, realtime_temperature_c,
-        output debug_trigger_mask, debug_capture_enable
+        input  clk, rst_n,
+               link_state, power_state, thermal_status, performance_counters,
+               ml_active, multi_module_active, protocol_active,
+               protocol_utilization, protocol_errors, lane_active, lane_trained,
+               lane_error, lane_ber_status, pam4_active, dfe_status, ffe_status,
+               eye_height, eye_width, signal_quality, signal_alarm,
+               crosstalk_level, thermal_sensor_data, thermal_zone_status,
+               thermal_throttle_level, power_domain_status, power_consumption,
+               power_efficiency, ml_prediction_accuracy, ml_bandwidth_prediction,
+               ml_adaptation_rate, ml_learning_active, debug_bus, debug_bus_valid,
+               bandwidth_utilization, packet_count_tx, packet_count_rx,
+               cycle_count, idle_count, total_error_count,
+               correctable_error_count, uncorrectable_error_count,
+               training_event_count, power_event_count,
+               stream_data, stream_valid, stream_type, timestamp, timestamp_valid,
+               stream_ready,
+               
+        output debug_enable, debug_mode, debug_target_select, compliance_mode,
+               debug_bus_select, stream_enable
+    );
+    
+    modport testbench (
+        input  clk, rst_n,
+        inout  debug_enable, debug_mode, compliance_mode, link_state,
+               power_state, lane_active, lane_trained, pam4_active,
+               ml_active, thermal_status, debug_bus, stream_enable,
+               bandwidth_utilization, total_error_count
+    );
+    
+    modport monitor (
+        input  clk, rst_n,
+               link_state, power_state, thermal_status, performance_counters,
+               protocol_active, lane_active, lane_trained, signal_quality,
+               thermal_sensor_data, power_consumption, debug_bus,
+               bandwidth_utilization, packet_count_tx, packet_count_rx,
+               total_error_count, stream_data, stream_valid, timestamp
     );
 
 endinterface

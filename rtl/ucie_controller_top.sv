@@ -266,6 +266,15 @@ module ucie_controller_top
     logic [15:0] sb_error_count;
     logic [31:0] sb_debug_info;
     
+    // Temporary variables for procedural blocks
+    logic [2:0] module_count;
+    logic [1:0] master_id;
+    logic [15:0] active_lanes_count;
+    logic [15:0] total_buffer_occupancy;
+    logic [15:0] total_buffer_capacity;
+    logic [15:0] total_violations;
+    logic [15:0] total_transactions;
+    
     // 128 Gbps Enhancement Internal Signals
     
     // Quarter-Rate Processor Interfaces
@@ -504,7 +513,6 @@ module ucie_controller_top
                     mm_coordination_timer <= mm_coordination_timer - 1;
                     
                     // Count detected modules
-                    logic [2:0] module_count;
                     module_count = 3'h0;
                     for (int i = 0; i < 4; i++) begin
                         if (detected_modules[i]) module_count = module_count + 1;
@@ -518,7 +526,6 @@ module ucie_controller_top
                     mm_coordination_timer <= mm_coordination_timer - 1;
                     
                     // Master election: lowest MODULE_ID becomes master
-                    logic [1:0] master_id;
                     master_id = 2'h3; // Start with highest ID
                     for (int i = 0; i < 4; i++) begin
                         if (detected_modules[i] && (i < master_id)) begin
@@ -1323,7 +1330,7 @@ module ucie_controller_top
                                       16'd10 : 16'd0;  // Simplified latency model
         
         // Calculate link utilization
-        logic [15:0] active_lanes_count = 0;
+        active_lanes_count = 0;
         for (int i = 0; i < NUM_LANES; i++) begin
             if (lane_active_mask[i]) active_lanes_count = active_lanes_count + 1;
         end
@@ -1331,8 +1338,8 @@ module ucie_controller_top
         link_utilization_percent = (active_lanes_count * 100) / NUM_LANES;
         
         // Calculate buffer utilization (aggregate across all buffers)
-        logic [15:0] total_buffer_occupancy = 0;
-        logic [15:0] total_buffer_capacity = 0;
+        total_buffer_occupancy = 0;
+        total_buffer_capacity = 0;
         
         for (int i = 0; i < NUM_PROTOCOLS; i++) begin
             total_buffer_occupancy = total_buffer_occupancy + protocol_buffer_occupancy[i];
@@ -1377,8 +1384,8 @@ module ucie_controller_top
             end
             
             // Calculate QoS compliance (simplified metric)
-            logic [15:0] total_violations = 0;
-            logic [15:0] total_transactions = 0;
+            total_violations = 0;
+            total_transactions = 0;
             
             for (int i = 0; i < NUM_PROTOCOLS; i++) begin
                 total_violations = total_violations + protocol_error_count[i][15:0];
@@ -2432,7 +2439,7 @@ module ucie_controller_top
             8'h0,                       // [31:24] Reserved
             ml_global_enable,           // [23] ML globally enabled
             2'b0,                       // [22:21] Reserved
-            ml_global_performance_score[7:3], // [20:16] Performance score (top 5 bits)
+            ml_global_performance_score[7:3] // [20:16] Performance score (top 5 bits)
         };
     end
     

@@ -57,6 +57,17 @@ import ucie_pkg::*;
 // Clock Domain Crossing Signals
 logic rst_symbol_n, rst_quarter_n, rst_sideband_n;
 
+// Interface Adapter to Protocol Layer Signals
+logic [FLIT_WIDTH-1:0] ul_tx_flit [4-1:0];
+logic [4-1:0]         ul_tx_valid;
+logic [4-1:0]         ul_tx_ready;
+logic [7:0]           ul_tx_vc [4-1:0];
+
+logic [FLIT_WIDTH-1:0] ul_rx_flit [4-1:0];
+logic [4-1:0]         ul_rx_valid;
+logic [4-1:0]         ul_rx_ready;
+logic [7:0]           ul_rx_vc [4-1:0];
+
 // Protocol Layer Signals
 logic [FLIT_WIDTH-1:0] protocol_to_d2d_flit;
 logic                  protocol_to_d2d_valid;
@@ -128,12 +139,45 @@ ucie_reset_synchronizer u_rst_sync_sideband (
 );
 
 // ============================================================================
+// Interface Adapter (RDI/FDI to Protocol Arrays)
+// ============================================================================
+
+ucie_interface_adapter #(
+    .NUM_PROTOCOLS(4),
+    .NUM_VCS(8)
+) u_interface_adapter (
+    .clk(app_clk),
+    .rst_n(app_resetn),
+    
+    // RDI/FDI Interface Connections
+    .rdi(rdi),
+    .fdi(fdi),
+    
+    // Protocol Layer Array Interfaces
+    .ul_tx_flit(ul_tx_flit),
+    .ul_tx_valid(ul_tx_valid),
+    .ul_tx_ready(ul_tx_ready),
+    .ul_tx_vc(ul_tx_vc),
+    
+    .ul_rx_flit(ul_rx_flit),
+    .ul_rx_valid(ul_rx_valid),
+    .ul_rx_ready(ul_rx_ready),
+    .ul_rx_vc(ul_rx_vc),
+    
+    // Protocol Configuration
+    .protocol_enable(config.protocol_enable),
+    .protocol_priority(config.protocol_priority)
+);
+
+// ============================================================================
 // Multi-Domain Clock and Power Management
 // ============================================================================
 
-ucie_multi_domain_power_manager #(
+ucie_power_management #(
     .NUM_DOMAINS(3),
-    .ENABLE_AVFS(POWER_OPTIMIZATION)
+    .NUM_LANES(MODULE_WIDTH),
+    .ENABLE_AVFS(POWER_OPTIMIZATION),
+    .ENABLE_ADAPTIVE_POWER(1)
 ) u_power_manager (
     .clk                (app_clk),
     .rst_n              (app_resetn),
@@ -162,7 +206,7 @@ ucie_multi_domain_power_manager #(
 // Protocol Layer Instance (Enhanced for 128 Gbps)
 // ============================================================================
 
-ucie_protocol_layer_enhanced #(
+ucie_protocol_layer #(
     .NUM_PROTOCOLS          (4),
     .BUFFER_DEPTH          (16384),  // 4x deeper for 128 Gbps
     .NUM_VCS               (8),
@@ -177,9 +221,16 @@ ucie_protocol_layer_enhanced #(
     .clk_symbol_rate    (clk_symbol_64g),
     .quarter_rate_enable(MAX_SPEED >= 64),
     
-    // Upper Layer Interfaces (from RDI/FDI)
-    .rdi                (rdi),
-    .fdi                (fdi),
+    // Upper Layer Interfaces (from Interface Adapter)
+    .ul_tx_flit         (ul_tx_flit),
+    .ul_tx_valid        (ul_tx_valid),
+    .ul_tx_ready        (ul_tx_ready),
+    .ul_tx_vc           (ul_tx_vc),
+    
+    .ul_rx_flit         (ul_rx_flit),
+    .ul_rx_valid        (ul_rx_valid),
+    .ul_rx_ready        (ul_rx_ready),
+    .ul_rx_vc           (ul_rx_vc),
     
     // D2D Adapter Interface
     .d2d_tx_flit        (protocol_to_d2d_flit),

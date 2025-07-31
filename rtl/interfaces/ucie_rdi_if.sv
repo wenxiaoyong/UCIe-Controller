@@ -82,6 +82,10 @@ interface ucie_rdi_if #(
         output tx_valid, tx_data, tx_user, tx_sop, tx_eop, tx_empty,
                lp_wake_req, lp_clk_ack, lp_stallreq, lp_stallack,
                lp_state_req, lp_state_sts, rx_ready,
+               clk_domain_sync, clk_domain_sel, thermal_throttle, temperature_status,
+               advanced_credits, burst_length, pam4_symbol_align, pam4_training_mode,
+               pam4_eq_status, pam4_error_count, ml_prediction_valid,
+               ml_bandwidth_predict, ml_latency_class,
         input  tx_ready, rx_valid, rx_data, rx_user, rx_sop, rx_eop, rx_empty,
                pl_wake_ack, pl_clk_req, pl_stallreq, pl_stallack,
                pl_state_req, pl_state_sts, link_up, link_error, link_status
@@ -92,6 +96,10 @@ interface ucie_rdi_if #(
                tx_valid, tx_data, tx_user, tx_sop, tx_eop, tx_empty,
                lp_wake_req, lp_clk_ack, lp_stallreq, lp_stallack,
                lp_state_req, lp_state_sts, rx_ready,
+               clk_domain_sync, clk_domain_sel, thermal_throttle, temperature_status,
+               advanced_credits, burst_length, pam4_symbol_align, pam4_training_mode,
+               pam4_eq_status, pam4_error_count, ml_prediction_valid,
+               ml_bandwidth_predict, ml_latency_class,
         output tx_ready, rx_valid, rx_data, rx_user, rx_sop, rx_eop, rx_empty,
                pl_wake_ack, pl_clk_req, pl_stallreq, pl_stallack,
                pl_state_req, pl_state_sts, link_up, link_error, link_status

@@ -102,10 +102,16 @@ interface ucie_fdi_if #(
                pl_flit_cancel, pl_credit_return, lp_wake_req, lp_clk_ack,
                lp_rx_active_req, lp_flit_ready, quarter_rate_mode, quarter_rate_phase,
                parallel_lane_sel, bypass_enable, bypass_valid, bypass_data,
+               cancel_reason, cancel_sequence, clk_domain_sync, clk_domain_sel,
+               thermal_throttle, temperature_status, advanced_credits, burst_length,
+               buffer_level_percent, power_domain_active, low_power_mode,
+               ml_flow_predict, ml_congestion_level, ml_priority_boost,
+               ml_bandwidth_predict, ml_latency_class, pam4_symbol_align,
+               pam4_training_mode, pam4_eq_status, pam4_error_count,
         input  lp_flit_ready, lp_flit_valid, lp_flit_data, lp_flit_sop, lp_flit_eop,
                lp_flit_be, lp_credit_return, pl_wake_ack, pl_clk_req,
                pl_rx_active_sts, link_up, link_error, link_status, pl_flit_ready,
-               bypass_ready
+               bypass_ready, pl_flit_cancel_ack
     );
     
     modport controller (
@@ -114,9 +120,15 @@ interface ucie_fdi_if #(
                pl_flit_cancel, pl_credit_return, lp_wake_req, lp_clk_ack,
                lp_rx_active_req, lp_flit_ready, quarter_rate_mode, quarter_rate_phase,
                parallel_lane_sel, bypass_enable, bypass_valid, bypass_data,
+               cancel_reason, cancel_sequence, clk_domain_sync, clk_domain_sel,
+               thermal_throttle, temperature_status, advanced_credits, burst_length,
+               buffer_level_percent, power_domain_active, low_power_mode,
+               ml_flow_predict, ml_congestion_level, ml_priority_boost,
+               ml_bandwidth_predict, ml_latency_class, pam4_symbol_align,
+               pam4_training_mode, pam4_eq_status, pam4_error_count,
         output lp_flit_ready, lp_flit_valid, lp_flit_data, lp_flit_sop, lp_flit_eop,
                lp_flit_be, lp_credit_return, pl_wake_ack, pl_clk_req,
                pl_rx_active_sts, link_up, link_error, link_status, pl_flit_ready,
-               bypass_ready
+               bypass_ready, pl_flit_cancel_ack
     );
 endinterface

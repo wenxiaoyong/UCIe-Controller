@@ -18,9 +18,14 @@ VERILATOR_FLAGS += --Mdir $(BUILD_DIR)/obj_dir
 # RTL source files (for synthesis/lint)
 RTL_SOURCES_SYNTH := \
 	$(RTL_DIR)/ucie_pkg.sv \
+	$(RTL_DIR)/common/ucie_common_pkg.sv \
 	$(RTL_DIR)/interfaces/ucie_fdi_if.sv \
 	$(RTL_DIR)/interfaces/ucie_rdi_if.sv \
 	$(RTL_DIR)/interfaces/ucie_sideband_if.sv \
+	$(RTL_DIR)/interfaces/ucie_phy_if.sv \
+	$(RTL_DIR)/interfaces/ucie_config_if.sv \
+	$(RTL_DIR)/interfaces/ucie_debug_if.sv \
+	$(RTL_DIR)/common/ucie_interface_adapter.sv \
 	$(RTL_DIR)/d2d_adapter/ucie_crc_retry_engine.sv \
 	$(RTL_DIR)/d2d_adapter/ucie_stack_multiplexer.sv \
 	$(RTL_DIR)/d2d_adapter/ucie_param_exchange.sv \
